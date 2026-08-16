@@ -1913,7 +1913,8 @@ class Tank extends Entity {
         const viewT = state.cam.y - 50;
         const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
 
-        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
+                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+
         drawCharacterAvatar(ctx, this.x, this.y, this.r, this.isPlayer ? "Unit 01" : this.type, this.color, this.angle, this);
         this.drawHealth(ctx);
     }
@@ -2171,7 +2172,8 @@ class Bullet extends Entity {
         const viewT = state.cam.y - 50;
         const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
 
-        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
+                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+
         const r = this.r;
 
         // 1. HIGH-PERFORMANCE PROXIMITY MINE RENDERER
@@ -2355,7 +2357,8 @@ class Shape extends Entity {
         const viewT = state.cam.y - 50;
         const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
 
-        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
+                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+
         const r = this.r;
         ctx.save();
         ctx.translate(this.x, this.y);
@@ -2557,7 +2560,8 @@ class TrainingDummy extends Entity {
         const viewT = state.cam.y - 50;
         const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
 
-        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
+        // Early exit if off-screen
+        if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
         if (this.dead) return;
         const r = this.r;
 
@@ -2704,7 +2708,8 @@ class NPC {
         const viewT = state.cam.y - 50;
         const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
 
-        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
+                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+
         if (this.dead) return;
         drawCharacterAvatar(ctx, this.x, this.y, this.r, this.name, this.color, this.angle);
 
@@ -2786,7 +2791,8 @@ class Particle {
         const viewT = state.cam.y - 50;
         const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
 
-        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
+                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+
         let alpha = Math.min(this.life / (this.maxLife * 0.3), 1);
         ctx.globalAlpha = alpha;
         ctx.fillStyle = this.c;
