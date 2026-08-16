@@ -4805,7 +4805,7 @@ function loop() {
         ctx.lineWidth = 1;
         ctx.beginPath();
         // Scale step so line count stays bounded regardless of zoom
-        let step = (z < 0.7) ? 80 : 40;
+        let step = 40;
         for (let x = 0; x < canvas.width + step; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
         for (let y = 0; y < canvas.height + step; y += step) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
         ctx.stroke();
