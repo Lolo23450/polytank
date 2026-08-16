@@ -997,6 +997,47 @@
 <script src="enemies/shield_carrier.js"></script>
 
 <script>
+
+// --- PRE-RENDERED GEAR SPRITE CACHE ---
+const gearCanvas = document.createElement('canvas');
+gearCanvas.width = 36;
+gearCanvas.height = 36;
+const gearCtx = gearCanvas.getContext('2d');
+
+(function initGearSprite() {
+    const cx = 18;
+    const cy = 18;
+    const baseR = 10;
+    const teeth = 6;
+
+    gearCtx.save();
+    gearCtx.translate(cx, cy);
+
+    // 1. Teeth geometry
+    gearCtx.fillStyle = '#475569';
+    gearCtx.strokeStyle = '#1e293b';
+    gearCtx.lineWidth = 1.2;
+    for (let i = 0; i < teeth; i++) {
+        gearCtx.rotate(Math.PI / teeth);
+        gearCtx.fillRect(-baseR - 3, -2, (baseR + 3) * 2, 4);
+    }
+
+    // 2. Main gear body
+    gearCtx.fillStyle = '#64748b';
+    gearCtx.beginPath();
+    gearCtx.arc(0, 0, baseR, 0, Math.PI * 2);
+    gearCtx.fill();
+    gearCtx.stroke();
+
+    // 3. Central axel pin
+    gearCtx.fillStyle = '#00d2d3';
+    gearCtx.beginPath();
+    gearCtx.arc(0, 0, 3, 0, Math.PI * 2);
+    gearCtx.fill();
+
+    gearCtx.restore();
+})();
+
 // =====================================================================
 //  PROCEDURAL WEB AUDIO SYNTHESIZER & SOFTER SOUNDTRACK ENGINE
 // =====================================================================
@@ -2472,10 +2513,22 @@ class TrainingDummy extends Entity {
         this.currentDps = 0;
     }
     update() {
-        const now = Date.now();
-        this.recentDamage = this.recentDamage.filter(d => now - d.time < 1200);
-        let dmgSum = this.recentDamage.reduce((acc, v) => acc + v.amt, 0);
-        this.currentDps = Math.round(dmgSum / 1.2);
+            if (this.recentDamage.length > 0) {
+            const now = Date.now();
+            let writeIdx = 0;
+            let dmgSum = 0;
+            for (let i = 0; i < this.recentDamage.length; i++) {
+                const entry = this.recentDamage[i];
+                if (now - entry.time < 1200) {
+                    this.recentDamage[writeIdx++] = entry;
+                    dmgSum += entry.amt;
+                }
+            }
+            this.recentDamage.length = writeIdx;
+            this.currentDps = Math.round(dmgSum / 1.2);
+        } else {
+            this.currentDps = 0;
+        }
 
         if (this.dead) {
             if (this.respawnTimer > 0) {
@@ -2678,8 +2731,11 @@ class NPC {
     }
     update() {
         if (player && !player.dead) {
-            let d = Math.hypot(player.x - this.x, player.y - this.y);
-            if (d < 2000) this.angle = Math.atan2(player.y - this.y, player.x - this.x);
+            const dx = player.x - this.x;
+            const dy = player.y - this.y;
+            if (dx * dx + dy * dy < 1400 * 1400) {
+                this.angle = Math.atan2(dy, dx);
+            }
         }
     }
     draw(ctx) {
@@ -2817,9 +2873,10 @@ function drawCharacterAvatar(ctx, x, y, r, name, color, angle = 0, entityObj = n
     ctx.strokeStyle = '#2f3542';
     ctx.lineJoin = 'round';
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    // Lightweight highlight without clip()
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
     ctx.beginPath();
-    ctx.arc(2, 3, r, 0, Math.PI * 2);
+    ctx.arc(-r * 0.25, -r * 0.25, r * 0.65, 0, Math.PI * 2);
     ctx.fill();
 
     // 1. PLAYER / UNIT 01
@@ -2870,38 +2927,26 @@ function drawCharacterAvatar(ctx, x, y, r, name, color, angle = 0, entityObj = n
 
         if (spdLvl > 0) {
             const gearRadius = 5 + spdLvl * 0.85;
-            const gearPositions = [
-                { gx: -r * 0.4, gy: -r * 0.65, dir: 1 },
-                { gx: -r * 0.4, gy:  r * 0.65, dir: -1 }
-            ];
+            // Native sprite size is 36x36 (base radius 10 + 3px teeth)
+            const scale = (gearRadius + 2) / 13;
+            const drawSize = 36 * scale;
+            const halfSize = drawSize * 0.5;
 
-            gearPositions.forEach(gp => {
-                ctx.save();
-                ctx.translate(gp.gx, gp.gy);
-                let gAngle = (entityObj ? entityObj.gearRotation : state.frame * 0.05) * gp.dir;
-                ctx.rotate(gAngle);
+            const baseRot = entityObj ? entityObj.gearRotation : state.frame * 0.05;
 
-                ctx.fillStyle = '#475569';
-                ctx.strokeStyle = '#1e293b';
-                ctx.lineWidth = 1.2;
-                const teeth = 6;
-                for (let i = 0; i < teeth; i++) {
-                    ctx.rotate(Math.PI / teeth);
-                    ctx.fillRect(-gearRadius - 2, -1.8, (gearRadius + 2) * 2, 3.6);
-                }
+            // Top gear
+            ctx.save();
+            ctx.translate(-r * 0.4, -r * 0.65);
+            ctx.rotate(baseRot);
+            ctx.drawImage(gearCanvas, -halfSize, -halfSize, drawSize, drawSize);
+            ctx.restore();
 
-                ctx.fillStyle = '#64748b';
-                ctx.beginPath();
-                ctx.arc(0, 0, gearRadius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.fillStyle = '#00d2d3';
-                ctx.beginPath();
-                ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            });
+            // Bottom gear (rotates counter-direction)
+            ctx.save();
+            ctx.translate(-r * 0.4, r * 0.65);
+            ctx.rotate(-baseRot);
+            ctx.drawImage(gearCanvas, -halfSize, -halfSize, drawSize, drawSize);
+            ctx.restore();
         }
 
         // Visual XP Booster Pods
@@ -3301,39 +3346,69 @@ function spawnEnemy(type, x, y) {
     return inst;
 }
 
+// --- PRE-ALLOCATED STATIC CRATE OFFSETS (Zero Garbage Collection) ---
+const CRATE_OFFSETS = [
+    [-45, -16], [-15, -16], [15, -16], [45, -16],
+    [-45,  16], [-15,  16], [15,  16], [45,  16]
+];
+
 // =====================================================================
-//  OUTPOST & CAMPSITE ARCHITECTURE
+//  OPTIMIZED OUTPOST & CAMPSITE ARCHITECTURE
 // =====================================================================
 
 function drawOutpostBase(ctx, lvl) {
     if (lvl.type !== 'hub') return;
 
+    // Viewport Culling helper for rectangular base sections
+    const isVisible = (x, y, w, h) => {
+        return (x + w >= state.viewL && x <= state.viewR && y + h >= state.viewT && y <= state.viewB);
+    };
+
     ctx.save();
-    ctx.fillStyle = 'rgba(30, 41, 59, 0.16)';
-    ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
     ctx.lineWidth = 2;
-    ctx.fillRect(-450, -450, 900, 900);
-    ctx.strokeRect(-450, -450, 900, 900);
 
-    ctx.fillStyle = 'rgba(24, 32, 47, 0.18)';
-    ctx.fillRect(-1150, -350, 600, 700);
-    ctx.strokeRect(-1150, -350, 600, 700);
+    // 1. Central Command Deck
+    if (isVisible(-450, -450, 900, 900)) {
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.16)';
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
+        ctx.fillRect(-450, -450, 900, 900);
+        ctx.strokeRect(-450, -450, 900, 900);
+    }
 
-    ctx.fillStyle = 'rgba(16, 42, 45, 0.16)';
-    ctx.fillRect(-1150, 450, 600, 500);
-    ctx.strokeRect(-1150, 450, 600, 500);
+    // 2. Maintenance & Motor Pool
+    if (isVisible(-1150, -350, 600, 700)) {
+        ctx.fillStyle = 'rgba(24, 32, 47, 0.18)';
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
+        ctx.fillRect(-1150, -350, 600, 700);
+        ctx.strokeRect(-1150, -350, 600, 700);
+    }
 
-    ctx.fillStyle = 'rgba(35, 30, 15, 0.18)';
-    ctx.fillRect(-350, -1150, 700, 600);
-    ctx.strokeRect(-350, -1150, 700, 600);
+    // 3. Field Hospital / Bio-Dome
+    if (isVisible(-1150, 450, 600, 500)) {
+        ctx.fillStyle = 'rgba(16, 42, 45, 0.16)';
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
+        ctx.fillRect(-1150, 450, 600, 500);
+        ctx.strokeRect(-1150, 450, 600, 500);
+    }
 
+    // 4. Polygon Logistics & Crate Depot
+    if (isVisible(-350, -1150, 700, 600)) {
+        ctx.fillStyle = 'rgba(35, 30, 15, 0.18)';
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
+        ctx.fillRect(-350, -1150, 700, 600);
+        ctx.strokeRect(-350, -1150, 700, 600);
+    }
+
+    // Room Label Overlays (Culled individually)
     ctx.font = 'bold 22px Ubuntu';
     ctx.fillStyle = 'rgba(148, 163, 184, 0.14)';
     ctx.textAlign = 'center';
-    ctx.fillText("CENTRAL COMMAND DECK", 0, 0);
-    ctx.fillText("MAINTENANCE & MOTOR POOL", -850, 0);
-    ctx.fillText("FIELD HOSPITAL / BIO-DOME", -850, 700);
-    ctx.fillText("POLYGON LOGISTICS & CRATE DEPOT", 0, -850);
+
+    if (isVisible(-200, -20, 400, 40))   ctx.fillText("CENTRAL COMMAND DECK", 0, 0);
+    if (isVisible(-1050, -20, 400, 40)) ctx.fillText("MAINTENANCE & MOTOR POOL", -850, 0);
+    if (isVisible(-1050, 680, 400, 40)) ctx.fillText("FIELD HOSPITAL / BIO-DOME", -850, 700);
+    if (isVisible(-200, -870, 400, 40)) ctx.fillText("POLYGON LOGISTICS & CRATE DEPOT", 0, -850);
+
     ctx.restore();
 
     drawStorageVaultCrates(ctx, lvl);
@@ -3344,105 +3419,111 @@ function drawStorageVaultCrates(ctx, lvl) {
     const vx = lvl.vaultTerminal ? lvl.vaultTerminal.x : 0;
     const vy = lvl.vaultTerminal ? lvl.vaultTerminal.y : -820;
 
-    ctx.save();
-    ctx.translate(vx, vy);
-    ctx.fillStyle = '#0f172a';
-    ctx.strokeStyle = '#ffd700';
-    ctx.lineWidth = 2.5;
-    ctx.fillRect(-35, -22, 70, 44);
-    ctx.strokeRect(-35, -22, 70, 44);
+    // 1. Vault Terminal Console
+    if (vx + 50 >= state.viewL && vx - 50 <= state.viewR && vy + 50 >= state.viewT && vy - 50 <= state.viewB) {
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2.5;
+        ctx.fillRect(vx - 35, vy - 22, 70, 44);
+        ctx.strokeRect(vx - 35, vy - 22, 70, 44);
 
-    ctx.fillStyle = '#060a14';
-    ctx.fillRect(-28, -16, 56, 32);
-    ctx.fillStyle = '#ffd700';
-    ctx.font = 'bold 9px Ubuntu';
-    ctx.textAlign = 'center';
-    ctx.fillText("STORAGE", 0, -3);
-    ctx.fillText("DEPOT (64)", 0, 9);
+        ctx.fillStyle = '#060a14';
+        ctx.fillRect(vx - 28, vy - 16, 56, 32);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 9px Ubuntu';
+        ctx.textAlign = 'center';
+        ctx.fillText("STORAGE", vx, vy - 3);
+        ctx.fillText("DEPOT (64)", vx, vy + 9);
 
-    let dVault = player ? Math.hypot(player.x - vx, player.y - vy) : 999;
-    if (dVault < 120) {
-        let p = 0.5 + 0.5 * Math.sin(Date.now() * 0.006);
-        ctx.strokeStyle = `rgba(255, 215, 0, ${p})`;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(-42, -28, 84, 56);
+        if (player) {
+            const pdx = player.x - vx;
+            const pdy = player.y - vy;
+            if (pdx * pdx + pdy * pdy < 120 * 120) {
+                const p = 0.5 + 0.5 * Math.sin(Date.now() * 0.006);
+                ctx.strokeStyle = `rgba(255, 215, 0, ${p})`;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(vx - 42, vy - 28, 84, 56);
+            }
+        }
     }
-    ctx.restore();
 
+    // 2. High-Performance Crate Pallet Renderer (No save/restore churn per crate)
     const drawCratePallet = (baseX, baseY, count, color, shapeType, label) => {
+        // Pallet Viewport Culling
+        if (baseX + 75 < state.viewL || baseX - 75 > state.viewR ||
+            baseY + 50 < state.viewT || baseY - 50 > state.viewB) {
+            return;
+        }
+
         const fullCrates = Math.floor(count / 64);
         const remainder  = count % 64;
 
-        ctx.save();
-        ctx.translate(baseX, baseY);
-
+        // Pallet Base
         ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 1.5;
-        ctx.fillRect(-65, -35, 130, 70);
-        ctx.strokeRect(-65, -35, 130, 70);
+        ctx.fillRect(baseX - 65, baseY - 35, 130, 70);
+        ctx.strokeRect(baseX - 65, baseY - 35, 130, 70);
 
+        // Header Label
         ctx.font = 'bold 10px Ubuntu';
         ctx.fillStyle = color;
         ctx.textAlign = 'center';
-        ctx.fillText(`${label}: ${count} (${fullCrates}x64 + ${remainder})`, 0, -42);
+        ctx.fillText(`${label}: ${count} (${fullCrates}x64 + ${remainder})`, baseX, baseY - 42);
 
-        const offsets = [
-            [-45, -16], [-15, -16], [15, -16], [45, -16],
-            [-45,  16], [-15,  16], [15,  16], [45,  16]
-        ];
-
+        // Direct Coordinate Rendering for 8 Crates
         for (let i = 0; i < 8; i++) {
-            const [cx, cy] = offsets[i];
+            const cx = baseX + CRATE_OFFSETS[i][0];
+            const cy = baseY + CRATE_OFFSETS[i][1];
             const isFull = i < fullCrates;
             const isPartial = (i === fullCrates && remainder > 0);
             const isEmpty = !isFull && !isPartial;
 
-            ctx.save();
-            ctx.translate(cx, cy);
-
             if (isEmpty) {
                 ctx.strokeStyle = 'rgba(71, 85, 105, 0.25)';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(-12, -12, 24, 24);
+                ctx.strokeRect(cx - 12, cy - 12, 24, 24);
             } else {
                 ctx.fillStyle = isFull ? '#1e293b' : '#0f172a';
                 ctx.strokeStyle = color;
                 ctx.lineWidth = isFull ? 2 : 1.5;
-                ctx.fillRect(-12, -12, 24, 24);
-                ctx.strokeRect(-12, -12, 24, 24);
+                ctx.fillRect(cx - 12, cy - 12, 24, 24);
+                ctx.strokeRect(cx - 12, cy - 12, 24, 24);
 
+                // Diagonal Bracing
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
                 ctx.beginPath();
-                ctx.moveTo(-12, -12); ctx.lineTo(12, 12);
-                ctx.moveTo(12, -12); ctx.lineTo(-12, 12);
+                ctx.moveTo(cx - 12, cy - 12); ctx.lineTo(cx + 12, cy + 12);
+                ctx.moveTo(cx + 12, cy - 12); ctx.lineTo(cx - 12, cy + 12);
                 ctx.stroke();
 
                 if (isPartial) {
-                    let fillH = 20 * (remainder / 64);
+                    const fillH = 20 * (remainder / 64);
                     ctx.fillStyle = color;
                     ctx.globalAlpha = 0.5;
-                    ctx.fillRect(-10, 10 - fillH, 20, fillH);
+                    ctx.fillRect(cx - 10, (cy + 10) - fillH, 20, fillH);
                     ctx.globalAlpha = 1.0;
 
                     ctx.font = 'bold 8px Ubuntu';
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillText(remainder, 0, 3);
+                    ctx.fillText(remainder, cx, cy + 3);
                 } else if (isFull) {
                     ctx.fillStyle = color;
                     ctx.beginPath();
-                    if (shapeType === 0) ctx.rect(-3.5, -3.5, 7, 7);
-                    else if (shapeType === 1) {
-                        ctx.moveTo(0, -4); ctx.lineTo(4, 4); ctx.lineTo(-4, 4); ctx.closePath();
+                    if (shapeType === 0) {
+                        ctx.rect(cx - 3.5, cy - 3.5, 7, 7);
+                    } else if (shapeType === 1) {
+                        ctx.moveTo(cx, cy - 4);
+                        ctx.lineTo(cx + 4, cy + 4);
+                        ctx.lineTo(cx - 4, cy + 4);
+                        ctx.closePath();
                     } else {
-                        ctx.arc(0, 0, 4, 0, Math.PI * 2);
+                        ctx.arc(cx, cy, 4, 0, Math.PI * 2);
                     }
                     ctx.fill();
                 }
             }
-            ctx.restore();
         }
-        ctx.restore();
     };
 
     drawCratePallet(-200, -920, state.harvested.sq,   '#ffe869', 0, "KINETIC SQUARES");
@@ -4723,7 +4804,8 @@ function loop() {
         ctx.strokeStyle = C.GRID;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        let step = 40;
+        // Scale step so line count stays bounded regardless of zoom
+        let step = (z < 0.7) ? 80 : 40;
         for (let x = 0; x < canvas.width + step; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
         for (let y = 0; y < canvas.height + step; y += step) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
         ctx.stroke();
@@ -4914,8 +4996,11 @@ function update() {
 
 function updateHubLogic(lvl) {
     let nearNpc = null;
-    for (let n of npcs) {
-        if (player && Math.hypot(player.x - n.x, player.y - n.y) < 130) {
+    for (let i = 0, len = npcs.length; i < len; i++) {
+        const n = npcs[i];
+        const dx = player.x - n.x;
+        const dy = player.y - n.y;
+        if (dx * dx + dy * dy < 130 * 130) {
             nearNpc = n;
             break;
         }
@@ -4980,7 +5065,8 @@ function draw() {
     bufferCtx.lineWidth = invZoom;
     bufferCtx.beginPath();
 
-    let step = 40;
+    // Scale step so line count stays bounded regardless of zoom
+    let step = (z < 0.7) ? 80 : 40;
     let left = cx, right = cx + viewW;
     let top = cy, bottom = cy + viewH;
     let sx = Math.floor(left / step) * step;
@@ -5078,15 +5164,35 @@ function applyPostProcessing() {
 }
 
 function drawArrows(ctx) {
-    let lvl = LEVELS[state.level], targets = [];
-    if (lvl.type === 'shape') targets = shapes;
-    if (lvl.type === 'kill' || lvl.type === 'boss') targets = enemies;
-    if (!targets.length || player.dead) return;
-    let closest = targets.reduce((a, b) => dist(player, a) < dist(player, b) ? a : b);
-    if (dist(player, closest) < Math.max(canvas.width, canvas.height) / 2) return;
-    let ang = Math.atan2(closest.y - player.y, closest.x - player.x);
+    const lvl = LEVELS[state.level];
+    const targets = (lvl.type === 'shape') ? shapes : ((lvl.type === 'kill' || lvl.type === 'boss') ? enemies : null);
+    if (!targets || targets.length === 0 || !player || player.dead) return;
+
+    const px = player.x;
+    const py = player.y;
+    let closest = null;
+    let minDistSq = Infinity;
+
+    for (let i = 0, len = targets.length; i < len; i++) {
+        const t = targets[i];
+        if (t.dead) continue;
+        const dx = t.x - px;
+        const dy = t.y - py;
+        const dSq = dx * dx + dy * dy;
+        if (dSq < minDistSq) {
+            minDistSq = dSq;
+            closest = t;
+        }
+    }
+
+    if (!closest) return;
+
+    const threshold = Math.max(canvas.width, canvas.height) * 0.5;
+    if (minDistSq < threshold * threshold) return;
+
+    const ang = Math.atan2(closest.y - py, closest.x - px);
     ctx.save();
-    ctx.translate(player.x + Math.cos(ang) * 90, player.y + Math.sin(ang) * 90);
+    ctx.translate(px + Math.cos(ang) * 90, py + Math.sin(ang) * 90);
     ctx.rotate(ang);
     ctx.fillStyle = "rgba(255,215,0,0.5)";
     ctx.beginPath();
