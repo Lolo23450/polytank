@@ -4676,36 +4676,48 @@ function loop() {
     requestAnimationFrame(loop);
 }
 
+// --- 1. Cache DOM references outside update() ---
+const caElR = document.getElementById('ca-r');
+const caElB = document.getElementById('ca-b');
+
+// --- 2. In-place filter helper (avoids GC garbage from array allocations every frame) ---
+function retain(arr, predicate) {
+    let writeIdx = 0;
+    for (let i = 0; i < arr.length; i++) {
+        if (predicate(arr[i])) {
+            arr[writeIdx++] = arr[i];
+        }
+    }
+    arr.length = writeIdx;
+}
+
 function update() {
     state.frame++;
+
+    // Chromatic aberration effect
     if (caEffect.timer > 0) {
         caEffect.timer--;
         let offset = (Math.random() - 0.5) * caEffect.intensity;
-        document.getElementById('ca-r').setAttribute('dx', offset);
-        document.getElementById('ca-b').setAttribute('dx', -offset);
+        if (caElR) caElR.setAttribute('dx', offset);
+        if (caElB) caElB.setAttribute('dx', -offset);
         if (caEffect.timer <= 0) canvas.style.filter = 'none';
     }
 
     let lvl = LEVELS[state.level];
 
+    // Throttle range check (e.g. every 6 frames) — zoom lerp is smooth anyway
     if (lvl && lvl.type === 'hub') {
         if (!state.dia.active && !state.bossDeathEffect) {
-            if (isPlayerInFiringRange()) {
-                state.cam.targetZoom = 0.52;
-            } else {
-                state.cam.targetZoom = 1.0;
+            if (state.frame % 6 === 0) {
+                state.cam.targetZoom = isPlayerInFiringRange() ? 0.52 : 1.0;
             }
         }
     }
 
     state.cam.zoom += (state.cam.targetZoom - state.cam.zoom) * 0.02;
 
-    let targetX = player.x;
-    let targetY = player.y;
-    if (state.cam.target) {
-        targetX = state.cam.target.x;
-        targetY = state.cam.target.y;
-    }
+    let targetX = state.cam.target ? state.cam.target.x : player.x;
+    let targetY = state.cam.target ? state.cam.target.y : player.y;
 
     let desiredCx = targetX - (canvas.width / 2) / state.cam.zoom;
     let desiredCy = targetY - (canvas.height / 2) / state.cam.zoom;
@@ -4725,16 +4737,22 @@ function update() {
 
     player.update();
 
+    // ----------------- HUB LOGIC -----------------
     if (lvl.type === 'hub') {
         npcs.forEach(n => n.update());
         dummies.forEach(d => d.update());
         bullets.forEach(b => b.update());
-        bullets = bullets.filter(x => !x.dead);
+        retain(bullets, x => !x.dead);
         updateHubLogic(lvl);
+
         particles.forEach(p => p.update());
         texts.forEach(t => t.update());
-        particles = particles.filter(x => x.life > 0);
-        texts = texts.filter(x => x.life > 0);
+
+        // Cleanup particles/texts every 3 frames
+        if (state.frame % 3 === 0) {
+            retain(particles, x => x.life > 0);
+            retain(texts, x => x.life > 0);
+        }
         return;
     }
 
@@ -4742,23 +4760,31 @@ function update() {
         levelTimer++;
     }
 
+    // ----------------- BOSS DEATH SEQUENCE -----------------
     if (state.bossDeathEffect) {
         let bde = state.bossDeathEffect;
         bde.timer--;
         state.cam.shake = 9 * (bde.timer / 200);
         state.cam.x += (bde.x - canvas.width / 2 - state.cam.x) * 0.04;
         state.cam.y += (bde.y - canvas.height / 2 - state.cam.y) * 0.04;
+
         if (state.frame % 3 === 0) {
             let ox = (Math.random() - 0.5) * 160;
             let oy = (Math.random() - 0.5) * 160;
             let col = ['#ff6600', '#ffaa00', '#ff2200', '#ffee00'][Math.floor(Math.random() * 4)];
             spawnParticles(bde.x + ox, bde.y + oy, col, 6, 'explosion');
         }
+
         if (bde.timer === 100) spawnText(bde.x - 70, bde.y - 80, "BOSS ELIMINATED", "#ff4400");
+
         particles.forEach(p => p.update());
         texts.forEach(t => t.update());
-        particles = particles.filter(x => x.life > 0);
-        texts = texts.filter(x => x.life > 0);
+
+        if (state.frame % 3 === 0) {
+            retain(particles, x => x.life > 0);
+            retain(texts, x => x.life > 0);
+        }
+
         if (bde.timer <= 0) {
             state.bossDeathEffect = null;
             checkObj('boss');
@@ -4766,12 +4792,15 @@ function update() {
         return;
     }
 
+    // ----------------- SPAWNING LOGIC -----------------
     if (lvl.spawnRate > 0) {
-        if (shapes.length < 32 && Math.random() < 0.05) {
+        // Run ambient shape checks every 15 frames
+        if (state.frame % 15 === 0 && shapes.length < 32 && Math.random() < 0.6) {
             let d = 800 + Math.random() * 400;
             let a = Math.random() * Math.PI * 2;
             shapes.push(new Shape(player.x + Math.cos(a) * d, player.y + Math.sin(a) * d, Math.random() < 0.7 ? 0 : (Math.random() < 0.5 ? 1 : 2)));
         }
+
         const maxEnemies = Math.min(18, 7 + (lvl.act * 3) + Math.floor(state.level / 6));
         if (lvl.types && lvl.types.length > 0 && state.frame % lvl.spawnRate === 0 && enemies.length < maxEnemies) {
             let t = lvl.types[Math.floor(Math.random() * lvl.types.length)];
@@ -4779,6 +4808,7 @@ function update() {
             let a = Math.random() * Math.PI * 2;
             spawnEnemy(t, player.x + Math.cos(a) * d, player.y + Math.sin(a) * d);
         }
+
         if (lvl.boss && !lvl.bossSpawned) {
             spawnEnemy(lvl.boss, 0, -900);
             lvl.bossSpawned = true;
@@ -4786,6 +4816,7 @@ function update() {
         }
     }
 
+    // ----------------- LEVEL EVENTS -----------------
     if (lvl.events) {
         for (let evt of lvl.events) {
             if (!evt.triggered && levelTimer >= evt.frame) {
@@ -4795,6 +4826,7 @@ function update() {
         }
     }
 
+    // ----------------- ENTITY UPDATES -----------------
     bullets.forEach(b => b.update());
     if (!state.paused) {
         enemies.forEach(e => e.update());
@@ -4802,19 +4834,27 @@ function update() {
     shapes.forEach(s => s.update());
     particles.forEach(p => p.update());
     texts.forEach(t => t.update());
-    bullets = bullets.filter(x => !x.dead);
-    enemies = enemies.filter(x => !x.dead);
-    shapes = shapes.filter(x => !x.dead);
-    particles = particles.filter(x => x.life > 0);
-    texts = texts.filter(x => x.life > 0);
+
+    // In-place filtering for active entities
+    retain(bullets, x => !x.dead);
+    retain(enemies, x => !x.dead);
+    retain(shapes, x => !x.dead);
+
+    // Throttle particle/text array cleanup to every 3 frames
+    if (state.frame % 3 === 0) {
+        retain(particles, x => x.life > 0);
+        retain(texts, x => x.life > 0);
+    }
 
     if (lvl.type !== 'hub') {
         npcs.forEach(n => n.update());
-        npcs = npcs.filter(n => !n.dead);
-        updateHubLogic(lvl);
+        retain(npcs, n => !n.dead);
     }
 
-    checkLvl();
+    // Check level win/loss/completion every 10 frames (~6 times/sec)
+    if (state.frame % 10 === 0) {
+        checkLvl();
+    }
 }
 
 function updateHubLogic(lvl) {
