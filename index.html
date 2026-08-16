@@ -1908,12 +1908,7 @@ class Tank extends Entity {
         this.reload = rld;
     }
     draw(ctx) {
-        const viewL = state.cam.x - 50;
-        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
-        const viewT = state.cam.y - 50;
-        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
-
-                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
 
         drawCharacterAvatar(ctx, this.x, this.y, this.r, this.isPlayer ? "Unit 01" : this.type, this.color, this.angle, this);
         this.drawHealth(ctx);
@@ -2167,12 +2162,7 @@ class Bullet extends Entity {
     }
 
     draw(ctx) {
-        const viewL = state.cam.x - 50;
-        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
-        const viewT = state.cam.y - 50;
-        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
-
-                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
 
         const r = this.r;
 
@@ -2351,13 +2341,8 @@ class Shape extends Entity {
         super.phys();
         this.rotation += this.rotSpd;
     }
-    draw(ctx) {        
-        const viewL = state.cam.x - 50;
-        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
-        const viewT = state.cam.y - 50;
-        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
-
-                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+    draw(ctx) {               
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
 
         const r = this.r;
         ctx.save();
@@ -2555,14 +2540,9 @@ class TrainingDummy extends Entity {
         }
     }
     draw(ctx) {
-        const viewL = state.cam.x - 50;
-        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
-        const viewT = state.cam.y - 50;
-        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
-
-        // Early exit if off-screen
-        if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
         if (this.dead) return;
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
+
         const r = this.r;
 
         if (this.type === 'moving_x') {
@@ -2703,14 +2683,9 @@ class NPC {
         }
     }
     draw(ctx) {
-        const viewL = state.cam.x - 50;
-        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
-        const viewT = state.cam.y - 50;
-        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
-
-                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
-
         if (this.dead) return;
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
+
         drawCharacterAvatar(ctx, this.x, this.y, this.r, this.name, this.color, this.angle);
 
         ctx.save();
@@ -2786,12 +2761,7 @@ class Particle {
         this.currentSize = this.size * (this.life / this.maxLife);
     }
     draw(ctx) {
-        const viewL = state.cam.x - 50;
-        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
-        const viewT = state.cam.y - 50;
-        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
-
-                if (this.x < viewL || this.x > viewR || this.y < viewT || this.y > viewB) return;
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
 
         let alpha = Math.min(this.life / (this.maxLife * 0.3), 1);
         ctx.globalAlpha = alpha;
@@ -2824,6 +2794,8 @@ class FloatText {
         this.life--;
     }
     draw(ctx) {
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
+
         ctx.globalAlpha = this.life / 50;
         ctx.fillStyle = this.c;
         ctx.font = "bold 20px Ubuntu";
@@ -4986,6 +4958,17 @@ function draw() {
     let cx = state.cam.x, cy = state.cam.y, z = state.cam.zoom;
     let lvl = LEVELS[state.level];
 
+    // --- PRE-CALCULATE VIEWPORT BOUNDS ONCE FOR ALL ENTITIES ---
+    const pad = 60;
+    const invZoom = 1 / z;
+    const viewW = canvas.width * invZoom;
+    const viewH = canvas.height * invZoom;
+
+    state.viewL = cx - pad;
+    state.viewR = cx + viewW + pad;
+    state.viewT = cy - pad;
+    state.viewB = cy + viewH + pad;
+
     bufferCtx.fillStyle = C.BG;
     bufferCtx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -4994,12 +4977,12 @@ function draw() {
     bufferCtx.translate(-cx, -cy);
 
     bufferCtx.strokeStyle = C.GRID;
-    bufferCtx.lineWidth = 1 / z;
+    bufferCtx.lineWidth = invZoom;
     bufferCtx.beginPath();
 
     let step = 40;
-    let left = cx, right = cx + canvas.width / z;
-    let top = cy, bottom = cy + canvas.height / z;
+    let left = cx, right = cx + viewW;
+    let top = cy, bottom = cy + viewH;
     let sx = Math.floor(left / step) * step;
     let sy = Math.floor(top / step) * step;
 
@@ -5091,7 +5074,6 @@ function applyPostProcessing() {
     ctx.drawImage(bufferCanvas, 0, 0);
 
     ctx.save();
-    ctx.drawImage(bufferCanvas, 0, 0);
     ctx.restore();
 }
 
