@@ -1908,6 +1908,12 @@ class Tank extends Entity {
         this.reload = rld;
     }
     draw(ctx) {
+        const viewL = state.cam.x - 50;
+        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
+        const viewT = state.cam.y - 50;
+        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
+
+        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
         drawCharacterAvatar(ctx, this.x, this.y, this.r, this.isPlayer ? "Unit 01" : this.type, this.color, this.angle, this);
         this.drawHealth(ctx);
     }
@@ -2057,68 +2063,115 @@ class Bullet extends Entity {
             return;
         }
 
+        const bx = this.x;
+        const by = this.y;
+        const br = this.r;
+
         if (this.pShot) {
-            // Check collision with destructible mines
-            for (let b of bullets) {
-                if (!b.dead && b.isMine && dist(this, b) < this.r + b.r) {
-                    b.takeDmg(this.dmg);
-                    AudioEngine.playHit('armor');
-                    this.dead = true;
-                    spawnParticles(this.x, this.y, this.color, 4, 'spark');
-                    return;
+            // 1. Check destructible mines
+            for (let i = 0, len = bullets.length; i < len; i++) {
+                const b = bullets[i];
+                if (b.isMine && !b.dead) {
+                    const radSum = br + b.r;
+                    const dx = bx - b.x;
+                    const dy = by - b.y;
+                    if (Math.abs(dx) < radSum && Math.abs(dy) < radSum && (dx * dx + dy * dy) < radSum * radSum) {
+                        b.takeDmg(this.dmg);
+                        AudioEngine.playHit('armor');
+                        this.dead = true;
+                        spawnParticles(bx, by, this.color, 4, 'spark');
+                        return;
+                    }
                 }
             }
 
-            for (let e of enemies) {
-                if (dist(this, e) < this.r + e.r) {
-                    e.takeDmg(this.dmg);
-                    e.vx += this.vx * 0.05;
-                    e.vy += this.vy * 0.05;
-                    AudioEngine.playHit('armor');
-                    triggerGlitch(5, 10);
-                    this.dead = true;
-                    spawnParticles(this.x, this.y, this.color, 4, 'spark');
-                    return;
+            // 2. Check enemies
+            for (let i = 0, len = enemies.length; i < len; i++) {
+                const e = enemies[i];
+                if (!e.dead) {
+                    const radSum = br + e.r;
+                    const dx = bx - e.x;
+                    const dy = by - e.y;
+                    if (Math.abs(dx) < radSum && Math.abs(dy) < radSum && (dx * dx + dy * dy) < radSum * radSum) {
+                        e.takeDmg(this.dmg);
+                        e.vx += this.vx * 0.05;
+                        e.vy += this.vy * 0.05;
+                        AudioEngine.playHit('armor');
+                        triggerGlitch(5, 10);
+                        this.dead = true;
+                        spawnParticles(bx, by, this.color, 4, 'spark');
+                        return;
+                    }
                 }
             }
-            for (let s of shapes) {
-                if (dist(this, s) < this.r + s.r) {
-                    s.takeDmg(this.dmg);
-                    s.vx += this.vx * 0.1;
-                    s.vy += this.vy * 0.1;
-                    AudioEngine.playHit('armor');
-                    this.dead = true;
-                    spawnParticles(this.x, this.y, this.color, 4, 'spark');
-                    return;
+
+            // 3. Check shapes
+            for (let i = 0, len = shapes.length; i < len; i++) {
+                const s = shapes[i];
+                if (!s.dead) {
+                    const radSum = br + s.r;
+                    const dx = bx - s.x;
+                    const dy = by - s.y;
+                    if (Math.abs(dx) < radSum && Math.abs(dy) < radSum && (dx * dx + dy * dy) < radSum * radSum) {
+                        s.takeDmg(this.dmg);
+                        s.vx += this.vx * 0.1;
+                        s.vy += this.vy * 0.1;
+                        AudioEngine.playHit('armor');
+                        this.dead = true;
+                        spawnParticles(bx, by, this.color, 4, 'spark');
+                        return;
+                    }
                 }
             }
-            for (let d of dummies) {
-                if (!d.dead && dist(this, d) < this.r + d.r) {
-                    d.takeDmg(this.dmg);
-                    AudioEngine.playHit(d.type === 'shielded' ? 'shield' : 'armor');
-                    this.dead = true;
-                    spawnParticles(this.x, this.y, d.color || "#c49a6c", 4, 'debris');
-                    spawnText(this.x, this.y - 20, `-${Math.round(this.dmg)}`, "#ffd700");
-                    return;
+
+            // 4. Check training dummies (Hub / Proving Grounds only)
+            if (dummies.length > 0) {
+                for (let i = 0, len = dummies.length; i < len; i++) {
+                    const d = dummies[i];
+                    if (!d.dead) {
+                        const radSum = br + d.r;
+                        const dx = bx - d.x;
+                        const dy = by - d.y;
+                        if (Math.abs(dx) < radSum && Math.abs(dy) < radSum && (dx * dx + dy * dy) < radSum * radSum) {
+                            d.takeDmg(this.dmg);
+                            AudioEngine.playHit(d.type === 'shielded' ? 'shield' : 'armor');
+                            this.dead = true;
+                            spawnParticles(bx, by, d.color || "#c49a6c", 4, 'debris');
+                            spawnText(bx, by - 20, `-${Math.round(this.dmg)}`, "#ffd700");
+                            return;
+                        }
+                    }
                 }
             }
         } else {
-            if (!player.dead && dist(this, player) < this.r + player.r) {
-                player.takeDmg(this.dmg);
-                AudioEngine.playHit('player_hurt');
-                if (this.isMine) AudioEngine.playExplosion(true);
-                state.cam.shake = this.isMine ? 12 : 5;
-                triggerGlitch(this.isMine ? 14 : 8, this.isMine ? 22 : 15);
-                this.dead = true;
-                spawnParticles(this.x, this.y, this.isMine ? '#ff1e27' : this.color, this.isMine ? 24 : 4, this.isMine ? 'explosion' : 'spark');
-                if (this.isMine) {
-                    spawnText(this.x, this.y - 30, "MINE DETONATED", "#ff3838");
+            // Enemy bullet hitting player
+            if (player && !player.dead) {
+                const radSum = br + player.r;
+                const dx = bx - player.x;
+                const dy = by - player.y;
+                if (Math.abs(dx) < radSum && Math.abs(dy) < radSum && (dx * dx + dy * dy) < radSum * radSum) {
+                    player.takeDmg(this.dmg);
+                    AudioEngine.playHit('player_hurt');
+                    if (this.isMine) AudioEngine.playExplosion(true);
+                    state.cam.shake = this.isMine ? 12 : 5;
+                    triggerGlitch(this.isMine ? 14 : 8, this.isMine ? 22 : 15);
+                    this.dead = true;
+                    spawnParticles(bx, by, this.isMine ? '#ff1e27' : this.color, this.isMine ? 24 : 4, this.isMine ? 'explosion' : 'spark');
+                    if (this.isMine) {
+                        spawnText(bx, by - 30, "MINE DETONATED", "#ff3838");
+                    }
                 }
             }
         }
     }
 
     draw(ctx) {
+        const viewL = state.cam.x - 50;
+        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
+        const viewT = state.cam.y - 50;
+        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
+
+        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
         const r = this.r;
 
         // 1. HIGH-PERFORMANCE PROXIMITY MINE RENDERER
@@ -2296,7 +2349,13 @@ class Shape extends Entity {
         super.phys();
         this.rotation += this.rotSpd;
     }
-    draw(ctx) {
+    draw(ctx) {        
+        const viewL = state.cam.x - 50;
+        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
+        const viewT = state.cam.y - 50;
+        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
+
+        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
         const r = this.r;
         ctx.save();
         ctx.translate(this.x, this.y);
@@ -2493,6 +2552,12 @@ class TrainingDummy extends Entity {
         }
     }
     draw(ctx) {
+        const viewL = state.cam.x - 50;
+        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
+        const viewT = state.cam.y - 50;
+        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
+
+        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
         if (this.dead) return;
         const r = this.r;
 
@@ -2634,6 +2699,12 @@ class NPC {
         }
     }
     draw(ctx) {
+        const viewL = state.cam.x - 50;
+        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
+        const viewT = state.cam.y - 50;
+        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
+
+        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
         if (this.dead) return;
         drawCharacterAvatar(ctx, this.x, this.y, this.r, this.name, this.color, this.angle);
 
@@ -2710,6 +2781,12 @@ class Particle {
         this.currentSize = this.size * (this.life / this.maxLife);
     }
     draw(ctx) {
+        const viewL = state.cam.x - 50;
+        const viewR = state.cam.x + (canvas.width / state.cam.zoom) + 50;
+        const viewT = state.cam.y - 50;
+        const viewB = state.cam.y + (canvas.height / state.cam.zoom) + 50;
+
+        if (entity.x < viewL || entity.x > viewR || entity.y < viewT || entity.y > viewB) return;
         let alpha = Math.min(this.life / (this.maxLife * 0.3), 1);
         ctx.globalAlpha = alpha;
         ctx.fillStyle = this.c;
@@ -5008,9 +5085,6 @@ function applyPostProcessing() {
     ctx.drawImage(bufferCanvas, 0, 0);
 
     ctx.save();
-    ctx.globalCompositeOperation = 'screen';
-    ctx.filter = `blur(2px) brightness(1.5) contrast(1.2)`;
-    ctx.globalAlpha = 0.3;
     ctx.drawImage(bufferCanvas, 0, 0);
     ctx.restore();
 }
