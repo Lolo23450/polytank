@@ -14,7 +14,7 @@ EnemyAPI.register({
     bodyShape:  'hexagon',
 
     onSpawn(self) {
-        self.reload = 110 + Math.random() * 50;
+        self.reload = 200 + Math.random() * 50;
         self.state.spawnPulse = 0;
     },
 
