@@ -103,7 +103,7 @@ EnemyAPI.register({
         }
 
         if (self.reload <= 0) {
-            api.shoot(self, aim, { speed: 6, damage: 14, size: 11, life: 130 });
+            api.shoot(self, aim, { speed: 6, damage: 12, size: 11, life: 130 });
             self.reload = 110;
         }
     },

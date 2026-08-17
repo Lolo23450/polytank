@@ -3329,13 +3329,12 @@ let friendlyTurrets = [];
 let friendlyMissiles = [];
 let friendlyDrones = [];
 let empShockwaves = [];
-
 class FriendlyTurret extends Entity {
     constructor(x, y) {
         super(x, y, 18, '#2ed573');
         this.maxHp = 250;
         this.hp = 250;
-        this.life = 1000; // 12 seconds
+        this.life = 1000;
         this.reload = 0;
         this.angle = 0;
     }
@@ -3348,10 +3347,13 @@ class FriendlyTurret extends Entity {
         }
 
         let target = null;
-        let minDistSq = 450 * 450;
-        const candidates = [...enemies, ...dummies];
-        for (let i = 0, len = candidates.length; i < len; i++) {
-            const e = candidates[i];
+        let maxRangeSq = 450 * 450;
+        let minDistSq = maxRangeSq;
+
+        // 1. Primary Target Acquisition: Hostiles and Proving Ground Dummies
+        const primaryCandidates = [...enemies, ...dummies];
+        for (let i = 0, len = primaryCandidates.length; i < len; i++) {
+            const e = primaryCandidates[i];
             if (!e.dead) {
                 const dx = e.x - this.x;
                 const dy = e.y - this.y;
@@ -3363,6 +3365,24 @@ class FriendlyTurret extends Entity {
             }
         }
 
+        // 2. Secondary Target Acquisition: Harvestable Polygon Shapes (Squares, Triangles, Pentagons)
+        if (!target && shapes && shapes.length > 0) {
+            minDistSq = maxRangeSq;
+            for (let i = 0, len = shapes.length; i < len; i++) {
+                const s = shapes[i];
+                if (!s.dead) {
+                    const dx = s.x - this.x;
+                    const dy = s.y - this.y;
+                    const dSq = dx * dx + dy * dy;
+                    if (dSq < minDistSq) {
+                        minDistSq = dSq;
+                        target = s;
+                    }
+                }
+            }
+        }
+
+        // 3. Aim & Fire
         if (target) {
             this.angle = Math.atan2(target.y - this.y, target.x - this.x);
             if (this.reload <= 0) {
