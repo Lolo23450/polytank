@@ -9,9 +9,9 @@ EnemyAPI.register({
     name:       'Hexagon Guardian',
     color:      '#9e55a0',
     radius:     52,
-    hp:         2600,
+    hp:         3600,
     xpReward:   950,
-    scoreValue: 750,
+    scoreValue: 850,
     bodyShape:  'hexagon',
     isBoss:     true,
 

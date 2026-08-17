@@ -1,6 +1,6 @@
 /**
  * enemies/hive.js
- * Hexagonal Swarm Carrier with 6 drone bays and dynamic endgame scaling.
+ * Hexagonal Swarm Carrier with 6 drone bays (Rebalanced for fair pacing).
  */
 
 EnemyAPI.register({
@@ -8,13 +8,13 @@ EnemyAPI.register({
     name:       'Hive Carrier',
     color:      '#d9a441',
     radius:     34,
-    hp:         200,
+    hp:         165, // Lowered from 200 for faster takedowns
     xpReward:   120,
     scoreValue: 75,
     bodyShape:  'hexagon',
 
     onSpawn(self) {
-        self.reload = 200 + Math.random() * 50;
+        self.reload = 300 + Math.random() * 60;
         self.state.spawnPulse = 0;
     },
 
@@ -23,49 +23,53 @@ EnemyAPI.register({
         const aim = Math.atan2(player.y - self.y, player.x - self.x);
         self.angle = aim;
 
-        if (d < 500) {
-            self.vx -= Math.cos(aim) * 0.09;
-            self.vy -= Math.sin(aim) * 0.09;
-        } else {
-            self.vx += Math.cos(aim) * 0.07;
-            self.vy += Math.sin(aim) * 0.07;
+        // Gentle kiting - easier for player to catch up
+        if (d < 420) {
+            self.vx -= Math.cos(aim) * 0.05;
+            self.vy -= Math.sin(aim) * 0.05;
+        } else if (d > 650) {
+            self.vx += Math.cos(aim) * 0.06;
+            self.vy += Math.sin(aim) * 0.06;
         }
 
         if (self.state.spawnPulse > 0) self.state.spawnPulse--;
 
-        if (self.reload <= 0 && d < 1400) {
-            // Progressive endgame swarm scaling
-            let baseCount = 6 + Math.floor(Math.random() * 3);
+        // Only spawns within reasonable combat range (850px instead of off-screen 1400px)
+        if (self.reload <= 0 && d < 850) {
+            let baseCount = 3 + Math.floor(Math.random() * 2); // Act 1: 3-4 drones
+
             if (api.state) {
                 const currentLevel = (typeof LEVELS !== 'undefined' && LEVELS[api.state.level]) ? LEVELS[api.state.level] : null;
                 const act = currentLevel ? (currentLevel.act || 1) : 1;
                 if (act === 2) {
-                    baseCount = 5 + Math.floor(Math.random() * 3); // Act 2: 10-13 drones
+                    baseCount = 4 + Math.floor(Math.random() * 2); // Act 2: 4-5 drones
                 } else if (act === 3) {
-                    baseCount = 7 + Math.floor(Math.random() * 4); // Act 3: 14-18 drones
+                    baseCount = 5 + Math.floor(Math.random() * 2); // Act 3: 5-6 drones
                 }
             }
 
             for (let i = 0; i < baseCount; i++) {
-                const a = (i / baseCount) * Math.PI * 2 + Math.random() * 0.35;
-                const r = 44 + Math.random() * 36;
+                const a = (i / baseCount) * Math.PI * 2 + Math.random() * 0.3;
+                const r = 38 + Math.random() * 24;
                 const child = api.spawnEnemy('swarm_drone', self.x + Math.cos(a) * r, self.y + Math.sin(a) * r);
                 if (child) {
-                    child.vx = Math.cos(a) * (2.4 + Math.random() * 2.5);
-                    child.vy = Math.sin(a) * (2.4 + Math.random() * 2.5);
+                    // Gentler ejection speed so player can react
+                    child.vx = Math.cos(a) * (1.6 + Math.random() * 1.5);
+                    child.vy = Math.sin(a) * (1.6 + Math.random() * 1.5);
                 }
             }
 
-            api.particles(self.x, self.y, '#ffd34d', 26, 'spark');
+            api.particles(self.x, self.y, '#ffd34d', 18, 'spark');
             api.text(self.x, self.y - 52, `SWARM (${baseCount})`, '#ffd34d');
             self.state.spawnPulse = 24;
-            self.reload = 190 + Math.random() * 80;
+            // Longer breather cooldown (5.5 - 6.5s)
+            self.reload = 330 + Math.random() * 70;
         }
     },
 
     onDraw(self, ctx) {
         const pulse = self.state.spawnPulse > 0 ? self.state.spawnPulse / 24 : 0;
-        const r = self.r + pulse * 6;
+        const r = self.r + pulse * 5;
 
         ctx.save();
         ctx.translate(self.x, self.y);

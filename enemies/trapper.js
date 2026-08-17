@@ -14,7 +14,7 @@ EnemyAPI.register({
     bodyShape:  'circle',
 
     onSpawn(self) {
-        self.reload = 60;
+        self.reload = 300;
         self.state.strafeDir = Math.random() < 0.5 ? 1 : -1;
         self.state.strafeTimer = 0;
         self.state.panicCooldown = 0;
@@ -54,7 +54,7 @@ EnemyAPI.register({
                     speed:      1.4,
                     damage:     55,
                     size:       18,
-                    life:       950,
+                    life:       500,
                     color:      '#ff1e27',
                     isMine:     true
                 });
@@ -67,7 +67,7 @@ EnemyAPI.register({
             api.text(self.x, self.y - 35, "CLUSTER DROP!", "#ff3838");
 
             self.state.panicCooldown = 180;
-            self.reload = 70;
+            self.reload = 200;
             return;
         }
 
@@ -85,7 +85,7 @@ EnemyAPI.register({
                 speed:      0.4,
                 damage:     46,
                 size:       12,
-                life:       950,
+                life:       500,
                 color:      '#ff1e27',
                 isMine:     true
             });
@@ -96,7 +96,7 @@ EnemyAPI.register({
                 '#94a3b8', 6, 'debris'
             );
 
-            self.reload = 85 + Math.random() * 20;
+            self.reload = 135 + Math.random() * 20;
         }
     },
 

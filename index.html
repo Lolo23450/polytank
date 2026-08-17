@@ -2317,19 +2317,35 @@ class Tank extends Entity {
     }
     gainXp(amt) {
         if (!this.isPlayer) return;
-        // XP Boost Multiplier (+25% per tier)
-        let mult = 1 + (this.S(6) * 0.25);
-        let finalAmt = Math.round(amt * mult);
 
+        // 1. XP Boost Multiplier (+25% per tier)
+        let mult = 1 + (this.S(6) * 0.15);
+        let finalAmt = Math.round(amt * mult);
         this.xp += finalAmt;
-        if (this.xp >= this.maxXp) {
+
+        let leveledUp = false;
+
+        // 2. Use a while loop so high-yield XP (Bosses, Pentagons) can grant multiple levels
+        while (this.xp >= this.maxXp) {
             this.xp -= this.maxXp;
             this.lvl++;
-            this.pts++;
-            this.maxXp = Math.round(this.maxXp * 1.32);
+
+            // ── LINEAR XP FORMULA (Replaces * 1.32) ──
+            // Starts at 85 XP and adds a predictable +120 XP per level, soft-capped at 3000 XP
+            this.maxXp = Math.min(3000, 120 + (this.lvl * 85));
+
+            // ── MID/ENDGAME POINT BOOST ──
+            // Grants +1 point in Act 1, and +2 points per level from Level 12 onward
+            let ptsGained = (this.lvl >= 12) ? 2 : 1;
+            this.pts += ptsGained;
+
+            leveledUp = true;
+        }
+
+        if (leveledUp) {
             this.hp = this.maxHp;
             AudioEngine.playLevelUp();
-            spawnText(this.x, this.y - 40, "LEVEL UP!", "#fff");
+            spawnText(this.x, this.y - 40, `LEVEL UP! (Lvl ${this.lvl})`, "#ffd700");
             updateUi();
         }
     }
@@ -2531,7 +2547,8 @@ class Bullet extends Entity {
                         const dx = bx - d.x;
                         const dy = by - d.y;
                         if (Math.abs(dx) < radSum && Math.abs(dy) < radSum && (dx * dx + dy * dy) < radSum * radSum) {
-                            d.takeDmg(this.dmg);
+                            // Pass bullet position and velocity vectors for directional wobble physics
+                            d.takeDmg(this.dmg, bx, by, this.vx, this.vy);
                             AudioEngine.playHit(d.type === 'shielded' ? 'shield' : 'armor');
                             this.dead = true;
                             spawnParticles(bx, by, d.color || "#c49a6c", 4, 'debris');
@@ -2861,8 +2878,14 @@ class TrainingDummy extends Entity {
         this.type = config.type || 'standard';
         this.maxHp = config.hp || (this.type === 'heavy' ? 650 + (this.tier * 180) : (this.type === 'shielded' ? 300 + (this.tier * 100) : 160 + (this.tier * 70)));
         this.hp = this.maxHp;
+        
+        // Physics & Impact Reaction
         this.wobble = 0;
         this.wobbleSpeed = 0;
+        this.recoilX = 0;
+        this.recoilY = 0;
+        this.hitFlash = 0;
+
         this.respawnTimer = 0;
         this.moveSpeed = (config.speed || 0.1) * (1 + this.tier * 0.1);
         this.moveRange = config.range || 160;
@@ -2873,8 +2896,10 @@ class TrainingDummy extends Entity {
         this.recentDamage = [];
         this.currentDps = 0;
     }
+
     update() {
-            if (this.recentDamage.length > 0) {
+        // 1. Calculate Real-time DPS
+        if (this.recentDamage.length > 0) {
             const now = Date.now();
             let writeIdx = 0;
             let dmgSum = 0;
@@ -2891,6 +2916,9 @@ class TrainingDummy extends Entity {
             this.currentDps = 0;
         }
 
+        if (this.hitFlash > 0) this.hitFlash--;
+
+        // 2. Respawn Logic
         if (this.dead) {
             if (this.respawnTimer > 0) {
                 this.respawnTimer--;
@@ -2898,14 +2926,16 @@ class TrainingDummy extends Entity {
                     this.dead = false;
                     this.hp = this.maxHp;
                     this.shieldHp = this.maxShieldHp;
-                    this.wobble = 0.4;
-                    spawnParticles(this.x, this.y, this.color, 12, 'debris');
-                    spawnText(this.x, this.y - 45, "TARGET READY", "#ffd700");
+                    this.wobble = 0.35;
+                    this.wobbleSpeed = 0;
+                    spawnParticles(this.x, this.y, this.color, 14, 'debris');
+                    spawnText(this.x, this.y - 45, "TARGET REPAIRED", "#00ff88");
                 }
             }
             return;
         }
 
+        // 3. Shield Regeneration
         if (this.type === 'shielded' && this.shieldHp < this.maxShieldHp) {
             this.shieldRegenTimer++;
             if (this.shieldRegenTimer > 120) {
@@ -2913,6 +2943,7 @@ class TrainingDummy extends Entity {
             }
         }
 
+        // 4. Track Motion
         if (this.type === 'moving_x') {
             this.moveOffset += 0.035 * this.moveSpeed;
             this.x = this.baseX + Math.sin(this.moveOffset) * this.moveRange;
@@ -2921,83 +2952,214 @@ class TrainingDummy extends Entity {
             this.y = this.baseY + Math.sin(this.moveOffset) * this.moveRange;
         }
 
+        // 5. Angular Spring-Mass Dampened Wobble & Recoil
         this.wobble += this.wobbleSpeed;
-        this.wobbleSpeed -= this.wobble * 0.15;
-        this.wobbleSpeed *= 0.82;
+        this.wobbleSpeed -= this.wobble * 0.16; // Restoring spring force
+        this.wobbleSpeed *= 0.86;               // Mechanical friction damping
+
+        this.recoilX *= 0.82;
+        this.recoilY *= 0.82;
     }
-    takeDmg(amt) {
+
+    takeDmg(amt, hitX = null, hitY = null, hitVx = 0, hitVy = 0) {
         if (this.dead) return;
         this.recentDamage.push({ amt, time: Date.now() });
         this.shieldRegenTimer = 0;
+        this.hitFlash = 4;
+
+        // Directional kinetic impulse based on hit impact coordinates and bullet velocity
+        if (hitX !== null && hitY !== null) {
+            const relX = hitX - this.x;
+            const relY = hitY - this.y;
+
+            // Directional torque: hits on the left tilt right; horizontal bullet velocity pushes tilt
+            const torqueImpulse = (relX * 0.012) + (hitVx * 0.035);
+            this.wobbleSpeed += Math.max(-0.6, Math.min(0.6, torqueImpulse));
+
+            // Linear pushback
+            this.recoilX = Math.max(-10, Math.min(10, hitVx * 0.4));
+            this.recoilY = Math.max(-10, Math.min(10, hitVy * 0.4));
+        } else {
+            this.wobbleSpeed = (Math.random() - 0.5) * 0.4;
+        }
 
         if (this.shieldHp > 0) {
             this.shieldHp -= amt;
-            spawnParticles(this.x, this.y, "#00d2d3", 4, 'spark');
+            spawnParticles(this.x, this.y, "#00d2d3", 5, 'spark');
             if (this.shieldHp <= 0) {
                 AudioEngine.playHit('shield');
-                spawnText(this.x, this.y - 30, "SHIELD BROKEN", "#00ffff");
-                spawnParticles(this.x, this.y, "#00ffff", 16, 'spark');
+                spawnText(this.x, this.y - 30, "BARRIER SHATTERED", "#00ffff");
+                spawnParticles(this.x, this.y, "#00ffff", 18, 'spark');
                 this.shieldHp = 0;
             }
             return;
         }
 
         this.hp -= amt;
-        this.wobbleSpeed = (Math.random() - 0.5) * 0.45;
-        spawnParticles(this.x, this.y, this.color, 3, 'debris');
+        spawnParticles(this.x, this.y, this.color, 4, 'debris');
         if (this.hp <= 0) {
             this.dead = true;
             this.respawnTimer = 75;
             AudioEngine.playExplosion(false);
-            spawnParticles(this.x, this.y, this.color, 18, 'debris');
-            spawnText(this.x, this.y - 40, "NEUTRALIZED", "#ff4757");
+            spawnParticles(this.x, this.y, this.color, 20, 'debris');
+            spawnText(this.x, this.y - 45, "NEUTRALIZED", "#ff4757");
         }
     }
+
     draw(ctx) {
-        if (this.dead) return;
         if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
 
         const r = this.r;
+        const baseOffsetY = r * 1.55;
 
+        // ── 1. INDUSTRIAL TRACK GUIDE RAILS (DRAWN BEHIND EVERYTHING) ──
         if (this.type === 'moving_x') {
             ctx.save();
-            ctx.strokeStyle = 'rgba(71, 85, 105, 0.45)';
-            ctx.lineWidth = 5;
+            const minX = this.baseX - this.moveRange - 20;
+            const maxX = this.baseX + this.moveRange + 20;
+            const railY = this.baseY + baseOffsetY;
+
+            // Track Bed
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+            ctx.fillRect(minX, railY - 10, maxX - minX, 20);
+
+            // Metal Ties / Cross-sleepers
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            for (let tx = minX + 15; tx < maxX; tx += 28) {
+                ctx.beginPath();
+                ctx.moveTo(tx, railY - 11);
+                ctx.lineTo(tx, railY + 11);
+                ctx.stroke();
+            }
+
+            // Dual Steel Guide Rails
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(this.baseX - this.moveRange, this.baseY);
-            ctx.lineTo(this.baseX + this.moveRange, this.baseY);
+            ctx.moveTo(minX, railY - 6); ctx.lineTo(maxX, railY - 6);
+            ctx.moveTo(minX, railY + 6); ctx.lineTo(maxX, railY + 6);
             ctx.stroke();
+
+            // End-Stop Bumpers
+            const drawEndBumper = (bx) => {
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = '#ff4757';
+                ctx.lineWidth = 2;
+                ctx.fillRect(bx - 7, railY - 14, 14, 28);
+                ctx.strokeRect(bx - 7, railY - 14, 14, 28);
+                ctx.fillStyle = '#ff4757';
+                ctx.fillRect(bx - 3, railY - 10, 6, 20);
+            };
+            drawEndBumper(minX);
+            drawEndBumper(maxX);
+
             ctx.restore();
         } else if (this.type === 'moving_y') {
             ctx.save();
-            ctx.strokeStyle = 'rgba(71, 85, 105, 0.45)';
-            ctx.lineWidth = 5;
+            const minY = this.baseY - this.moveRange - 20;
+            const maxY = this.baseY + this.moveRange + 20;
+            const railX = this.baseX;
+
+            // Track Bed
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+            ctx.fillRect(railX - 10, minY, 20, maxY - minY);
+
+            // Metal Ties / Cross-sleepers
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            for (let ty = minY + 15; ty < maxY; ty += 28) {
+                ctx.beginPath();
+                ctx.moveTo(railX - 11, ty);
+                ctx.lineTo(railX + 11, ty);
+                ctx.stroke();
+            }
+
+            // Dual Steel Guide Rails
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(this.baseX, this.baseY - this.moveRange);
-            ctx.lineTo(this.baseX, this.baseY + this.moveRange);
+            ctx.moveTo(railX - 6, minY); ctx.lineTo(railX - 6, maxY);
+            ctx.moveTo(railX + 6, minY); ctx.lineTo(railX + 6, maxY);
             ctx.stroke();
+
+            // End-Stop Bumpers
+            const drawEndBumperY = (by) => {
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = '#ff4757';
+                ctx.lineWidth = 2;
+                ctx.fillRect(railX - 14, by - 7, 28, 14);
+                ctx.strokeRect(railX - 14, by - 7, 28, 14);
+                ctx.fillStyle = '#ff4757';
+                ctx.fillRect(railX - 10, by - 3, 20, 6);
+            };
+            drawEndBumperY(minY);
+            drawEndBumperY(maxY);
+
             ctx.restore();
         }
 
+        if (this.dead) return;
+
+        // ── 2. GROUND-ANCHORED BASE & SLIDING TROLLEY (PROPERLY OFFSET) ──
         ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.wobble);
+        const baseFloorX = this.x;
+        const baseFloorY = this.y + baseOffsetY;
 
-        ctx.lineWidth = 3;
+        // Heavy Anchor Mount Plate / Rail Carriage
+        ctx.fillStyle = '#0f172a';
         ctx.strokeStyle = '#334155';
-        ctx.beginPath();
-        ctx.moveTo(0, r * 0.8);
-        ctx.lineTo(-6, r * 1.2);
-        ctx.lineTo(6, r * 1.4);
-        ctx.lineTo(0, r * 1.7);
-        ctx.stroke();
+        ctx.lineWidth = 2.5;
+        ctx.fillRect(baseFloorX - 22, baseFloorY - 7, 44, 14);
+        ctx.strokeRect(baseFloorX - 22, baseFloorY - 7, 44, 14);
 
+        // Heavy Bolt Rivets
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(baseFloorX - 18, baseFloorY - 5, 4, 10);
+        ctx.fillRect(baseFloorX + 14, baseFloorY - 5, 4, 10);
+
+        // Center Ball Pivot Socket
         ctx.fillStyle = '#1e293b';
-        ctx.fillRect(-18, r * 1.55, 36, 7);
-        ctx.strokeRect(-18, r * 1.55, 36, 7);
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(baseFloorX, baseFloorY - 6, 9, Math.PI, 0);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
 
+        // ── 3. FLEXIBLE PIVOTING TARGET HEAD & STAND ──
+        ctx.save();
+        ctx.translate(baseFloorX, baseFloorY - 6);
+        ctx.rotate(this.wobble);
+        ctx.translate(this.recoilX, -baseOffsetY + 6 + this.recoilY);
+
+        // Simple Steel Piston Pole
+        const poleW = 6;
+        const topY = r * 0.7;
+        const botY = baseOffsetY - 6;
+
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-poleW / 2, topY, poleW, botY - topY);
+        ctx.strokeRect(-poleW / 2, topY, poleW, botY - topY);
+
+        // Subtle specular highlight line
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.fillRect(-poleW / 2 + 1, topY, 2, botY - topY);
+
+        // Clean Mounting Collars (Top & Bottom brackets)
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(-poleW, topY - 2, poleW * 2, 4);
+        ctx.strokeRect(-poleW, topY - 2, poleW * 2, 4);
+        ctx.fillRect(-poleW, botY - 3, poleW * 2, 4);
+        ctx.strokeRect(-poleW, botY - 3, poleW * 2, 4);
+
+        // Target Body Render
+        const isHit = this.hitFlash > 0;
         if (this.type === 'heavy') {
-            ctx.fillStyle = '#475569';
+            ctx.fillStyle = isHit ? '#ffffff' : '#475569';
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 3;
             ctx.fillRect(-r, -r, r * 2, r * 2);
@@ -3009,7 +3171,7 @@ class TrainingDummy extends Entity {
             ctx.fill();
             ctx.stroke();
         } else {
-            ctx.fillStyle = this.color;
+            ctx.fillStyle = isHit ? '#ffffff' : this.color;
             ctx.lineWidth = 3;
             ctx.strokeStyle = '#2f3542';
             ctx.lineJoin = 'round';
@@ -3018,6 +3180,7 @@ class TrainingDummy extends Entity {
             ctx.fill();
             ctx.stroke();
 
+            // Concentric Bullseye Rings
             ctx.lineWidth = 2.5;
             ctx.strokeStyle = '#d63031';
             ctx.beginPath(); ctx.arc(0, 0, r * 0.65, 0, Math.PI * 2); ctx.stroke();
@@ -3026,11 +3189,12 @@ class TrainingDummy extends Entity {
             ctx.beginPath(); ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2); ctx.fill();
         }
 
+        // Active Energy Barrier
         if (this.type === 'shielded' && this.shieldHp > 0) {
             let shieldPct = this.shieldHp / this.maxShieldHp;
             ctx.strokeStyle = `rgba(0, 210, 211, ${0.4 + 0.5 * shieldPct})`;
             ctx.fillStyle = `rgba(0, 210, 211, ${0.12 * shieldPct})`;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
             ctx.arc(0, 0, r + 10, 0, Math.PI * 2);
             ctx.fill();
@@ -3039,38 +3203,54 @@ class TrainingDummy extends Entity {
 
         ctx.restore();
 
+        // ── 4. HUD LABELS & ENLARGED HIGH-CONTRAST DPS METER ──
         ctx.save();
         ctx.translate(this.x, this.y);
+
+        // Category & Sub-label
         ctx.textAlign = 'center';
         ctx.font = 'bold 11px Ubuntu';
         ctx.fillStyle = '#94a3b8';
-        ctx.fillText(this.label, 0, -r - 28);
+        ctx.fillText(this.label, 0, -r - 42);
         if (this.subLabel) {
             ctx.font = '9px Ubuntu';
             ctx.fillStyle = '#64748b';
-            ctx.fillText(this.subLabel, 0, -r - 17);
+            ctx.fillText(this.subLabel, 0, -r - 31);
         }
 
+        // Enlarged Tactical DPS Badge
         if (this.currentDps > 0) {
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-            ctx.fillRect(-28, -r - 54, 56, 17);
-            ctx.strokeStyle = '#ffd700';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(-28, -r - 54, 56, 17);
-            ctx.font = 'bold 10px Ubuntu';
-            ctx.fillStyle = '#ffd700';
-            ctx.fillText(`${this.currentDps} DPS`, 0, -r - 42);
+            const dps = this.currentDps;
+            const badgeW = 86;
+            const badgeH = 24;
+            const badgeY = -r - 72;
+
+            // Color-tiering based on DPS output
+            const dpsColor = dps > 150 ? '#ff4757' : (dps > 60 ? '#ffd700' : '#00d2d3');
+
+            ctx.fillStyle = 'rgba(11, 17, 32, 0.95)';
+            ctx.strokeStyle = dpsColor;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(-badgeW / 2, badgeY, badgeW, badgeH, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = 'bold 14px Ubuntu';
+            ctx.fillStyle = dpsColor;
+            ctx.fillText(`${dps} DPS`, 0, badgeY + 17);
         }
 
-        ctx.translate(0, r + 24);
+        // Mini HP & Shield Bars
+        ctx.translate(0, r + 26);
         ctx.fillStyle = '#0f172a';
-        ctx.fillRect(-20, 0, 40, 5);
+        ctx.fillRect(-22, 0, 44, 6);
         ctx.fillStyle = '#2ed573';
-        ctx.fillRect(-19, 1, 38 * Math.max(0, this.hp / this.maxHp), 3);
+        ctx.fillRect(-21, 1, 42 * Math.max(0, this.hp / this.maxHp), 4);
 
         if (this.type === 'shielded' && this.shieldHp > 0) {
             ctx.fillStyle = '#00d2d3';
-            ctx.fillRect(-19, -4, 38 * Math.max(0, this.shieldHp / this.maxShieldHp), 3);
+            ctx.fillRect(-21, -5, 42 * Math.max(0, this.shieldHp / this.maxShieldHp), 3);
         }
         ctx.restore();
     }
@@ -3239,7 +3419,7 @@ const ABILITIES_DEF = {
         type: 'passive', 
         icon: "🛡️",
         desc: "3 kinetic micro-drones continuously orbit your hull, deflecting incoming enemy fire and dealing collision damage on contact.",
-        cost: { pts: 2, sq: 24, tri: 12, pent: 0, desc: "2 Pts + 24■ 12▲" }
+        cost: { pts: 1, sq: 24, tri: 12, pent: 0, desc: "1 Pts + 24■ 12▲" }
     },
     grav_aura: {
         id: 'grav_aura', 
@@ -3247,15 +3427,15 @@ const ABILITIES_DEF = {
         type: 'passive', 
         icon: "🌀",
         desc: "Radial gravity field slowing nearby hostiles by up to 50%. Efficiency dilutes when surrounded by multiple targets.",
-        cost: { pts: 2, sq: 20, tri: 20, pent: 4, desc: "2 Pts + 20■ 20▲ 4⬟" }
+        cost: { pts: 1, sq: 20, tri: 20, pent: 4, desc: "1 Pts + 20■ 20▲ 4⬟" }
     },
     missile_barrage: {
         id: 'missile_barrage', 
         name: "Auto Missile Barrage", 
         type: 'passive', 
         icon: "🚀",
-        desc: "Automatically launches 4 micro-missiles every 10 seconds tracking the nearest hostile targets.",
-        cost: { pts: 3, sq: 0, tri: 28, pent: 8, desc: "3 Pts + 28▲ 8⬟" }
+        desc: "Automatically launches 6 micro-missiles every 10 seconds tracking the nearest hostile targets.",
+        cost: { pts: 2, sq: 0, tri: 28, pent: 8, desc: "2 Pts + 28▲ 8⬟" }
     },
     drone_spawner: {
         id: 'drone_spawner', 
@@ -3263,7 +3443,7 @@ const ABILITIES_DEF = {
         type: 'passive', 
         icon: "🐝",
         desc: "Fabricates 2 friendly homing swarm drones every 2 seconds that dive-bomb enemies on sight.",
-        cost: { pts: 3, sq: 16, tri: 24, pent: 8, desc: "3 Pts + 16■ 24▲ 8⬟" }
+        cost: { pts: 1, sq: 16, tri: 24, pent: 8, desc: "1 Pts + 16■ 24▲ 8⬟" }
     },
 
     // ─── 🔹 TRIGGERABLE / ACTIVE ABILITIES (ASSIGNED TO HOTKEYS) ───
@@ -3297,8 +3477,8 @@ const ABILITIES_DEF = {
         key: 'F / RMB', 
         cd: 12, 
         icon: "⚡",
-        desc: "Discharges a 300px shockwave stunning hostiles for 1.75s, vaporizing enemy bullets/mines, and shattering shields.",
-        cost: { pts: 3, sq: 20, tri: 26, pent: 10, desc: "3 Pts + 20■ 26▲ 10⬟" }
+        desc: "Discharges a 300px shockwave dealing 35 EMP damage, stunning hostiles for 3.5s, vaporizing all swarm drones/projectiles, and shattering shields with extended recharge delay.",
+        cost: { pts: 2, sq: 20, tri: 26, pent: 10, desc: "2 Pts + 20■ 26▲ 10⬟" }
     },
     nanite_heal: {
         id: 'nanite_heal', 
@@ -3309,7 +3489,7 @@ const ABILITIES_DEF = {
         cd: 16, 
         icon: "💚",
         desc: "Deploys a cloud of nanite repair bots rapidly healing +35 HP/sec for 2 seconds.",
-        cost: { pts: 2, sq: 24, tri: 0, pent: 12, desc: "2 Pts + 24■ 12⬟" }
+        cost: { pts: 1, sq: 24, tri: 0, pent: 12, desc: "1 Pts + 24■ 12⬟" }
     },
     heavy_missile: {
         id: 'heavy_missile', 
@@ -3320,7 +3500,7 @@ const ABILITIES_DEF = {
         cd: 10, 
         icon: "🚀",
         desc: "Fires a heavy armor-piercing guided rocket dealing massive splash damage and explosive knockback on impact.",
-        cost: { pts: 3, sq: 12, tri: 32, pent: 14, desc: "3 Pts + 12■ 32▲ 14⬟" }
+        cost: { pts: 2, sq: 12, tri: 32, pent: 14, desc: "2 Pts + 12■ 32▲ 14⬟" }
     }
 };
 
@@ -3335,19 +3515,25 @@ class FriendlyTurret extends Entity {
         this.maxHp = 250;
         this.hp = 250;
         this.life = 1000;
+        this.maxLife = 1000;
         this.reload = 0;
         this.angle = 0;
+        this.recoil = 0;
+        this.pulseAngle = Math.random() * Math.PI * 2;
     }
     update() {
         this.life--;
         if (this.life <= 0) {
             this.dead = true;
-            spawnParticles(this.x, this.y, this.color, 12, 'debris');
+            spawnParticles(this.x, this.y, this.color, 14, 'debris');
             return;
         }
 
+        if (this.recoil > 0) this.recoil *= 0.82;
+        this.pulseAngle += 0.08;
+
         let target = null;
-        let maxRangeSq = 450 * 450;
+        let maxRangeSq = 480 * 480;
         let minDistSq = maxRangeSq;
 
         // 1. Primary Target Acquisition: Hostiles and Proving Ground Dummies
@@ -3365,7 +3551,7 @@ class FriendlyTurret extends Entity {
             }
         }
 
-        // 2. Secondary Target Acquisition: Harvestable Polygon Shapes (Squares, Triangles, Pentagons)
+        // 2. Secondary Target Acquisition: Harvestable Polygons
         if (!target && shapes && shapes.length > 0) {
             minDistSq = maxRangeSq;
             for (let i = 0, len = shapes.length; i < len; i++) {
@@ -3382,50 +3568,169 @@ class FriendlyTurret extends Entity {
             }
         }
 
-        // 3. Aim & Fire
+        // 3. Smooth Tracking & Firing
         if (target) {
-            this.angle = Math.atan2(target.y - this.y, target.x - this.x);
-            if (this.reload <= 0) {
+            const aimAngle = Math.atan2(target.y - this.y, target.x - this.x);
+            const diff = Math.atan2(Math.sin(aimAngle - this.angle), Math.cos(aimAngle - this.angle));
+            this.angle += diff * 0.25;
+
+            if (this.reload <= 0 && Math.abs(diff) < 0.35) {
+                // Alternating twin-barrel spawn offset
+                const barrelOffset = (state.frame % 2 === 0 ? 5 : -5);
+                const spawnX = this.x + Math.cos(this.angle) * (this.r * 1.5) - Math.sin(this.angle) * barrelOffset;
+                const spawnY = this.y + Math.sin(this.angle) * (this.r * 1.5) + Math.cos(this.angle) * barrelOffset;
+
                 bullets.push(new Bullet(
-                    this.x + Math.cos(this.angle) * this.r * 1.3,
-                    this.y + Math.sin(this.angle) * this.r * 1.3,
-                    this.angle, 9, 18 + (player ? player.S(2) * 3 : 0), 6, 80, '#2ed573', true
+                    spawnX, spawnY,
+                    this.angle, 9.5, 18 + (player ? player.S(2) * 3 : 0), 6, 80, '#2ed573', true
                 ));
                 AudioEngine.playShoot('player');
-                this.reload = 32; // Balanced firing rate (~1.8 shots/sec)
+                this.reload = 30;
+                this.recoil = 5.5;
+
+                spawnParticles(spawnX, spawnY, '#00ff88', 3, 'spark', { speed: 2 });
             }
         }
         if (this.reload > 0) this.reload--;
     }
     draw(ctx) {
         if (this.dead) return;
+        if (this.x < state.viewL || this.x > state.viewR || this.y < state.viewT || this.y > state.viewB) return;
+
+        const r = this.r;
+        const lifePct = Math.max(0, this.life / this.maxLife);
+
         ctx.save();
         ctx.translate(this.x, this.y);
+
+        // ── 1. GROUND ANCHOR BASE & HOLOGRAPHIC RUNTIME RING ──
+        // Active lifetime countdown ring
+        ctx.strokeStyle = `rgba(46, 213, 115, ${0.15 + 0.15 * Math.sin(this.pulseAngle)})`;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 1.7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Battery life arc
+        ctx.strokeStyle = lifePct > 0.25 ? '#2ed573' : '#ff4757';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 1.7, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * lifePct));
+        ctx.stroke();
+
+        // 4 Outrigger Stabilizer Legs (Fixed orientation to ground)
+        for (let i = 0; i < 4; i++) {
+            ctx.save();
+            ctx.rotate((Math.PI / 2) * i + Math.PI / 4);
+
+            // Hydraulic strut
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.fillRect(-3, r * 0.7, 6, r * 0.9);
+            ctx.strokeRect(-3, r * 0.7, 6, r * 0.9);
+
+            // Foot pad
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(-7, r * 1.5, 14, 5);
+            ctx.strokeRect(-7, r * 1.5, 14, 5);
+
+            // Status LED on each leg pad
+            ctx.fillStyle = '#00ff88';
+            ctx.beginPath();
+            ctx.arc(0, r * 1.5 + 2.5, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Heavy Base Platform Plate
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 1.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Mechanical Turret Ring Track
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.85, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ── 2. ROTATING TURRET DOME & DUAL CANNONS ──
         ctx.rotate(this.angle);
 
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(-16, -16); ctx.lineTo(16, 16);
-        ctx.moveTo(-16, 16); ctx.lineTo(16, -16);
-        ctx.stroke();
-
-        ctx.fillStyle = '#64748b';
-        ctx.fillRect(0, -3.5, 24, 7);
-        ctx.strokeRect(0, -3.5, 24, 7);
-
-        ctx.fillStyle = this.color;
-        ctx.lineWidth = 2;
+        // Rear Ammo Magazine / Counterweight
+        ctx.fillStyle = '#1e293b';
         ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.fillRect(-r * 1.25, -r * 0.55, r * 0.65, r * 1.1);
+        ctx.strokeRect(-r * 1.25, -r * 0.55, r * 0.65, r * 1.1);
+
+        // Twin Autocannon Barrels with Recoil Offset
+        const barrelLen = r * 1.8;
+        const barrelW = 4.5;
+        const recoilX = -this.recoil;
+
+        const drawBarrel = (offsetY) => {
+            // Main barrel tube
+            ctx.fillStyle = '#64748b';
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(recoilX, offsetY - barrelW / 2, barrelLen, barrelW);
+            ctx.strokeRect(recoilX, offsetY - barrelW / 2, barrelLen, barrelW);
+
+            // Muzzle brake
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(recoilX + barrelLen - 5, offsetY - barrelW * 0.8, 5, barrelW * 1.6);
+            ctx.strokeRect(recoilX + barrelLen - 5, offsetY - barrelW * 0.8, 5, barrelW * 1.6);
+
+            // Heat dissipation vents
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(recoilX + barrelLen * 0.45, offsetY - 1, 4, 2);
+            ctx.fillRect(recoilX + barrelLen * 0.65, offsetY - 1, 4, 2);
+        };
+
+        drawBarrel(-5.5);
+        drawBarrel(5.5);
+
+        // Main Armored Hull Pod
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(0, 0, this.r, 0, Math.PI * 2);
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
+        // Hull Specular Highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.beginPath();
+        ctx.arc(-r * 0.22, -r * 0.22, r * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Central Commander Optic & Sensor Turret
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Glowing Scanner Eye
         ctx.fillStyle = '#00d2d3';
         ctx.beginPath();
-        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.arc(r * 0.12, 0, r * 0.24, 0, Math.PI * 2);
         ctx.fill();
+
+        // Central Lens Flare
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(r * 0.08, -r * 0.07, r * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+
         ctx.restore();
 
         this.drawHealth(ctx);
@@ -3441,23 +3746,34 @@ class FriendlyMissile extends Entity {
         this.vx = Math.cos(angle) * this.speed;
         this.vy = Math.sin(angle) * this.speed;
         this.damage = isHeavy ? 180 + (player ? player.S(2) * 20 : 0) : 42 + (player ? player.S(2) * 6 : 0);
-        this.splashRadius = isHeavy ? 130 : 65;
+        this.splashRadius = isHeavy ? 150 : 75;
         this.life = isHeavy ? 180 : 120;
+        this.maxLife = this.life;
+
+        // Swerve & Arching Dynamics
+        this.age = 0;
+        this.swerveSign = Math.random() < 0.5 ? -1 : 1;
+        this.swervePower = (isHeavy ? 0.85 : 1.4) * (0.8 + Math.random() * 0.4);
+        this.swerveFrequency = 0.16 + Math.random() * 0.06;
     }
     update() {
+        this.age++;
         this.life--;
         if (this.life <= 0) {
             this.explode();
             return;
         }
-        // Trail particles
+
+        // Exhaust trail particles
         if (state.frame % 2 === 0) {
-            spawnParticles(this.x, this.y, '#94a3b8', 1, 'spark', { speed: 1 });
+            const exhaustX = this.x - Math.cos(this.angle) * (this.r * 1.6);
+            const exhaustY = this.y - Math.sin(this.angle) * (this.r * 1.6);
+            spawnParticles(exhaustX, exhaustY, this.isHeavy ? '#ff6b81' : '#ffeaa7', 1, 'spark', { speed: 1.2, life: 14 });
         }
 
-        // Homing logic towards closest enemy or cursor
+        // 1. Target Acquisition (Hostiles & Proving Dummies)
         let target = null;
-        let minDistSq = 700 * 700;
+        let minDistSq = 750 * 750;
         const candidates = [...enemies, ...dummies];
         for (let i = 0, len = candidates.length; i < len; i++) {
             const e = candidates[i];
@@ -3472,21 +3788,31 @@ class FriendlyMissile extends Entity {
             }
         }
 
-        let targetAngle = this.angle;
+        // 2. Base Aim Calculation
+        let desiredAngle = this.angle;
         if (target) {
-            targetAngle = Math.atan2(target.y - this.y, target.x - this.x);
+            desiredAngle = Math.atan2(target.y - this.y, target.x - this.x);
         } else if (this.isHeavy) {
-            targetAngle = Math.atan2(mouse.wy - this.y, mouse.wx - this.x);
+            desiredAngle = Math.atan2(mouse.wy - this.y, mouse.wx - this.x);
         }
 
-        const diff = targetAngle - this.angle;
-        this.angle += Math.atan2(Math.sin(diff), Math.cos(diff)) * (this.isHeavy ? 0.08 : 0.14);
+        // 3. Lateral Arching & Course Deviation Effect
+        // Creates a curved outward flare that smoothly decays as propulsion locks on
+        const swerveDecay = Math.exp(-this.age * 0.055);
+        const swerveOffset = Math.sin(this.age * this.swerveFrequency) * this.swervePower * this.swerveSign * swerveDecay;
+        const finalTargetAngle = desiredAngle + swerveOffset;
+
+        // Turn rate ramps up as booster accelerates into locked trajectory
+        const turnSpeed = (this.isHeavy ? 0.08 : 0.14) * Math.min(1.8, 0.4 + this.age * 0.04);
+        const diff = finalTargetAngle - this.angle;
+        this.angle += Math.atan2(Math.sin(diff), Math.cos(diff)) * turnSpeed;
+
         this.vx = Math.cos(this.angle) * this.speed;
         this.vy = Math.sin(this.angle) * this.speed;
         this.x += this.vx;
         this.y += this.vy;
 
-        // Collision Check
+        // 4. Collision Check
         for (let i = 0, len = candidates.length; i < len; i++) {
             const e = candidates[i];
             if (!e.dead) {
@@ -3532,11 +3858,13 @@ class FriendlyMissile extends Entity {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
+
         ctx.fillStyle = this.color;
         ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 1.5;
         ctx.fillRect(-this.r * 1.5, -this.r * 0.5, this.r * 3, this.r);
         ctx.strokeRect(-this.r * 1.5, -this.r * 0.5, this.r * 3, this.r);
+
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.moveTo(this.r * 1.5, -this.r * 0.5);
@@ -3672,38 +4000,72 @@ function triggerAbility(slotKey) {
         state.activeBuffs.aegisTimer = 180; // 3 seconds
         state.activeBuffs.aegisShieldHp = 300;
         AudioEngine.playShieldActivate();
-        spawnText(player.x, player.y - 45, "AEGIS BARRIER ACTIVE", "#00d2d3");
     } else if (slotKey === 'q') {
         friendlyTurrets.push(new FriendlyTurret(player.x, player.y));
         AudioEngine.playTurretDeploy();
         spawnParticles(player.x, player.y, '#2ed573', 14, 'spark');
-        spawnText(player.x, player.y - 45, "SENTRY DEPLOYED", "#2ed573");
     } else if (slotKey === 'f') {
+        // [F] Tactical EMP Shockwave
         empShockwaves.push(new EmpWave(player.x, player.y));
         AudioEngine.playEmp();
-        state.cam.shake = 6;
-        triggerGlitch(8, 12);
+        state.cam.shake = 8;
+        triggerGlitch(10, 14);
         spawnText(player.x, player.y - 45, "EMP DISCHARGED", "#a55eea");
 
-        const shockRadiusSq = 300 * 300;
+        const shockRadiusSq = 360 * 360;
+        const empDmg = 75 + (player ? player.S(2) * 6 : 0);
+
+        // 1. Affect Enemies (Stun, Damage, Kill Swarm Drones, Disable Shields)
         for (let i = 0, len = enemies.length; i < len; i++) {
             const e = enemies[i];
             if (!e.dead && (e.x - player.x) ** 2 + (e.y - player.y) ** 2 < shockRadiusSq) {
-                e.stunTimer = 105;
-                if (e.state && e.state.shieldUp) {
+                // Instantly vaporize Swarm Drones
+                if (e.type === 'swarm_drone' || e.maxHp <= 20) {
+                    e.takeDmg(999);
+                    spawnParticles(e.x, e.y, '#a55eea', 8, 'explosion');
+                    continue;
+                }
+
+                // Stun for 6 seconds
+                e.stunTimer = 360;
+
+                // Shatter shields and impose prolonged 6-second recharge penalty
+                if (e.state && (e.state.shieldUp !== undefined || e.state.shieldHp !== undefined)) {
                     e.state.shieldUp = false;
                     e.state.shieldHp = 0;
-                    e.state.shieldCooldown = 180;
+                    e.state.shieldCooldown = 360; // Slower regen cooldown (6 seconds)
                 }
-                spawnParticles(e.x, e.y, '#a55eea', 6, 'spark');
-                spawnText(e.x, e.y - 20, "STUNNED!", "#a55eea");
+
+                // Apply flat shock damage
+                e.takeDmg(empDmg);
+                spawnParticles(e.x, e.y, '#a55eea', 7, 'spark');
+                spawnText(e.x, e.y - 20, `-${empDmg} (STUNNED)`, "#a55eea");
             }
         }
+
+        // 2. Affect Training Dummies (Break Barrier, Delay Shield Regen, Deal Damage)
+        if (dummies && dummies.length > 0) {
+            for (let i = 0, len = dummies.length; i < len; i++) {
+                const d = dummies[i];
+                if (!d.dead && (d.x - player.x) ** 2 + (d.y - player.y) ** 2 < shockRadiusSq) {
+                    if (d.shieldHp > 0) {
+                        d.shieldHp = 0;
+                        d.shieldRegenTimer = -240; // Extended 4-second delay before shield can regenerate
+                        spawnParticles(d.x, d.y, '#00ffff', 14, 'spark');
+                        spawnText(d.x, d.y - 30, "BARRIER DISABLED", "#a55eea");
+                    }
+                    d.takeDmg(empDmg, player.x, player.y, 0, 0);
+                    spawnParticles(d.x, d.y, '#a55eea', 6, 'spark');
+                }
+            }
+        }
+
+        // 3. Vaporize Enemy Projectiles & Proximity Mines
         for (let i = 0, len = bullets.length; i < len; i++) {
             const b = bullets[i];
             if (!b.pShot && !b.dead && (b.x - player.x) ** 2 + (b.y - player.y) ** 2 < shockRadiusSq) {
                 b.dead = true;
-                spawnParticles(b.x, b.y, '#a55eea', 3, 'spark');
+                spawnParticles(b.x, b.y, '#a55eea', 4, 'spark');
             }
         }
     } else if (slotKey === 'c') {
@@ -4477,14 +4839,26 @@ function drawMassiveFiringRange(ctx, lvl) {
 }
 
 // =====================================================================
-//  CAMPAIGN LEVELS DATA (WITH MEDICS ACROSS OUTPOSTS)
+//  CAMPAIGN LEVELS DATA — EXPANDED ENDGAME & SPACED-OUT FORMATIONS
+// =====================================================================
+
+// =====================================================================
+//  CAMPAIGN LEVELS DATA — EXPANDED WITH PERIMETER BUNKER 4 & SCRIPTED DEBUTS
+// =====================================================================
+// =====================================================================
+//  CAMPAIGN LEVELS DATA — EXPANDED WITH RIDGE OUTPOST & SCRIPTED DEBUTS
 // =====================================================================
 
 const LEVELS = [
+    // ═════════════════════════════════════════════════════════════════
+    //  ACT 1: PERIMETER GRID & CITADEL BREACH
+    //  Enemy Roster: Basic Patrols -> Rammer Units -> Hexagon Guardian
+    // ═════════════════════════════════════════════════════════════════
+
     // ── HUB 0: FORWARD BASE ──
     {
         name: "Forward Base", type: "hub", mapSize: 2200, spawnRate: 0, act: 1,
-        objText: "Talk to crew, calibrate weapons at proving grounds, then deploy.",
+        objText: "Inspect outpost facilities, test fire at proving grounds, then deploy.",
         deployZone: { x: 0, y: 780 },
         vaultTerminal: { x: 0, y: -780 },
         firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
@@ -4497,177 +4871,205 @@ const LEVELS = [
             { x: 1420, y: 0, label: "LANE 6: BARRIER MK-I", subLabel: "200m Energy Shield", type: 'shielded', hp: 350, shieldHp: 280, tier: 1 }
         ],
         intro: [
-            { who: "Command", text: "Unit 01, you're live at Forward Base. The camp is fully operational. Meet with our specialists and test calibration at the expanded proving grounds." },
-            { who: "Unit 01", text: "Understood. Inspecting outpost facilities." }
+            { who: "Command", text: "Unit 01, systems online. Welcome to Forward Base. Meet our specialists and calibrate your chassis at the eastern proving grounds." },
+            { who: "Unit 01", text: "Understood. Inspecting outpost bays and running diagnostics." }
         ],
         npcs: [
             { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
               dialogue: [
-                { who: "Engineer Kova", text: "Welcome to Motor & Weapon Tech. Spend points and polygon materials here. Higher tiers require harvested shapes." }
+                { who: "Engineer Kova", text: "Weapon tech bay open. Spend points on Bullet Damage, Reload, and Range here. Advanced tiers consume harvested shapes." }
               ]
             },
             { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
               dialogue: [
-                { who: "Scout Wren", text: "Mobility & Intel bay. Extra thruster speed and XP Boost modules keep your leveling fast and smooth." }
+                { who: "Scout Wren", text: "Mobility bay ready. Upgrading Move Speed and XP Boost accelerates your leveling across all sectors." }
               ]
             },
             { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
               dialogue: [
-                { who: "Medic Voss", text: "Field Hospital ready. Talk to me anytime you take hull damage to repair, or upgrade your Max HP and Nanite Regen." }
+                { who: "Medic Voss", text: "Field hospital standing by. Visit me anytime for free nanite hull repairs, or upgrade Max HP and Nanite Regen." }
               ]
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
               dialogue: [
-                { who: "Command", text: "Unit 01. The proving grounds to the east are equipped with reactive damage sensors and barrier dummies." },
-                { who: "Command", text: "Harvested polygon reserves are stored in 64-unit supply crates in the northern yard. Speak with Archivist Vance for enemy dossiers." }
+                { who: "Command", text: "Sector 7 hostiles are mounting forward positions. Harvest polygons in the field to bank upgrade materials." },
+                { who: "Command", text: "Use the eastern proving grounds to check your DPS before heading out through the southern runway." }
               ]
             },
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
               dialogue: [
-                { who: "Archivist Vance", text: "Archivist Vance at tactical records. I compile active combat telemetry on every hostile model you destroy." }
+                { who: "Archivist Vance", text: "Combat archivist online. I record detailed tactical telemetry and threat ratings on every hostile class you destroy." }
               ]
             },
-                        {
-                x: 0, y: 320, 
-                name: "Specialist Jax", 
-                color: "#00d2d3", 
-                subRole: "TACTICAL ABILITIES & ARMORY",
-                dialogue: [
-                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
-                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
-                ]
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [
+                { who: "Specialist Jax", text: "Armory bay open. I install deployable sentry turrets, Aegis barriers, EMP blast coils, and autonomous homing rockets." },
+                { who: "Specialist Jax", text: "Equip modules here using upgrade points and refined polygon crates." }
+              ]
             },
-            { 
-                x: -350, y: 650, 
-                name: "Scout Yolo", 
-                color: C.NPC_ORANGE,
-                subRole: "BLACK SUPPLY STASH",
-                dialogue: [
-                    { who: "Scout Yolo", text: "Psst! Take these 3 Upgrade Points and supply polygons (35■, 20▲, 6⬟) from my black stash." },
-                    { who: "Scout Yolo", text: "Head over to Specialist Jax to equip your first tactical ability!" }
-                ]
+            { x: -350, y: 650, name: "Scout Yolo", color: C.NPC_ORANGE, subRole: "BLACK SUPPLY STASH",
+              dialogue: [
+                { who: "Scout Yolo", text: "Psst! Grab these 3 Upgrade Points and supply polygons (35■, 20▲, 6⬟) from my private stash." },
+                { who: "Scout Yolo", text: "Head over to Specialist Jax to equip your first tactical ability before deployment!" }
+              ]
             }
         ]
     },
 
-    // ── A1-L1 ──
+    // ── A1-L1: TUTORIAL — BASIC CALIBRATION ──
     {
-        name: "Calibration", type: "shape", count: 8, scripted: true, spawnRate: 0, mapSize: 600, act: 1,
-        objText: "Destroy 8 Kinetic Squares",
+        name: "Calibration", type: "shape", count: 8, scripted: true, spawnRate: 0, mapSize: 700, act: 1,
+        objText: "Destroy 8 Kinetic Squares [WASD Move | Aim & Click Fire]",
         intro: [
-            { who: "Command", text: "Target kinetic squares placed in a ring around you. Destroy all 8 formations." },
-            { who: "Unit 01", text: "Engaging targets." }
+            { who: "Command", text: "Calibration grid active. Use WASD to maneuver and Left Click or Spacebar to fire at the surrounding Kinetic Squares." },
+            { who: "Unit 01", text: "Sensors calibrated. Commencing target practice." }
         ]
     },
 
-    // ── A1-L2 ──
+    // ── A1-L2: TUTORIAL — FIRST CONTACT (SCRIPTED CAMERA FOCUS) ──
     {
         name: "First Contact", type: "kill", count: 3, scripted: true, spawnRate: 0, mapSize: 1300, act: 1,
-        objText: "Defeat 3 Patrol Units",
+        objText: "Neutralize 3 Hostile Patrol Scouts",
         intro: [
-            { who: "Command", text: "Hostile Patrol Units detected in Sector 2. Slow, but carry range. Keep moving." },
-            { who: "Unit 01", text: "Contacts on radar. Engaging." }
+            { who: "Command", text: "3 hostile Patrol Units detected. They fire single kinetic rounds at medium range. Keep moving and lead your shots." },
+            { who: "Unit 01", text: "Radar lock confirmed. Engaging hostiles." }
         ]
     },
 
-    // ── A1-L3 ──
+    // ── A1-L3: TUTORIAL — RESOURCE HARVESTING ──
     {
-        name: "Open Field", type: "shape", count: 18, spawnRate: 320, types: ['basic'], mapSize: 1500, act: 1,
-        objText: "Harvest 18 Polygon Formations",
+        name: "Polygon Fields", type: "shape", count: 18, spawnRate: 380, types: ['basic'], mapSize: 1500, act: 1,
+        objText: "Harvest 18 Polygons (Squares, Triangles & Pentagons)",
         intro: [
-            { who: "Command", text: "Polygon energy detected in the open field ahead. Harvest 18 formations." },
-            { who: "Unit 01", text: "Moving in." }
+            { who: "Command", text: "High geometric energy detected. Destroy 18 formations. Pentagons grant massive XP and rare materials!" },
+            { who: "Unit 01", text: "Harvesting field reserves." }
         ]
     },
 
-    // ── A1-L4 ──
+    // ── A1-L4: PATROL COMBAT PRACTICE ──
     {
-        name: "Patrol Break", type: "kill", count: 10, spawnRate: 460, types: ['basic'], mapSize: 1600, act: 1,
-        objText: "Destroy 10 Patrol Units",
+        name: "Patrol Break", type: "kill", count: 8, spawnRate: 340, types: ['basic'], mapSize: 1600, act: 1,
+        objText: "Break Perimeter Patrols — 8 Kills",
         intro: [
-            { who: "Command", text: "Enemy Patrol Units setting up forward positions. Break 10 of them." },
-            { who: "Unit 01", text: "Engaging patrol." }
+            { who: "Command", text: "Enemy patrol scouts attempting to set up a forward line. Clear 8 Patrol Units." },
+            { who: "Unit 01", text: "Engaging squad." }
         ]
     },
 
-    // ── A1-CS ──
+    // ── A1-CS1: ENEMY INTRO — RAMMER UNITS ──
     {
-        name: "CS: Red Advance", type: "dialogue_cutscene", act: 1,
-        csAct: "Intelligence Report", csTitle: "RED ADVANCE", csSub: "Sector 3 Breach",
-        csBg: "rgba(40,0,0,0.9)",
+        name: "CS: High-Velocity Contacts", type: "dialogue_cutscene", act: 1,
+        csAct: "Telemetry Warning", csTitle: "HIGH-VELOCITY CONTACTS", csSub: "Rammer Unit Detected",
+        csBg: "rgba(50,10,10,0.92)",
         lines: [
-            { who: "Command", text: "Long-range radar indicates incoming Rammer Units. They attack via rapid velocity." },
-            { who: "Unit 01", text: "Keep moving. Understood." }
+            { who: "Command", text: "Telemetry alert! Rammer Units detected. Stripped-down hulls designed for explosive high-speed dashes." },
+            { who: "Command", text: "Watch for their targeting pause before they dash, then strafe laterally to evade." },
+            { who: "Unit 01", text: "Understood. Maintaining lateral thrusters." }
         ]
     },
 
-    // ── A1-L5 ──
+    // ── A1-L5: DEBUT — RAMMER 1-ON-1 TRIAL (SCRIPTED CAMERA LOCK) ──
     {
-        name: "The Swarm", type: "time", count: 60, scripted: true, spawnRate: 240, types: ['rammer'], mapSize: 1800, act: 1,
-        objText: "Survive 60 Seconds",
+        name: "Rammer Trial", type: "kill", count: 3, scripted: true, spawnRate: 0, mapSize: 1500, act: 1,
+        objText: "Neutralize 3 Rammer Units [Watch the aim-lock pause before the dash!]",
         intro: [
-            { who: "Command", text: "Rammer Unit swarm inbound. Stay in motion for 60 seconds!" },
-            { who: "Unit 01", text: "Evading contacts." }
+            { who: "Command", text: "Single Rammer Unit approaching your position. Observe its aim lock, sidestep the dash, and return fire!" },
+            { who: "Unit 01", text: "Visual on target." }
+        ]
+    },
+
+    // ── HUB 0.2: NEW BASE — RIDGE OUTPOST BETA (RIGHT AFTER FIRST RAMMER) ──
+    {
+        name: "Ridge Outpost Beta", type: "hub", mapSize: 2200, spawnRate: 0, act: 1,
+        objText: "Resupply at Ridge Outpost, refit thrusters, then deploy.",
+        deployZone: { x: 0, y: 780 },
+        vaultTerminal: { x: 0, y: -780 },
+        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
+        dummies: [
+            { x: 700, y: -500, label: "LANE 1: TARGET MK-I+", subLabel: "50m Reaction", type: 'standard', tier: 1 },
+            { x: 920, y: 0, label: "LANE 2: STRAFER MK-I+", subLabel: "100m Moving", type: 'moving_y', range: 190, speed: 0.22, tier: 1 },
+            { x: 1160, y: 350, label: "LANE 3: RUNNER MK-I+", subLabel: "150m High Speed", type: 'moving_x', range: 180, speed: 0.35, tier: 1 },
+            { x: 1420, y: -200, label: "LANE 4: FORTIFIED MK-I+", subLabel: "200m Armor", type: 'heavy', hp: 850, tier: 1 }
+        ],
+        intro: [
+            { who: "Command", text: "Welcome to Ridge Outpost Beta. We've established a forward foothold along the Red Ridge. Refit your chassis before facing larger Rammer packs." }
+        ],
+        npcs: [
+            { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
+              dialogue: [{ who: "Engineer Kova", text: "Those red triangular chassis pack massive kinetic impact. Boost your Bullet Damage and Reload to shred them mid-charge!" }]
+            },
+            { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
+              dialogue: [{ who: "Scout Wren", text: "Saw that dash? Upgrading Move Speed lets you effortlessly circle-strafe their trajectory." }]
+            },
+            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
+              dialogue: [{ who: "Medic Voss", text: "Rammer hull collisions deal heavy direct damage. Get patched up and consider upgrading your Max HP." }]
+            },
+            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
+              dialogue: [{ who: "Archivist Vance", text: "Rammer telemetry logged: 105 HP, boosted thrusters, high vulnerability to lateral kiting." }]
+            },
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [{ who: "Specialist Jax", text: "Deployable Sentry Turrets are perfect for drawing Rammer aggression while you pick them off from afar." }]
+            },
+            { x: -160, y: 0, name: "Command", color: C.COMMAND,
+              dialogue: [{ who: "Command", text: "Full swarm formations detected deeper in Sector 3. Deploy when ready!" }]
+            }
+        ]
+    },
+
+    // ── A1-L6: RAMMER SWARM ──
+    {
+        name: "The Swarm", type: "time", count: 50, scripted: true, spawnRate: 260, types: ['rammer'], mapSize: 1800, act: 1,
+        objText: "Evade and Survive Rammer Assault (50s)",
+        intro: [
+            { who: "Command", text: "Rammer assault wave incoming! Keep moving and sidestep their charges. Survive 50 seconds!" },
+            { who: "Unit 01", text: "Thrusters at maximum." }
         ],
         events: [
-            { frame: 600,  type: 'text', message: "WAVE 2 — FLANKERS", color: '#ff4400' },
-            { frame: 600,  type: 'spawn_formation', formation: 'pincer', enemyType: 'rammer', count: 2, radius: 800 },
-            { frame: 1800, type: 'text', message: "WAVE 3 — ENCIRCLEMENT", color: '#ff0000' },
-            { frame: 1800, type: 'shake', intensity: 12 },
-            { frame: 1800, type: 'spawn_formation', formation: 'ring', enemyType: 'rammer', count: 3, radius: 850 },
-            { frame: 2800, type: 'text', message: "FINAL SURGE — HOLD ON", color: '#ff0000' },
-            { frame: 2800, type: 'spawn_formation', formation: 'corners', enemyType: 'rammer', count: 4, radius: 750 },
+            { frame: 600,  type: 'text', message: "SPACED FLANKERS INBOUND", color: '#ff4400' },
+            { frame: 600,  type: 'spawn_formation', formation: 'pincer', enemyType: 'rammer', count: 2, radius: 950 },
+            { frame: 1600, type: 'text', message: "DUAL CORNER DASH", color: '#ff0000' },
+            { frame: 1600, type: 'spawn_formation', formation: 'corners', enemyType: 'rammer', count: 2, radius: 950 }
         ]
     },
 
-    // ── A1-L6 ──
+    // ── A1-L7: RAMMER HUNT ──
     {
-        name: "Hit and Run", type: "kill", count: 9, spawnRate: 220, types: ['rammer'], mapSize: 1700, act: 1,
-        objText: "Hunt Down 9 Rammer Units",
+        name: "Hit and Run", type: "kill", count: 8, spawnRate: 260, types: ['rammer'], mapSize: 1800, act: 1,
+        objText: "Hunt Down 8 Rammer Units",
         intro: [
-            { who: "Command", text: "Time to hunt. Track down 9 Rammer Units and clear the zone." },
-            { who: "Unit 01", text: "Tracking." }
+            { who: "Command", text: "Take the offensive. Track down 8 Rammer Units and eliminate them before they can charge." },
+            { who: "Unit 01", text: "Hunting targets." }
         ]
     },
 
-    // ── A1-L7 ──
+    // ── A1-L8: COMBINED BASICS & RAMMERS ──
     {
-        name: "Dead End", type: "kill", count: 12, spawnRate: 300, types: ['basic', 'basic', 'rammer'], mapSize: 1700, act: 1,
-        objText: "Destroy 12 Hostile Units",
+        name: "Crossfire Ridge", type: "kill", count: 12, spawnRate: 240, types: ['basic', 'rammer'], mapSize: 1800, act: 1,
+        objText: "Clear Crossfire Ridge — 12 Kills (Patrols & Rammers)",
         intro: [
-            { who: "Command", text: "Exposed sector. Clear 12 hostile units." },
-            { who: "Unit 01", text: "Adapting." }
-        ]
-    },
-
-    // ── A1-L8 ──
-    {
-        name: "Crossfire", type: "kill", count: 14, spawnRate: 300, types: ['basic', 'basic', 'rammer'], mapSize: 1800, act: 1,
-        objText: "Destroy 14 Hostile Units",
-        intro: [
-            { who: "Command", text: "Patrol Units holding range while Rammer Units push in. Neutralize 14 enemies." },
-            { who: "Unit 01", text: "Handling." }
+            { who: "Command", text: "Patrol Units are holding range while Rammers charge in. Prioritize the fast rammers first!" },
+            { who: "Unit 01", text: "Managing target priority." }
         ],
         events: [
-            { frame: 480, type: 'text', message: "PINCER INCOMING", color: '#f14e54' },
-            { frame: 480, type: 'spawn_formation', formation: 'pincer', enemyType: 'basic', count: 4, radius: 900 },
+            { frame: 450, type: 'text', message: "CROSS FORMATION ARRIVING", color: '#f14e54' },
+            { frame: 450, type: 'spawn_formation', formation: 'cross', enemyType: 'basic', count: 4, radius: 950 }
         ]
     },
 
-    // ── A1-L9 ──
+    // ── A1-L9: MASS HARVEST BEFORE SECTOR 3 ──
     {
-        name: "Shape Harvest", type: "shape", count: 24, spawnRate: 175, types: ['basic'], mapSize: 1800, act: 1,
+        name: "Energy Sweep", type: "shape", count: 24, spawnRate: 200, types: ['basic', 'rammer'], mapSize: 1900, act: 1,
         objText: "Harvest 24 Polygon Formations",
         intro: [
-            { who: "Command", text: "Strong energy signatures in this grid. Harvest 24 formations." },
-            { who: "Unit 01", text: "Moving in." }
+            { who: "Command", text: "Harvest 24 polygon formations to stock up on points and crates before the Citadel outpost." },
+            { who: "Unit 01", text: "Securing resources." }
         ]
     },
 
-    // ── HUB 0.5: SECTOR 3 OUTPOST ──
+    // ── HUB 0.5: SECTOR 3 FIELD OUTPOST ──
     {
         name: "Sector 3 Field Outpost", type: "hub", mapSize: 2200, spawnRate: 0, act: 1,
-        objText: "Refit and test weapons against MK-II target dummies.",
+        objText: "Refit chassis, test fire on MK-II proving dummies, then deploy.",
         deployZone: { x: 0, y: 780 },
         vaultTerminal: { x: 0, y: -780 },
         firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
@@ -4678,84 +5080,86 @@ const LEVELS = [
             { x: 1420, y: -200, label: "LANE 4: SHIELD MK-II", subLabel: "200m Barrier", type: 'shielded', hp: 460, shieldHp: 360, tier: 2 }
         ],
         intro: [
-            { who: "Command", text: "Sector 3 field outpost online. Test calibration against MK-II proving dummies before facing the Hexagon Guardian." }
+            { who: "Command", text: "Sector 3 Field Outpost established. The Hexagon Guardian dreadnought guards the gate ahead. Maximize your upgrades and test calibration." }
         ],
         npcs: [
             { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Spend your points and polygons here. Hexagon Guardian armor is heavy." }]
+              dialogue: [{ who: "Engineer Kova", text: "Guardian armor plates are heavy. Max out Bullet Damage and Range so you can strike from safe distances." }]
             },
             { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
-              dialogue: [{ who: "Scout Wren", text: "Circle the Hexagon Guardian at maximum speed. Pick up XP Boost to level up rapidly." }]
+              dialogue: [{ who: "Scout Wren", text: "Move speed is critical against the Guardian's quad artillery. Keep circling and never reverse direction abruptly!" }]
             },
             { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Field repairs ready. Get patched up before heading out to the Guardian." }]
+              dialogue: [{ who: "Medic Voss", text: "Full hull repairs complete. Upgrade your Max HP so direct artillery rounds won't breach your core." }]
             },
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Hexagon Guardian combat dossiers ready for review." }]
+              dialogue: [{ who: "Archivist Vance", text: "Hexagon Guardian telemetry loaded: 4 synchronized naval cannons with rotating pulse sweeps." }]
+            },
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [{ who: "Specialist Jax", text: "Deployable sentry turrets draw boss aggro effectively, allowing you to flank freely." }]
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "The Hexagon Guardian fires 4 artillery rounds simultaneously. Circle it constantly and stay at range!" }]
-            },
-            {
-                x: 0, y: 320, 
-                name: "Specialist Jax", 
-                color: "#00d2d3", 
-                subRole: "TACTICAL ABILITIES & ARMORY",
-                dialogue: [
-                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
-                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
-                ]
-            },
+              dialogue: [{ who: "Command", text: "Deploy through the southern runway when ready to breach the Citadel." }]
+            }
         ]
     },
 
-    // ── A1-L10 ──
+    // ── A1-L10: CITADEL GATES ──
     {
-        name: "Pressure Test", type: "time", count: 55, spawnRate: 180, types: ['basic', 'basic', 'rammer'], mapSize: 1900, act: 1,
-        objText: "Survive 55 Seconds",
+        name: "Citadel Approach", type: "time", count: 60, spawnRate: 180, types: ['basic', 'rammer'], mapSize: 2000, act: 1,
+        objText: "Hold Citadel Approach for 60s",
         intro: [
-            { who: "Command", text: "Hold under sustained pressure for 55 seconds before the Guardian chamber." },
-            { who: "Unit 01", text: "Ready." }
+            { who: "Command", text: "Citadel automated defenses active. Hold ground against combined patrol and rammer assault." },
+            { who: "Unit 01", text: "Holding the line." }
+        ],
+        events: [
+            { frame: 1200, type: 'text', message: "SPACED 4-CORNER ASSAULT", color: '#ff4400' },
+            { frame: 1200, type: 'spawn_formation', formation: 'corners', enemyType: 'rammer', count: 4, radius: 950 }
         ]
     },
 
-    // ── A1-L11 ──
+    // ── A1-L11: VANGUARD SWEEP ──
     {
-        name: "Vanguard Sweep", type: "kill", count: 18, spawnRate: 165, types: ['basic', 'basic', 'hive', 'rammer'], mapSize: 2100, act: 1,
-        objText: "Eliminate 18 Vanguard Units",
+        name: "Vanguard Sweep", type: "kill", count: 16, spawnRate: 170, types: ['basic', 'rammer'], mapSize: 2000, act: 1,
+        objText: "Eliminate 16 Citadel Vanguard Units",
         intro: [
-            { who: "Command", text: "Sweep 18 enemy vanguard units including early Hive Carriers." },
-            { who: "Unit 01", text: "Sweeping." }
+            { who: "Command", text: "Eliminate 16 vanguard units to force the Hexagon Guardian into the open." },
+            { who: "Unit 01", text: "Breaching." }
         ]
     },
 
-    // ── BOSS 1: The Guardian ──
+    // ── BOSS 1: THE GUARDIAN ──
     {
-        name: "The Guardian", type: "boss", count: 1, spawnRate: 400, types: ['basic'], boss: 'hexagon', mapSize: 2100, act: 1,
+        name: "The Guardian", type: "boss", count: 1, spawnRate: 420, types: ['basic'], boss: 'hexagon', mapSize: 2100, act: 1,
         objText: "Destroy the Hexagon Guardian",
         intro: [
-            { who: "Guardian", text: "INTRUDER DETECTED. ENGAGING DELETION PROTOCOL." },
-            { who: "Unit 01", text: "That thing is enormous — four heavy cannons!" },
-            { who: "Command", text: "Hexagon Guardian dreadnought. Multi-directional firepower. Keep circling!" }
+            { who: "Guardian", text: "CITADEL PERIMETER BREACH DETECTED. ENGAGING PRIMARY ERADICATION CANNONS." },
+            { who: "Unit 01", text: "Massive dreadnought class — four heavy artillery cannons confirmed!" },
+            { who: "Command", text: "Circle continuously at mid-range! Watch for its 4-way salvo and timed radial bursts!" }
         ],
         outro: [
-            { who: "Guardian", text: "...CRITICAL FAILURE... FATAL ERROR." },
-            { who: "Command", text: "Hexagon Guardian eliminated. Sector 7 is open." }
+            { who: "Guardian", text: "...CRITICAL ENERGY DISCHARGE... CITADEL FIREWALL COMPROMISED." },
+            { who: "Command", text: "Guardian neutralized! The path into Sector 7 deep space is open!" }
         ]
     },
 
-    // ── ACT 2: SECTOR 7 ──
+    // ═════════════════════════════════════════════════════════════════
+    //  ACT 2: SECTOR 7 CYBER-ABYSS & RELAY DEFENSE
+    //  Enemy Roster: Railgun Snipers -> Shotgun Breachers -> Shield Carriers
+    // ═════════════════════════════════════════════════════════════════
+
+    // ── A2-CS1: SECTOR 7 INFILTRATION ──
     {
         name: "CS: Sector 7", type: "dialogue_cutscene", act: 2,
-        csAct: "Intercepted Transmission", csTitle: "SECTOR 7", csSub: "Deep Cyber-Abyss",
-        csBg: "rgba(0,20,40,0.9)",
+        csAct: "Intercepted Transmission", csTitle: "SECTOR 7 CYBER-ABYSS", csSub: "Deep Cyber Territory",
+        csBg: "rgba(0,20,45,0.92)",
         lines: [
-            { who: "Command", text: "Entering Sector 7. Sniper Units and Shield Carriers confirmed ahead. Hostile density is high." },
-            { who: "Unit 01", text: "Standing by." }
+            { who: "Command", text: "You have entered Sector 7 deep space. Specialized heavy combat classes confirmed ahead." },
+            { who: "Unit 01", text: "Atmospheric shift detected. Weapons primed." }
         ]
     },
 
-    // ── HUB 1: SECTOR 7 OUTPOST ──
+    // ── HUB 1: SECTOR 7 FORWARD OUTPOST ──
     {
         name: "Sector 7 Outpost", type: "hub", mapSize: 2200, spawnRate: 0, act: 2,
         objText: "Resupply, test against MK-III target dummies, and deploy.",
@@ -4769,141 +5173,130 @@ const LEVELS = [
             { x: 1440, y: 200, label: "LANE 4: HEAVY MK-III", subLabel: "200m Heavy Plating", type: 'heavy', hp: 1100, tier: 3 }
         ],
         intro: [
-            { who: "Command", text: "Sector 7 forward post secured. MK-III proving ground dummies are ready for calibration." }
+            { who: "Command", text: "Sector 7 Forward Post secured. Enemy armor and range have increased significantly. Check MK-III dummies at the range." }
         ],
         npcs: [
             { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Invest in HP and Regen for survivability in deep sectors. High tiers use stored Polygons." }]
+              dialogue: [{ who: "Medic Voss", text: "Deep sector hostiles hit hard. Invest in Nanite Regen and HP to survive crossfire." }]
             },
             { x: -750, y: -180, name: "Sergeant Doss", color: C.NPC_YELLOW,
-              dialogue: [{ who: "Sergeant Doss", text: "Upgraded Range and XP Boost let you contest Sniper Units effectively." }]
+              dialogue: [{ who: "Sergeant Doss", text: "Upgrading Range and Reload lets you trade shots with Snipers from outside their kill-zone." }]
             },
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Sector 7 hostiles registered in database." }]
+              dialogue: [{ who: "Archivist Vance", text: "Tactical data updated: Sniper railguns have a 1-second targeting beam before firing." }]
+            },
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [{ who: "Specialist Jax", text: "Tactical EMP Blasts instantly shatter enemy energy barriers and clear projectiles!" }]
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "Sniper Units hold extreme distance, but their retreat is slow. Charge them between shots!" }]
-            },
-            {
-                x: 0, y: 320, 
-                name: "Specialist Jax", 
-                color: "#00d2d3", 
-                subRole: "TACTICAL ABILITIES & ARMORY",
-                dialogue: [
-                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
-                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
-                ]
-            },
-        ]
-    },
-
-    // ── A2-L1 ──
-    {
-        name: "First Snipers", type: "kill", count: 8, spawnRate: 200, types: ['sniper', 'basic'], mapSize: 2100, act: 2,
-        objText: "Eliminate 8 Sniper Units",
-        intro: [
-            { who: "Command", text: "Sniper Units anchored at range behind screens. Eliminate 8 targets." },
-            { who: "Unit 01", text: "Engaging." }
-        ]
-    },
-
-    // ── A2-L2 ──
-    {
-        name: "Sniper Alley", type: "kill", count: 11, spawnRate: 190, types: ['sniper', 'rammer'], mapSize: 2100, act: 2,
-        objText: "Clear Sniper Alley — 11 Kills",
-        intro: [
-            { who: "Command", text: "Advance through the corridor. Clear 11 hostile units." },
-            { who: "Unit 01", text: "Advancing." }
-        ]
-    },
-
-    // ── A2-L3 ──
-    {
-        name: "Ambush", type: "kill", count: 14, spawnRate: 175, types: ['sniper', 'basic', 'rammer'], mapSize: 2200, act: 2,
-        objText: "Eliminate 14 Hostile Units",
-        intro: [
-            { who: "Command", text: "Sniper Units holding range behind basic screens. Eliminate 14 hostiles." },
-            { who: "Unit 01", text: "Engaging." }
-        ]
-    },
-
-    // ── A2-L4 ──
-    {
-        name: "Rammer Patrol", type: "kill", count: 12, spawnRate: 175, types: ['rammer', 'shotgun'], mapSize: 2100, act: 2,
-        objText: "Destroy 12 Assault Units",
-        intro: [
-            { who: "Command", text: "Clear heavy Rammer Unit patrol and Shotgun Breachers. 12 kills required." },
-            { who: "Unit 01", text: "On it." }
-        ]
-    },
-
-    // ── A2-L5 ──
-    {
-        name: "Deep Fields", type: "shape", count: 32, spawnRate: 160, types: ['hive', 'hive', 'rammer', 'sniper'], mapSize: 2200, act: 2,
-        objText: "Harvest 32 Polygon Formations",
-        intro: [
-            { who: "Command", text: "Harvest 32 polygon formations amidst heavy Hive Carrier resistance." },
-            { who: "Unit 01", text: "Moving in." }
-        ],
-        npcs: [
-            { x: -1200, y: 1200, name: "Stranded Scout", color: C.NPC_BLUE, action: "rescue",
-              dialogue: [{ who: "Stranded Scout", text: "Unit 01! Take this core module and spend it on upgrades." }]
+              dialogue: [{ who: "Command", text: "Sniper units have slow turn rates while aiming. Dash perpendicular to dodge rail rounds." }]
             }
         ]
     },
 
-    // ── A2-L6 ──
+    // ── A2-L1: DEBUT — RAILGUN SNIPERS (SCRIPTED CAMERA FOCUS) ──
     {
-        name: "Sniper Nest", type: "kill", count: 14, spawnRate: 145, types: ['sniper', 'shield_carrier'], mapSize: 2200, act: 2,
-        objText: "Clear 14 Sniper Nest Defenders",
+        name: "Railgun Optics", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2100, act: 2,
+        objText: "Eliminate 4 Sniper Units [Watch railgun targeting lines!]",
         intro: [
-            { who: "Command", text: "Clear fixed nest defended by Sniper Units and Shield Carriers. 14 kills." },
-            { who: "Unit 01", text: "Clearing." }
+            { who: "Command", text: "Railgun Snipers anchored at long range. Observe their targeting line and strafe immediately when they fire!" },
+            { who: "Unit 01", text: "Engaging marksmen." }
         ]
     },
 
-    // ── A2-L7 ──
+    // ── A2-L2: SNIPER CORRIDOR ──
     {
-        name: "Convergence", type: "time", count: 70, spawnRate: 135, types: ['sniper', 'rammer', 'shotgun'], mapSize: 2300, act: 2,
-        objText: "Survive 70 Seconds",
+        name: "Sniper Alley", type: "kill", count: 12, spawnRate: 200, types: ['sniper', 'basic', 'rammer'], mapSize: 2100, act: 2,
+        objText: "Clear Sniper Alley — 12 Kills",
         intro: [
-            { who: "Command", text: "Sniper Units and Rammer Units converging simultaneously. Survive 70 seconds!" },
-            { who: "Unit 01", text: "Holding." }
+            { who: "Command", text: "Snipers locking down long corridors with support scouts. Close the gap and eliminate 12 hostiles." },
+            { who: "Unit 01", text: "Advancing with tactical cover." }
         ]
     },
 
-    // ── A2-L8 ──
+    // ── A2-L3: DEBUT — SHOTGUN BREACHERS (SCRIPTED CAMERA FOCUS) ──
     {
-        name: "Energy Extraction", type: "shape", count: 38, spawnRate: 105, types: ['sniper', 'shield_carrier', 'shotgun'], mapSize: 2200, act: 2,
-        objText: "Harvest 38 Polygon Formations",
+        name: "Breach Protocol", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2100, act: 2,
+        objText: "Neutralize 4 Shotgun Breachers [Keep distance from 5-pellet spread!]",
         intro: [
-            { who: "Command", text: "Shield Carriers detected! They guard allies with energy barriers. Harvest 38 formations." },
-            { who: "Unit 01", text: "Extracting." }
+            { who: "Command", text: "Shotgun Breachers detected! They advance aggressively to fire wide 5-pellet bursts. Keep them at maximum range!" },
+            { who: "Unit 01", text: "Maintaining standoff distance." }
         ]
     },
 
-    // ── A2-L9 ──
+    // ── A2-L4: SNIPER & SHOTGUN DUAL THREAT ──
     {
-        name: "Mixed Signals", type: "kill", count: 18, spawnRate: 110, types: ['sniper', 'shotgun', 'shield_carrier'], mapSize: 2300, act: 2,
-        objText: "Eliminate 18 Combat Units",
+        name: "Pincer Grid", type: "kill", count: 14, spawnRate: 175, types: ['sniper', 'shotgun', 'rammer'], mapSize: 2200, act: 2,
+        objText: "Eliminate 14 Mixed Assault Hostiles",
         intro: [
-            { who: "Command", text: "Sniper Units, Shotgun Breachers, and Shield Carriers in combination. Neutralize 18 units." },
-            { who: "Unit 01", text: "Engaging." }
+            { who: "Command", text: "Snipers holding backlines while Shotgun Breachers push frontally. Maneuver continuously!" },
+            { who: "Unit 01", text: "Engaging crossfire." }
         ]
     },
 
-    // ── A2-CS ──
+    // ── A2-L5: DEEP RESCUE & EXTRACTION ──
     {
-        name: "CS: Deep Push", type: "dialogue_cutscene", act: 2,
-        csAct: "Field Report", csTitle: "DEEP PUSH", csSub: "Into the Network",
-        csBg: "rgba(0,10,30,0.92)",
+        name: "Deep Extraction", type: "shape", count: 30, spawnRate: 160, types: ['sniper', 'shotgun', 'basic'], mapSize: 2200, act: 2,
+        objText: "Harvest 30 Formations & Locate Stranded Scout",
+        intro: [
+            { who: "Command", text: "A scout unit was downed in the deep field to the southwest. Harvest 30 formations and locate the survivor." },
+            { who: "Unit 01", text: "Locating emergency beacon." }
+        ],
+        npcs: [
+            { x: -1200, y: 1200, name: "Stranded Scout", color: C.NPC_BLUE, action: "rescue",
+              dialogue: [{ who: "Stranded Scout", text: "Unit 01! Thanks for the extraction. Take this core upgrade point and spend it well!" }]
+            }
+        ]
+    },
+
+    // ── A2-L6: DEBUT — SHIELD CARRIERS (SCRIPTED CAMERA FOCUS) ──
+    {
+        name: "The Aegis Wall", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2200, act: 2,
+        objText: "Eliminate 4 Shield Carriers [Shatter Blue Energy Shields!]",
+        intro: [
+            { who: "Command", text: "Shield Carriers deployed! Frontal energy barriers block kinetic fire. Flank around their shields, focus fire, or use EMP." },
+            { who: "Unit 01", text: "Targeting shield generators." }
+        ]
+    },
+
+    // ── A2-L7: COMBINED ARMS TEST ──
+    {
+        name: "Fortress Phalanx", type: "kill", count: 16, spawnRate: 150, types: ['shield_carrier', 'sniper', 'shotgun'], mapSize: 2300, act: 2,
+        objText: "Break the Phalanx — 16 Kills (Shields + Snipers + Shotguns)",
+        intro: [
+            { who: "Command", text: "Shield Carriers are escorting Snipers and Breachers. Pop the barriers or take out exposed flanks." },
+            { who: "Unit 01", text: "Executing flanking maneuvers." }
+        ]
+    },
+
+    // ── A2-L8: CONVERGENCE SURVIVAL ──
+    {
+        name: "Convergence Zone", type: "time", count: 70, spawnRate: 140, types: ['sniper', 'shotgun', 'shield_carrier', 'rammer'], mapSize: 2300, act: 2,
+        objText: "Survive Multi-Vector Ambush (70s)",
+        intro: [
+            { who: "Command", text: "Multi-angle pincer ambush detected. Hold out for 70 seconds against coordinated waves!" },
+            { who: "Unit 01", text: "Engaging active evasion." }
+        ],
+        events: [
+            { frame: 800,  type: 'text', message: "EQUAL SPACED 6-POINT RING", color: '#ff6348' },
+            { frame: 800,  type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 6, radius: 1050 },
+            { frame: 2200, type: 'text', message: "CORNER BREACHERS CLOSING IN", color: '#c542f5' },
+            { frame: 2200, type: 'spawn_formation', formation: 'corners', enemyType: 'shotgun', count: 4, radius: 950 }
+        ]
+    },
+
+    // ── A2-CS2: RELAY THETA BRIEFING ──
+    {
+        name: "CS: Relay Station Theta", type: "dialogue_cutscene", act: 2,
+        csAct: "Midway Logistics", csTitle: "RELAY STATION THETA", csSub: "Sub-Sector Staging",
+        csBg: "rgba(0,15,35,0.94)",
         lines: [
-            { who: "Unit 01", text: "Command, enemy density is spiking deeper into Sector 7." },
-            { who: "Command", text: "Confirmed. You're breaching the inner Core defense grid." }
+            { who: "Unit 01", text: "Command, deep sector hostiles are organizing fortified fireteams." },
+            { who: "Command", text: "Confirmed. Dock at Relay Station Theta for intermediate chassis refitting." }
         ]
     },
 
-    // ── HUB 1.5: RELAY STATION ──
+    // ── HUB 1.5: RELAY STATION THETA ──
     {
         name: "Relay Station", type: "hub", mapSize: 2200, spawnRate: 0, act: 2,
         objText: "Midway resupply and test against MK-IV target dummies.",
@@ -4917,83 +5310,65 @@ const LEVELS = [
             { x: 1440, y: 200, label: "LANE 4: SHIELD MK-IV", subLabel: "200m Dual Barrier", type: 'shielded', hp: 600, shieldHp: 500, tier: 4 }
         ],
         intro: [
-            { who: "Command", text: "Relay station secured. MK-IV proving dummies calibrated. Refit and test fire." }
+            { who: "Command", text: "Relay Station Theta secured. MK-IV high-durability proving dummies are calibrated for weapon testing." }
         ],
         npcs: [
             { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Range and Damage upgrades let your shots cross the screen faster." }]
+              dialogue: [{ who: "Engineer Kova", text: "Make sure you invest in Reload and Bullet Damage. Late-stage carriers require heavy burst fire." }]
             },
             { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
-              dialogue: [{ who: "Scout Wren", text: "Mobility is key. Extra speed and XP Boost let you outmaneuver heavy waves." }]
+              dialogue: [{ who: "Scout Wren", text: "Keep upgrading XP Boost and Move Speed. You'll need every bit of evasion for the outer Core." }]
             },
             { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Field hospital online. Get fully patched up and reinforce hull plating." }]
+              dialogue: [{ who: "Medic Voss", text: "Full hull maintenance completed. Remember to activate Nanite Drones when heavily pressured." }]
             },
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Field telemetry updated." }]
+              dialogue: [{ who: "Archivist Vance", text: "Field telemetry synchronized across all known Sector 7 models." }]
             },
-            {
-                x: 0, y: 320, 
-                name: "Specialist Jax", 
-                color: "#00d2d3", 
-                subRole: "TACTICAL ABILITIES & ARMORY",
-                dialogue: [
-                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
-                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
-                ]
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [{ who: "Specialist Jax", text: "Heavy AP Homing Rockets deal devastating splash damage against grouped formations!" }]
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "Shield Carriers will escort Sniper Units and Shotgun Breachers. Pop their barrier first!" }]
+              dialogue: [{ who: "Command", text: "The inner Core gateway lies ahead. Prepare your loadout thoroughly." }]
             }
         ]
     },
 
-    // ── A2-L10 ──
+    // ── A2-L9: ACT 2 CLIMAX ──
     {
-        name: "The Storm", type: "time", count: 85, spawnRate: 95, types: ['sniper', 'sniper', 'hive', 'trapper', 'shotgun'], mapSize: 2300, act: 2,
-        objText: "Survive 85 Seconds",
+        name: "Siege Break", type: "time", count: 80, spawnRate: 110, types: ['sniper', 'shield_carrier', 'shotgun', 'rammer'], mapSize: 2400, act: 2,
+        objText: "Break Outer Core Lockdown (80s)",
         intro: [
-            { who: "Command", text: "Full enemy mobilization with Trapper Minelayers. Shoot their mines from distance to defuse them!" },
-            { who: "Unit 01", text: "Holding." }
+            { who: "Command", text: "Outer Core lockdown initiated by enemy battlegroups. Hold the breach for 80 seconds!" },
+            { who: "Unit 01", text: "Lockdown contested." }
+        ],
+        events: [
+            { frame: 1400, type: 'text', message: "SPACED 8-POINT RING INCOMING", color: '#ff4757' },
+            { frame: 1400, type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 8, radius: 1100 }
         ]
     },
 
-    // ── A2-L11 ──
-    {
-        name: "Suppression Run", type: "kill", count: 22, spawnRate: 85, types: ['sniper', 'shield_carrier', 'shotgun', 'trapper'], mapSize: 2300, act: 2,
-        objText: "Neutralize 22 Defenders",
-        intro: [
-            { who: "Command", text: "Push through the reinforced line. Neutralize 22 defenders." },
-            { who: "Unit 01", text: "Suppressing." }
-        ]
-    },
+    // ═════════════════════════════════════════════════════════════════
+    //  ACT 3: THE CORE & AUTONOMOUS WEAPON PLATFORM
+    //  Enemy Roster: Trapper Minelayers -> Hive Carriers -> The Destroyer
+    // ═════════════════════════════════════════════════════════════════
 
-    // ── A2-L12 ──
-    {
-        name: "Siege Break", type: "time", count: 95, spawnRate: 90, types: ['sniper', 'shield_carrier', 'hive', 'shotgun', 'trapper'], mapSize: 2400, act: 2,
-        objText: "Survive 95 Seconds",
-        intro: [
-            { who: "Command", text: "Outer Core perimeter lockdown. Break the siege by holding for 95 seconds!" },
-            { who: "Unit 01", text: "Moving." }
-        ]
-    },
-
-    // ── ACT 3: THE CORE ──
+    // ── A3-CS1: THE CORE BRIEFING ──
     {
         name: "CS: The Core", type: "dialogue_cutscene", act: 3,
-        csAct: "Final Intelligence Brief", csTitle: "THE CORE", csSub: "Autonomous Weapon Platform",
-        csBg: "rgba(20,0,30,0.92)",
+        csAct: "Final Intelligence Brief", csTitle: "THE AUTONOMOUS CORE", csSub: "Central Mainframe Chamber",
+        csBg: "rgba(25,0,0,0.95)",
         lines: [
-            { who: "Command", text: "The Destroyer is at the heart of Sector 7. Autonomous platform with 4 massive naval batteries." },
-            { who: "Destroyer", text: "SYSTEM OVERRIDE DETECTED. PURGE PROTOCOL INITIATED." },
-            { who: "Unit 01", text: "Standing by to eliminate." }
+            { who: "Command", text: "You have reached The Core. Heavy area denial and drone carriers are shielding the mainframe." },
+            { who: "Destroyer", text: "SYSTEM THREAT QUANTIFIED. PURGE PROTOCOL ENGAGED." },
+            { who: "Unit 01", text: "Primary objective confirmed. Proceeding to breach." }
         ]
     },
 
     // ── HUB 2: CORE THRESHOLD ──
     {
         name: "Core Threshold", type: "hub", mapSize: 2200, spawnRate: 0, act: 3,
-        objText: "Final preparations against MK-V targets before the Destroyer push.",
+        objText: "Final refit against MK-V targets before the Destroyer push.",
         deployZone: { x: 0, y: 780 },
         vaultTerminal: { x: 0, y: -780 },
         firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
@@ -5004,85 +5379,102 @@ const LEVELS = [
             { x: 1440, y: 200, label: "LANE 4: BARRIER MK-V", subLabel: "200m Titan Shield", type: 'shielded', hp: 750, shieldHp: 650, tier: 5 }
         ],
         intro: [
-            { who: "Command", text: "Last safe post. Spend your points and polygon reserves to max out DPS against MK-V proving targets." }
+            { who: "Command", text: "Last safe outpost before the supreme mainframe. Max out your DPS and durability against MK-V targets." }
         ],
         npcs: [
             { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Max out Bullet Damage, Reload, and Range with stored Polygons." }]
+              dialogue: [{ who: "Engineer Kova", text: "Spend all your banked polygon reserves now. The Destroyer's armor threshold is immense." }]
             },
             { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Max HP and Regen determine if you survive multiple direct hits. Full repair is always free." }]
+              dialogue: [{ who: "Medic Voss", text: "All nanite injectors topped off. Keep your Aegis barrier ready to absorb supreme naval rounds." }]
             },
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "The Destroyer telemetry loaded." }]
+              dialogue: [{ who: "Archivist Vance", text: "Warning: The Destroyer enrages at 50% HP, doubling its cannon array to 8 simultaneous batteries." }]
+            },
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [{ who: "Specialist Jax", text: "Ensure your tactical active modules are fully unlocked and ready on hotkeys." }]
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "The Destroyer enrages at 50% HP and doubles its cannon array. Save your movement speed and stay mobile!" }]
-            },
-            {
-                x: 0, y: 320, 
-                name: "Specialist Jax", 
-                color: "#00d2d3", 
-                subRole: "TACTICAL ABILITIES & ARMORY",
-                dialogue: [
-                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
-                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
-                ]
-            },
+              dialogue: [{ who: "Command", text: "This is it, Unit 01. Complete Sector 7 liberation is within our grasp!" }]
+            }
         ]
     },
 
-    // ── A3-L1 ──
+    // ── A3-L1: DEBUT — TRAPPER MINELAYERS (SCRIPTED CAMERA FOCUS) ──
     {
-        name: "Core Perimeter", type: "kill", count: 20, spawnRate: 90, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun', 'rammer'], mapSize: 2400, act: 3,
-        objText: "Break the Perimeter — 20 Kills",
+        name: "Minefield Grid", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2400, act: 3,
+        objText: "Clear 4 Trapper Minelayers [Shoot spiked red mines to defuse!]",
         intro: [
-            { who: "Command", text: "The Destroyer's outer guard ring. Break through 20 hostile units." },
-            { who: "Unit 01", text: "Breaching." }
+            { who: "Command", text: "Trapper Minelayers are denying ground with explosive proximity mines. Shoot them from afar to clear pathways!" },
+            { who: "Unit 01", text: "Clearing ordnance." }
         ]
     },
 
-    // ── A3-L2 ──
+    // ── A3-L2: DEBUT — HIVE DRONE CARRIERS (SCRIPTED CAMERA FOCUS) ──
     {
-        name: "The Gauntlet", type: "kill", count: 24, spawnRate: 85, types: ['sniper', 'shotgun', 'shield_carrier', 'hive'], mapSize: 2400, act: 3,
+        name: "Hive Incursion", type: "kill", count: 3, scripted: true, spawnRate: 0, mapSize: 2400, act: 3,
+        objText: "Eliminate 3 Hive Drone Carriers [Focus down the mother hulls!]",
+        intro: [
+            { who: "Command", text: "Heavy Hive Carriers deploying clouds of fast suicide drones. Focus fire on the mother hulls!" },
+            { who: "Unit 01", text: "Engaging carrier fleet." }
+        ]
+    },
+
+    // ── A3-L3: ENDGAME STAGE 1 — SUB-CORE REACTOR SIPHON ──
+    {
+        name: "Reactor Siphon", type: "shape", count: 36, spawnRate: 150, types: ['trapper', 'hive', 'sniper'], mapSize: 2500, act: 3,
+        objText: "Harvest 36 High-Energy Core Nodes",
+        intro: [
+            { who: "Command", text: "Drain 36 high-yield polygon nodes from the reactor ring while avoiding perimeter minefields." },
+            { who: "Unit 01", text: "Siphoning core nodes." }
+        ]
+    },
+
+    // ── A3-L4: ENDGAME STAGE 2 — THE GAUNTLET ──
+    {
+        name: "The Gauntlet", type: "kill", count: 24, spawnRate: 130, types: ['sniper', 'shotgun', 'shield_carrier', 'hive', 'trapper'], mapSize: 2500, act: 3,
         objText: "Fight Through the Gauntlet — 24 Kills",
         intro: [
-            { who: "Command", text: "Shotgun Breachers, Hive Carriers, and Sniper Units in open ground. 24 kills required." },
-            { who: "Unit 01", text: "Entering the gauntlet." }
+            { who: "Command", text: "All core defense archetypes mobilized. Break through the royal guard to reach the mainframe." },
+            { who: "Unit 01", text: "Executing full combat engagement." }
+        ],
+        events: [
+            { frame: 700, type: 'text', message: "SPACED 6-POINT PHALANX", color: '#00d2d3' },
+            { frame: 700, type: 'spawn_formation', formation: 'ring', enemyType: 'shield_carrier', count: 6, radius: 1000 }
         ]
     },
 
-    // ── A3-L3 ──
+    // ── A3-L5: ENDGAME STAGE 3 — OVERDRIVE ARENA ──
     {
-        name: "Resource Burn", type: "shape", count: 36, spawnRate: 75, types: ['trapper', 'shotgun', 'hive', 'shield_carrier'], mapSize: 2400, act: 3,
-        objText: "Harvest 36 Polygon Formations",
+        name: "Overdrive Arena", type: "time", count: 80, spawnRate: 90, types: ['shotgun', 'rammer', 'sniper', 'trapper', 'hive'], mapSize: 2500, act: 3,
+        objText: "Survive Core Overdrive Ambush (80s)",
         intro: [
-            { who: "Command", text: "Deny polygon reserves to the Core line. Harvest 36 formations under heavy fire." },
-            { who: "Unit 01", text: "Burning." }
+            { who: "Command", text: "Automated overdrive engaged! Survive 80 seconds against 360-degree equidistant waves." },
+            { who: "Unit 01", text: "Shields up. Holding center." }
+        ],
+        events: [
+            { frame: 600,  type: 'text', message: "EQUIDISTANT 4-CORNER ASSAULT", color: '#ff3838' },
+            { frame: 600,  type: 'spawn_formation', formation: 'corners', enemyType: 'shotgun', count: 4, radius: 950 },
+            { frame: 2400, type: 'text', message: "EQUIDISTANT 8-POINT ENCIRCLEMENT", color: '#be2edd' },
+            { frame: 2400, type: 'spawn_formation', formation: 'ring', enemyType: 'hive', count: 4, radius: 1100 }
         ]
     },
 
-    // ── A3-L4 ──
+    // ── A3-L6: ENDGAME STAGE 4 — FIREWALL BREACH ──
     {
-        name: "Ambush Protocol", type: "kill", count: 26, spawnRate: 80, types: ['shotgun', 'rammer', 'sniper', 'trapper', 'hive'], mapSize: 2500, act: 3,
-        objText: "Survive the Ambush — 26 Kills",
+        name: "Firewall Breach", type: "kill", count: 28, spawnRate: 85, types: ['sniper', 'shield_carrier', 'hive', 'trapper', 'shotgun'], mapSize: 2600, act: 3,
+        objText: "Breach Inner Firewall — 28 Kills",
         intro: [
-            { who: "Command", text: "Multi-angle ambush pattern detected. Destroy 26 ambushers." },
-            { who: "Unit 01", text: "Standing by." }
+            { who: "Command", text: "Heavy defense battlegroups holding the final firewall. Break their line!" },
+            { who: "Unit 01", text: "Breaching." }
+        ],
+        events: [
+            { frame: 800, type: 'text', message: "EQUIDISTANT BOX AMBUSH", color: '#ff4757' },
+            { frame: 800, type: 'spawn_formation', formation: 'box', enemyType: 'sniper', count: 8, radius: 1050 }
         ]
     },
 
-    // ── A3-L5 ──
-    {
-        name: "Elimination Wave", type: "kill", count: 30, spawnRate: 70, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun', 'hive'], mapSize: 2500, act: 3,
-        objText: "Destroy 30 Enemy Units",
-        intro: [
-            { who: "Command", text: "Elite reinforcements pushing to protect the Core. Eliminate 30 hostile units." },
-            { who: "Unit 01", text: "Engaging." }
-        ]
-    },
-
-    // ── HUB 2.5: CORE RELAY OUTPOST ──
+    // ── HUB 2.5: TERMINAL VANGUARD OUTPOST ──
     {
         name: "Core Relay Outpost", type: "hub", mapSize: 2200, spawnRate: 0, act: 3,
         objText: "Last relay refit against supreme MK-VI target dummies.",
@@ -5096,65 +5488,84 @@ const LEVELS = [
             { x: 1440, y: 200, label: "LANE 4: BARRIER MK-VI", subLabel: "200m Aegis Barrier", type: 'shielded', hp: 950, shieldHp: 800, tier: 6 }
         ],
         intro: [
-            { who: "Command", text: "Final refit. One last chance to test fire against supreme MK-VI targets." }
+            { who: "Command", text: "Final refit station. One last opportunity to test fire and tune modules against supreme MK-VI targets." }
         ],
         npcs: [
             { x: -750, y: -180, name: "Sergeant Doss", color: C.NPC_YELLOW,
-              dialogue: [{ who: "Sergeant Doss", text: "Reload, Move Speed, Range, XP Boost. Max them all out." }]
+              dialogue: [{ who: "Sergeant Doss", text: "Reload, Move Speed, Range, XP Boost. Max them all out for the final confrontation." }]
             },
             { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Top off survivability before the showdown. I've primed emergency field nanites." }]
+              dialogue: [{ who: "Medic Voss", text: "Emergency nanite protocols primed. May your armor hold strong, Unit 01." }]
             },
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "All combat telemetry synchronized." }]
+              dialogue: [{ who: "Archivist Vance", text: "All combat records synchronized. Go make history, Unit 01." }]
+            },
+            { x: 0, y: 320, name: "Specialist Jax", color: "#00d2d3", subRole: "TACTICAL ABILITIES & ARMORY",
+              dialogue: [{ who: "Specialist Jax", text: "Deploy turrets and rockets aggressively. Overwhelm the Destroyer's point defense!" }]
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "This is it, Unit 01. Complete Sector 7 liberation is in your hands!" }]
-            },
-            {
-                x: 0, y: 320, 
-                name: "Specialist Jax", 
-                color: "#00d2d3", 
-                subRole: "TACTICAL ABILITIES & ARMORY",
-                dialogue: [
-                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
-                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
-                ]
-            },
+              dialogue: [{ who: "Command", text: "Good luck, Unit 01. We are tracking your signal. Take down The Destroyer!" }]
+            }
         ]
     },
 
-    // ── A3-L6 ──
+    // ── A3-L7: ENDGAME STAGE 5 — INNER SANCTUM SIEGE ──
     {
-        name: "The Final Hour", type: "time", count: 110, spawnRate: 60, types: ['sniper', 'basic', 'trapper', 'shotgun', 'shield_carrier', 'hive'], mapSize: 2500, act: 3,
-        objText: "Survive 110 Seconds",
+        name: "Inner Sanctum", type: "kill", count: 32, spawnRate: 80, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun', 'hive'], mapSize: 2600, act: 3,
+        objText: "Clear Inner Sanctum Defenders — 32 Kills",
+        intro: [
+            { who: "Command", text: "Supreme defense lines mobilized inside the mainframe vault. Eliminate 32 elite hostiles." },
+            { who: "Unit 01", text: "Suppressing elite forces." }
+        ],
+        events: [
+            { frame: 800,  type: 'text', message: "SPACED CARDINAL PINCH", color: '#ff3838' },
+            { frame: 800,  type: 'spawn_formation', formation: 'cross', enemyType: 'shield_carrier', count: 4, radius: 1000 },
+            { frame: 2200, type: 'text', message: "8-POINT EQUIDISTANT RAIL BATTERY", color: '#ff4757' },
+            { frame: 2200, type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 8, radius: 1150 }
+        ]
+    },
+
+    // ── A3-L8: ENDGAME STAGE 6 — THE FINAL HOUR ──
+    {
+        name: "The Final Hour", type: "time", count: 110, spawnRate: 70, types: ['sniper', 'basic', 'trapper', 'shotgun', 'shield_carrier', 'hive'], mapSize: 2600, act: 3,
+        objText: "Survive Full Core Mobilization (110s)",
         intro: [
             { who: "Command", text: "Maximum resistance from all hostile classes. Hold out for 110 seconds!" },
-            { who: "Unit 01", text: "Holding." }
+            { who: "Unit 01", text: "Holding to the end." }
+        ],
+        events: [
+            { frame: 1200, type: 'text', message: "WAVE 1 — SPACED 4-CORNER BREACHERS", color: '#ff3838' },
+            { frame: 1200, type: 'spawn_formation', formation: 'corners', enemyType: 'shotgun', count: 4, radius: 950 },
+            { frame: 3200, type: 'text', message: "WAVE 2 — SPACED 6-CARRIER INVASION", color: '#be2edd' },
+            { frame: 3200, type: 'spawn_formation', formation: 'ring', enemyType: 'hive', count: 6, radius: 1100 },
+            { frame: 5000, type: 'text', message: "FINAL SURGE — SPACED 8-POINT RAIL ENCIRCLEMENT", color: '#ff4757' },
+            { frame: 5000, type: 'shake', intensity: 14 },
+            { frame: 5000, type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 8, radius: 1150 }
         ]
     },
 
-    // ── A3-L7 ──
+    // ── A3-L9: ENDGAME STAGE 7 — THE DESTROYER'S ROYAL GUARD ──
     {
-        name: "Last Defense", type: "kill", count: 32, spawnRate: 65, types: ['sniper', 'shield_carrier', 'shotgun', 'trapper', 'hive'], mapSize: 2600, act: 3,
-        objText: "Neutralize 32 Core Defenders",
+        name: "Royal Guard", type: "kill", count: 36, spawnRate: 65, types: ['sniper', 'shield_carrier', 'shotgun', 'trapper', 'hive'], mapSize: 2600, act: 3,
+        objText: "Neutralize 36 Royal Guard Elites",
         intro: [
-            { who: "Command", text: "Final defense line before the Destroyer chamber. Neutralize 32 elite defenders." },
-            { who: "Unit 01", text: "Making a path." }
+            { who: "Command", text: "Final defense line guarding the supreme mainframe. Eliminate 36 Royal Guard units to expose The Destroyer!" },
+            { who: "Unit 01", text: "Final breach engaged." }
         ]
     },
 
-    // ── BOSS 2: The Destroyer ──
+    // ── BOSS 2: THE DESTROYER (SUPREME COLOSSUS) ──
     {
-        name: "The Destroyer", type: "boss", count: 1, spawnRate: 220, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun'], boss: 'final', mapSize: 2600, act: 3,
-        objText: "Destroy The Destroyer",
+        name: "The Destroyer", type: "boss", count: 1, spawnRate: 240, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun'], boss: 'final', mapSize: 2600, act: 3,
+        objText: "Destroy The Destroyer (Supreme Colossus)",
         intro: [
-            { who: "Destroyer", text: "PRIMARY CORE TARGETED. DESTRUCTION IMMINENT." },
-            { who: "Command", text: "End this, Unit 01. Destroy The Destroyer!" }
+            { who: "Destroyer", text: "PRIMARY MAINFRAME ENGAGED. INTRUDER ANNIHILATION PROTOCOL COMMENCING." },
+            { who: "Command", text: "The Destroyer is active! Stay out of its direct naval batteries, clear support drones, and target the core!" }
         ],
         outro: [
-            { who: "Unit 01", text: "Target eliminated. Core collapsing." },
-            { who: "Command", text: "Sector 7 is secured. Mission accomplished, Unit 01!" }
+            { who: "Destroyer", text: "...SYSTEM CORRUPTION FATAL... CORE DETONATION INEVITABLE..." },
+            { who: "Unit 01", text: "Target eliminated. Sector 7 mainframe offline." },
+            { who: "Command", text: "Incredible work, Unit 01! Sector 7 is completely liberated. Mission accomplished!" }
         ]
     }
 ];
@@ -5531,27 +5942,143 @@ function startLevel(idx) {
         return;
     }
 
-    if (lvl.scripted) {
+if (lvl.scripted) {
+        // Calibration: Ring of squares
         if (lvl.name === 'Calibration') {
             for (let i = 0; i < lvl.count; i++) {
                 let a = (i / lvl.count) * Math.PI * 2;
                 shapes.push(new Shape(Math.cos(a) * 360, Math.sin(a) * 360, 0));
             }
         }
-        if (lvl.name === 'First Contact') {
+
+        // Debut 1: Basic Patrol Scouts (1-by-1 with Camera Lock)
+        else if (lvl.name === 'First Contact') {
             for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
+                    if (state.level !== idx) return;
                     let angle = (Math.PI * 2 / 3) * i;
                     let x = Math.cos(angle) * 950;
                     let y = Math.sin(angle) * 950;
-                    spawnEnemy('basic', x, y);
-                    state.cam.target = enemies[enemies.length - 1];
-                }, i * 800);
+                    let enemy = spawnEnemy('basic', x, y);
+                    state.cam.target = enemy;
+                    setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1400);
+                }, i * 900);
             }
         }
-        if (lvl.name === 'The Swarm') {
+
+        // Debut 2: Rammer Unit (1-on-1 Solo Duel, then 2 flankers with Camera Lock)
+        else if (lvl.name === 'Rammer Trial') {
+            // First solo rammer directly North
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let enemy = spawnEnemy('rammer', 0, -920);
+                state.cam.target = enemy;
+                spawnText(enemy.x, enemy.y - 45, "TARGET ACQUIRED: RAMMER", "#ff4757");
+                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1600);
+            }, 600);
+
+            // Follow-up pair from West & East
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let e1 = spawnEnemy('rammer', -950, 0);
+                let e2 = spawnEnemy('rammer', 950, 0);
+
+            }, 5500);
+        }
+
+        // Debut 3: Railgun Snipers (Long-range lock)
+        else if (lvl.name === 'Railgun Optics') {
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let enemy = spawnEnemy('sniper', 0, -1100);
+                state.cam.target = enemy;
+                spawnText(enemy.x, enemy.y - 45, "PRECISION RAILGUN OPTICS", "#ff6348");
+                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1800);
+            }, 500);
+
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                spawnEnemy('sniper', -1050, 450);
+                spawnEnemy('sniper', 1050, 450);
+                spawnEnemy('basic', 0, 950);
+            }, 4500);
+        }
+
+        // Debut 4: Shotgun Breachers (Close-quarters cone)
+        else if (lvl.name === 'Breach Protocol') {
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let enemy = spawnEnemy('shotgun', 0, -850);
+                state.cam.target = enemy;
+                spawnText(enemy.x, enemy.y - 45, "SHOTGUN BREACHER DETECTED", "#c542f5");
+                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1600);
+            }, 500);
+
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                spawnEnemy('shotgun', -900, 300);
+                spawnEnemy('shotgun', 900, 300);
+                spawnEnemy('basic', 0, 900);
+            }, 4000);
+        }
+
+        // Debut 5: Shield Carriers (Energy Barrier)
+        else if (lvl.name === 'The Aegis Wall') {
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let enemy = spawnEnemy('shield_carrier', 0, -900);
+                state.cam.target = enemy;
+                spawnText(enemy.x, enemy.y - 45, "AEGIS BARRIER GENERATOR", "#00d2d3");
+                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1800);
+            }, 500);
+
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                spawnEnemy('shield_carrier', -950, 0);
+                spawnEnemy('shield_carrier', 950, 0);
+                spawnEnemy('sniper', 0, 1050);
+            }, 5000);
+        }
+
+        // Debut 6: Trapper Minelayers (Proximity Mines)
+        else if (lvl.name === 'Minefield Grid') {
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let enemy = spawnEnemy('trapper', 0, -900);
+                state.cam.target = enemy;
+                spawnText(enemy.x, enemy.y - 45, "TRAPPER MINELAYER LOCATED", "#778ca3");
+                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1800);
+            }, 500);
+
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                spawnEnemy('trapper', -950, 0);
+                spawnEnemy('trapper', 950, 0);
+                spawnEnemy('sniper', 0, 1050);
+            }, 4500);
+        }
+
+        // Debut 7: Hive Drone Carriers (Carrier Bays & Swarms)
+        else if (lvl.name === 'Hive Incursion') {
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                let enemy = spawnEnemy('hive', 0, -950);
+                state.cam.target = enemy;
+                spawnText(enemy.x, enemy.y - 55, "HIVE CARRIER DETECTED", "#be2edd");
+                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 2000);
+            }, 500);
+
+            setTimeout(() => {
+                if (state.level !== idx) return;
+                spawnEnemy('hive', -1050, 400);
+                spawnEnemy('hive', 1050, 400);
+            }, 6000);
+        }
+
+        // Rammer Swarm timed level opening
+        else if (lvl.name === 'The Swarm') {
             for (let i = 0; i < 2; i++) {
-                let x = -225 + (i * 450);
+                let x = -250 + (i * 500);
                 let y = -1000;
                 spawnEnemy('rammer', x, y);
             }
@@ -5957,7 +6484,7 @@ function update() {
             state.passiveTimers.missileBarrage--;
             if (state.passiveTimers.missileBarrage <= 0) {
                 if (enemies.length > 0 || dummies.length > 0) {
-                    for (let i = 0; i < 4; i++) {
+                    for (let i = 0; i < 6; i++) {
                         setTimeout(() => {
                             if (player && !player.dead) {
                                 friendlyMissiles.push(new FriendlyMissile(player.x, player.y, player.angle + (Math.random() - 0.5) * 1.2, false));
@@ -5994,6 +6521,9 @@ function update() {
     retain(empShockwaves, w => !w.dead);
 
     updateAbilityBarUi();
+
+    // ── Check NPC interaction proximity across ALL levels ──
+    updateNpcProximity();
 
     // ── 4. HUB ROUTINES (NPCS & DUMMIES) ──
     if (lvl.type === 'hub') {
@@ -6107,40 +6637,42 @@ function update() {
     }
 }
 
-function updateHubLogic(lvl) {
+function updateNpcProximity() {
     let nearNpc = null;
-    for (let i = 0, len = npcs.length; i < len; i++) {
-        const n = npcs[i];
-        const dx = player.x - n.x;
-        const dy = player.y - n.y;
-        if (dx * dx + dy * dy < 130 * 130) {
-            nearNpc = n;
-            break;
+    if (player && !player.dead && npcs.length > 0) {
+        for (let i = 0, len = npcs.length; i < len; i++) {
+            const n = npcs[i];
+            const dx = player.x - n.x;
+            const dy = player.y - n.y;
+            if (dx * dx + dy * dy < 140 * 140) {
+                nearNpc = n;
+                break;
+            }
         }
     }
     state.nearNpc = nearNpc;
 
+    let ip = document.getElementById('hub-interact-prompt');
+    if (ip && !state.hubUpgradeOpen && !state.galleryOpen && !state.vaultOpen && !state.dia.active) {
+        if (nearNpc) {
+            ip.style.display = 'block';
+            ip.innerText = nearNpc.action === 'rescue' ? `[E] Rescue ${nearNpc.name}` : `[E] Talk to ${nearNpc.name}`;
+        } else if (state.nearVault) {
+            ip.style.display = 'block';
+            ip.innerText = `[E] Access Polygon Storage Depot`;
+        } else {
+            ip.style.display = 'none';
+        }
+    }
+}
+
+function updateHubLogic(lvl) {
     let inVaultZone = false;
     if (lvl.vaultTerminal) {
         let vt = lvl.vaultTerminal;
         inVaultZone = player && Math.hypot(player.x - vt.x, player.y - vt.y) < 100;
     }
     state.nearVault = inVaultZone;
-
-    let ip = document.getElementById('hub-interact-prompt');
-    if (!state.hubUpgradeOpen && !state.galleryOpen && !state.vaultOpen && !state.dia.active) {
-        if (nearNpc) {
-            ip.style.display = 'block';
-            ip.innerText = `[E] Talk to ${nearNpc.name}`;
-        } else if (inVaultZone) {
-            ip.style.display = 'block';
-            ip.innerText = `[E] Access Polygon Storage Depot`;
-        } else {
-            ip.style.display = 'none';
-        }
-    } else {
-        ip.style.display = 'none';
-    }
 
     if (lvl.deployZone && !state.hubUpgradeOpen && !state.galleryOpen && !state.vaultOpen) {
         let dz = lvl.deployZone;
