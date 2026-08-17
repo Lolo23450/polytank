@@ -4507,6 +4507,16 @@ const LEVELS = [
                 { who: "Archivist Vance", text: "Archivist Vance at tactical records. I compile active combat telemetry on every hostile model you destroy." }
               ]
             },
+                        {
+                x: 0, y: 320, 
+                name: "Specialist Jax", 
+                color: "#00d2d3", 
+                subRole: "TACTICAL ABILITIES & ARMORY",
+                dialogue: [
+                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
+                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
+                ]
+            },
             { 
                 x: -350, y: 650, 
                 name: "Scout Yolo", 
@@ -4542,7 +4552,7 @@ const LEVELS = [
 
     // ── A1-L3 ──
     {
-        name: "Open Field", type: "shape", count: 18, spawnRate: 280, types: ['basic'], mapSize: 1500, act: 1,
+        name: "Open Field", type: "shape", count: 18, spawnRate: 320, types: ['basic'], mapSize: 1500, act: 1,
         objText: "Harvest 18 Polygon Formations",
         intro: [
             { who: "Command", text: "Polygon energy detected in the open field ahead. Harvest 18 formations." },
@@ -4552,7 +4562,7 @@ const LEVELS = [
 
     // ── A1-L4 ──
     {
-        name: "Patrol Break", type: "kill", count: 10, spawnRate: 210, types: ['basic'], mapSize: 1600, act: 1,
+        name: "Patrol Break", type: "kill", count: 10, spawnRate: 460, types: ['basic'], mapSize: 1600, act: 1,
         objText: "Destroy 10 Patrol Units",
         intro: [
             { who: "Command", text: "Enemy Patrol Units setting up forward positions. Break 10 of them." },
@@ -4573,7 +4583,7 @@ const LEVELS = [
 
     // ── A1-L5 ──
     {
-        name: "The Swarm", type: "time", count: 60, scripted: true, spawnRate: 210, types: ['rammer'], mapSize: 1800, act: 1,
+        name: "The Swarm", type: "time", count: 60, scripted: true, spawnRate: 240, types: ['rammer'], mapSize: 1800, act: 1,
         objText: "Survive 60 Seconds",
         intro: [
             { who: "Command", text: "Rammer Unit swarm inbound. Stay in motion for 60 seconds!" },
@@ -4592,7 +4602,7 @@ const LEVELS = [
 
     // ── A1-L6 ──
     {
-        name: "Hit and Run", type: "kill", count: 9, spawnRate: 190, types: ['rammer'], mapSize: 1700, act: 1,
+        name: "Hit and Run", type: "kill", count: 9, spawnRate: 220, types: ['rammer'], mapSize: 1700, act: 1,
         objText: "Hunt Down 9 Rammer Units",
         intro: [
             { who: "Command", text: "Time to hunt. Track down 9 Rammer Units and clear the zone." },
@@ -4602,7 +4612,7 @@ const LEVELS = [
 
     // ── A1-L7 ──
     {
-        name: "Dead End", type: "kill", count: 12, spawnRate: 180, types: ['basic', 'basic', 'rammer'], mapSize: 1700, act: 1,
+        name: "Dead End", type: "kill", count: 12, spawnRate: 300, types: ['basic', 'basic', 'rammer'], mapSize: 1700, act: 1,
         objText: "Destroy 12 Hostile Units",
         intro: [
             { who: "Command", text: "Exposed sector. Clear 12 hostile units." },
@@ -4612,7 +4622,7 @@ const LEVELS = [
 
     // ── A1-L8 ──
     {
-        name: "Crossfire", type: "kill", count: 14, spawnRate: 170, types: ['basic', 'basic', 'rammer'], mapSize: 1800, act: 1,
+        name: "Crossfire", type: "kill", count: 14, spawnRate: 300, types: ['basic', 'basic', 'rammer'], mapSize: 1800, act: 1,
         objText: "Destroy 14 Hostile Units",
         intro: [
             { who: "Command", text: "Patrol Units holding range while Rammer Units push in. Neutralize 14 enemies." },
@@ -4626,7 +4636,7 @@ const LEVELS = [
 
     // ── A1-L9 ──
     {
-        name: "Shape Harvest", type: "shape", count: 24, spawnRate: 135, types: ['basic'], mapSize: 1800, act: 1,
+        name: "Shape Harvest", type: "shape", count: 24, spawnRate: 175, types: ['basic'], mapSize: 1800, act: 1,
         objText: "Harvest 24 Polygon Formations",
         intro: [
             { who: "Command", text: "Strong energy signatures in this grid. Harvest 24 formations." },
@@ -4681,7 +4691,7 @@ const LEVELS = [
 
     // ── A1-L10 ──
     {
-        name: "Pressure Test", type: "time", count: 55, spawnRate: 140, types: ['basic', 'basic', 'rammer'], mapSize: 1900, act: 1,
+        name: "Pressure Test", type: "time", count: 55, spawnRate: 180, types: ['basic', 'basic', 'rammer'], mapSize: 1900, act: 1,
         objText: "Survive 55 Seconds",
         intro: [
             { who: "Command", text: "Hold under sustained pressure for 55 seconds before the Guardian chamber." },
@@ -4691,7 +4701,7 @@ const LEVELS = [
 
     // ── A1-L11 ──
     {
-        name: "Vanguard Sweep", type: "kill", count: 18, spawnRate: 125, types: ['basic', 'basic', 'hive', 'rammer'], mapSize: 2100, act: 1,
+        name: "Vanguard Sweep", type: "kill", count: 18, spawnRate: 165, types: ['basic', 'basic', 'hive', 'rammer'], mapSize: 2100, act: 1,
         objText: "Eliminate 18 Vanguard Units",
         intro: [
             { who: "Command", text: "Sweep 18 enemy vanguard units including early Hive Carriers." },
@@ -4769,7 +4779,7 @@ const LEVELS = [
 
     // ── A2-L1 ──
     {
-        name: "First Snipers", type: "kill", count: 8, spawnRate: 180, types: ['sniper', 'basic'], mapSize: 2100, act: 2,
+        name: "First Snipers", type: "kill", count: 8, spawnRate: 200, types: ['sniper', 'basic'], mapSize: 2100, act: 2,
         objText: "Eliminate 8 Sniper Units",
         intro: [
             { who: "Command", text: "Sniper Units anchored at range behind screens. Eliminate 8 targets." },
@@ -4779,7 +4789,7 @@ const LEVELS = [
 
     // ── A2-L2 ──
     {
-        name: "Sniper Alley", type: "kill", count: 11, spawnRate: 160, types: ['sniper', 'rammer'], mapSize: 2100, act: 2,
+        name: "Sniper Alley", type: "kill", count: 11, spawnRate: 190, types: ['sniper', 'rammer'], mapSize: 2100, act: 2,
         objText: "Clear Sniper Alley — 11 Kills",
         intro: [
             { who: "Command", text: "Advance through the corridor. Clear 11 hostile units." },
@@ -4789,7 +4799,7 @@ const LEVELS = [
 
     // ── A2-L3 ──
     {
-        name: "Ambush", type: "kill", count: 14, spawnRate: 145, types: ['sniper', 'basic', 'rammer'], mapSize: 2200, act: 2,
+        name: "Ambush", type: "kill", count: 14, spawnRate: 175, types: ['sniper', 'basic', 'rammer'], mapSize: 2200, act: 2,
         objText: "Eliminate 14 Hostile Units",
         intro: [
             { who: "Command", text: "Sniper Units holding range behind basic screens. Eliminate 14 hostiles." },
@@ -4799,7 +4809,7 @@ const LEVELS = [
 
     // ── A2-L4 ──
     {
-        name: "Rammer Patrol", type: "kill", count: 12, spawnRate: 165, types: ['rammer', 'shotgun'], mapSize: 2100, act: 2,
+        name: "Rammer Patrol", type: "kill", count: 12, spawnRate: 175, types: ['rammer', 'shotgun'], mapSize: 2100, act: 2,
         objText: "Destroy 12 Assault Units",
         intro: [
             { who: "Command", text: "Clear heavy Rammer Unit patrol and Shotgun Breachers. 12 kills required." },
@@ -4809,7 +4819,7 @@ const LEVELS = [
 
     // ── A2-L5 ──
     {
-        name: "Deep Fields", type: "shape", count: 32, spawnRate: 120, types: ['hive', 'hive', 'rammer', 'sniper'], mapSize: 2200, act: 2,
+        name: "Deep Fields", type: "shape", count: 32, spawnRate: 160, types: ['hive', 'hive', 'rammer', 'sniper'], mapSize: 2200, act: 2,
         objText: "Harvest 32 Polygon Formations",
         intro: [
             { who: "Command", text: "Harvest 32 polygon formations amidst heavy Hive Carrier resistance." },
@@ -4824,7 +4834,7 @@ const LEVELS = [
 
     // ── A2-L6 ──
     {
-        name: "Sniper Nest", type: "kill", count: 14, spawnRate: 135, types: ['sniper', 'shield_carrier'], mapSize: 2200, act: 2,
+        name: "Sniper Nest", type: "kill", count: 14, spawnRate: 145, types: ['sniper', 'shield_carrier'], mapSize: 2200, act: 2,
         objText: "Clear 14 Sniper Nest Defenders",
         intro: [
             { who: "Command", text: "Clear fixed nest defended by Sniper Units and Shield Carriers. 14 kills." },
@@ -4834,7 +4844,7 @@ const LEVELS = [
 
     // ── A2-L7 ──
     {
-        name: "Convergence", type: "time", count: 70, spawnRate: 125, types: ['sniper', 'rammer', 'shotgun'], mapSize: 2300, act: 2,
+        name: "Convergence", type: "time", count: 70, spawnRate: 135, types: ['sniper', 'rammer', 'shotgun'], mapSize: 2300, act: 2,
         objText: "Survive 70 Seconds",
         intro: [
             { who: "Command", text: "Sniper Units and Rammer Units converging simultaneously. Survive 70 seconds!" },
@@ -4844,7 +4854,7 @@ const LEVELS = [
 
     // ── A2-L8 ──
     {
-        name: "Energy Extraction", type: "shape", count: 38, spawnRate: 95, types: ['sniper', 'shield_carrier', 'shotgun'], mapSize: 2200, act: 2,
+        name: "Energy Extraction", type: "shape", count: 38, spawnRate: 105, types: ['sniper', 'shield_carrier', 'shotgun'], mapSize: 2200, act: 2,
         objText: "Harvest 38 Polygon Formations",
         intro: [
             { who: "Command", text: "Shield Carriers detected! They guard allies with energy barriers. Harvest 38 formations." },
@@ -4920,7 +4930,7 @@ const LEVELS = [
 
     // ── A2-L10 ──
     {
-        name: "The Storm", type: "time", count: 85, spawnRate: 85, types: ['sniper', 'sniper', 'hive', 'trapper', 'shotgun'], mapSize: 2300, act: 2,
+        name: "The Storm", type: "time", count: 85, spawnRate: 95, types: ['sniper', 'sniper', 'hive', 'trapper', 'shotgun'], mapSize: 2300, act: 2,
         objText: "Survive 85 Seconds",
         intro: [
             { who: "Command", text: "Full enemy mobilization with Trapper Minelayers. Shoot their mines from distance to defuse them!" },
@@ -4930,7 +4940,7 @@ const LEVELS = [
 
     // ── A2-L11 ──
     {
-        name: "Suppression Run", type: "kill", count: 22, spawnRate: 95, types: ['sniper', 'shield_carrier', 'shotgun', 'trapper'], mapSize: 2300, act: 2,
+        name: "Suppression Run", type: "kill", count: 22, spawnRate: 85, types: ['sniper', 'shield_carrier', 'shotgun', 'trapper'], mapSize: 2300, act: 2,
         objText: "Neutralize 22 Defenders",
         intro: [
             { who: "Command", text: "Push through the reinforced line. Neutralize 22 defenders." },
@@ -4940,7 +4950,7 @@ const LEVELS = [
 
     // ── A2-L12 ──
     {
-        name: "Siege Break", type: "time", count: 95, spawnRate: 80, types: ['sniper', 'shield_carrier', 'hive', 'shotgun', 'trapper'], mapSize: 2400, act: 2,
+        name: "Siege Break", type: "time", count: 95, spawnRate: 90, types: ['sniper', 'shield_carrier', 'hive', 'shotgun', 'trapper'], mapSize: 2400, act: 2,
         objText: "Survive 95 Seconds",
         intro: [
             { who: "Command", text: "Outer Core perimeter lockdown. Break the siege by holding for 95 seconds!" },

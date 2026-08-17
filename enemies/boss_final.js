@@ -162,7 +162,7 @@ EnemyAPI.register({
 
         // Boss HP Bar
         ctx.save();
-        ctx.translate(self.x, self.y - self.r - 22);
+        ctx.translate(self.x, self.y - self.r - 24);
         ctx.fillStyle = '#1e0d00';
         ctx.fillRect(-62, 0, 124, 12);
         ctx.lineWidth = 2;
