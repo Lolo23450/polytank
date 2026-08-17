@@ -835,6 +835,212 @@
             box-shadow: none;
         }
 
+        /* --- HUD ABILITY ACTION BAR --- */
+        #ability-bar {
+            position: absolute;
+            bottom: 48px;
+            right: 28px;
+            display: flex;
+            gap: 12px;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        .ability-slot {
+            position: relative;
+            width: 58px;
+            height: 58px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 2px solid #334155;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+
+        .ability-slot.ready {
+            border-color: #00d2d3;
+            box-shadow: 0 0 12px rgba(0, 210, 211, 0.4);
+        }
+
+        .ability-slot.active-buff {
+            border-color: #ffd700;
+            box-shadow: 0 0 16px rgba(255, 215, 0, 0.6);
+            animation: pulse 0.8s infinite;
+        }
+
+        .ability-slot.locked {
+            opacity: 0.35;
+            border-color: #1e293b;
+        }
+
+        .ability-slot .slot-icon {
+            font-size: 20px;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .ability-slot .slot-key {
+            position: absolute;
+            top: -8px;
+            left: -6px;
+            background: #0f172a;
+            border: 1px solid #64748b;
+            color: #ffd700;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .ability-slot .slot-cd-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: rgba(0, 0, 0, 0.72);
+            border-radius: 8px;
+            pointer-events: none;
+            transition: height 0.05s linear;
+        }
+
+        .ability-slot .slot-cd-text {
+            position: absolute;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px #000;
+            display: none;
+        }
+
+        /* --- TACTICAL ABILITY BAY MODAL --- */
+        #ability-bay-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 20, 0.88);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 252;
+            pointer-events: auto;
+        }
+
+        #ability-bay-panel {
+            background: #0b1120;
+            border: 2px solid #00d2d3;
+            border-radius: 12px;
+            width: 860px;
+            max-height: 90vh;
+            padding: 26px 32px;
+            box-shadow: 0 0 70px rgba(0, 210, 211, 0.25);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .ability-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin: 16px 0;
+        }
+
+        .ability-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.15s;
+        }
+
+        .ability-card.unlocked {
+            border-color: #00ff88;
+        }
+
+        .ability-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .ability-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .ability-type-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .type-passive { background: #3867d6; color: #ffffff; }
+        .type-active  { background: #e67e22; color: #ffffff; }
+
+        .ability-card-desc {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.45;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+
+        .ability-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #1e293b;
+            padding-top: 10px;
+        }
+
+        .ability-cost {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .btn-buy-ability {
+            background: #00d2d3;
+            color: #091322;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .btn-buy-ability:hover:not([disabled]) {
+            filter: brightness(1.25);
+            transform: scale(1.04);
+        }
+
+        .btn-buy-ability[disabled] {
+            background: #1e293b;
+            color: #64748b;
+            cursor: default;
+        }
+
         @keyframes pulse {
             0%   { opacity: 1; }
             50%  { opacity: 0.4; }
@@ -869,6 +1075,55 @@
     <div class="hud-panel" id="pts-banner">● <span id="pts-val">0</span> pts banked — spend at next hub</div>
     <div class="hud-panel" id="hub-interact-prompt">Press [E] to interact</div>
     <div class="hud-panel" id="hub-deploy-prompt">[ENTER] Deploy</div>
+    <!-- Ability HUD Action Bar -->
+    <div id="ability-bar">
+        <div class="ability-slot" id="slot-shift">
+            <span class="slot-key">SHIFT</span>
+            <span class="slot-icon" style="color:#00d2d3;">🛡️</span>
+            <div class="slot-cd-overlay" id="cd-shift"></div>
+            <span class="slot-cd-text" id="cdt-shift"></span>
+        </div>
+        <div class="ability-slot" id="slot-q">
+            <span class="slot-key">Q</span>
+            <span class="slot-icon" style="color:#2ed573;">⚙️</span>
+            <div class="slot-cd-overlay" id="cd-q"></div>
+            <span class="slot-cd-text" id="cdt-q"></span>
+        </div>
+        <div class="ability-slot" id="slot-f">
+            <span class="slot-key">F / RMB</span>
+            <span class="slot-icon" style="color:#a55eea;">⚡</span>
+            <div class="slot-cd-overlay" id="cd-f"></div>
+            <span class="slot-cd-text" id="cdt-f"></span>
+        </div>
+        <div class="ability-slot" id="slot-c">
+            <span class="slot-key">C</span>
+            <span class="slot-icon" style="color:#22d98e;">💚</span>
+            <div class="slot-cd-overlay" id="cd-c"></div>
+            <span class="slot-cd-text" id="cdt-c"></span>
+        </div>
+        <div class="ability-slot" id="slot-r">
+            <span class="slot-key">R</span>
+            <span class="slot-icon" style="color:#ff4757;">🚀</span>
+            <div class="slot-cd-overlay" id="cd-r"></div>
+            <span class="slot-cd-text" id="cdt-r"></span>
+        </div>
+    </div>
+
+    <!-- Tactical Ability Bay Modal -->
+    <div id="ability-bay-overlay">
+        <div id="ability-bay-panel">
+            <div style="font-size:11px; letter-spacing:3px; color:#00d2d3; font-weight:700; text-transform:uppercase;">Outpost Armory</div>
+            <h2 style="margin:4px 0 10px 0; font-size:24px; color:#ffffff;">Tactical Modules & Ability Bay</h2>
+            <div class="hub-resources-bar">
+                <div class="res-badge" style="color:#ffd700;"><span id="bay-pts">Pts: 0</span></div>
+                <div class="res-badge" style="color:#ffe869;">■ <span id="bay-sq">0</span> Sq</div>
+                <div class="res-badge" style="color:#fc7677;">▲ <span id="bay-tri">0</span> Tri</div>
+                <div class="res-badge" style="color:#768dfc;">⬟ <span id="bay-pent">0</span> Pent</div>
+            </div>
+            <div class="ability-grid" id="ability-cards-container"></div>
+            <button id="hub-close-btn" style="margin-top:14px;" onclick="closeAbilityBay()">[E] Close Armory Bay</button>
+        </div>
+    </div>
 </div>
 
 <div id="cs-dim"></div>
@@ -1317,6 +1572,105 @@ const AudioEngine = (() => {
         osc.stop(t + 0.04);
     }
 
+    function playEmp() {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(60, t + 0.35);
+        gain.gain.setValueAtTime(0.08, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.connect(gain); gain.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.36);
+    }
+
+    function playShieldActivate() {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(240, t);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.22);
+        gain.gain.setValueAtTime(0.06, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.connect(gain); gain.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.26);
+    }
+
+    function playShieldBreak() {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, t);
+        osc.frequency.exponentialRampToValueAtTime(40, t + 0.25);
+        gain.gain.setValueAtTime(0.08, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.connect(gain); gain.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.26);
+    }
+
+    function playMissileLaunch(isHeavy = false) {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = isHeavy ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(isHeavy ? 180 : 380, t);
+        osc.frequency.exponentialRampToValueAtTime(isHeavy ? 60 : 120, t + (isHeavy ? 0.3 : 0.16));
+        gain.gain.setValueAtTime(0.05, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + (isHeavy ? 0.3 : 0.16));
+        osc.connect(gain); gain.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.32);
+    }
+
+    function playTurretDeploy() {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        [320, 480, 640].forEach((f, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(f, t + i * 0.05);
+            gain.gain.setValueAtTime(0.02, t + i * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.05 + 0.08);
+            osc.connect(gain); gain.connect(sfxGain);
+            osc.start(t + i * 0.05); osc.stop(t + i * 0.05 + 0.09);
+        });
+    }
+
+    function playDroneSpawn() {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.linearRampToValueAtTime(900, t + 0.08);
+        gain.gain.setValueAtTime(0.03, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+        osc.connect(gain); gain.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.1);
+    }
+
+    function playNaniteHeal() {
+        if (!initialized || muted || !ctx) return;
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, t);
+        osc.frequency.exponentialRampToValueAtTime(780, t + 0.18);
+        gain.gain.setValueAtTime(0.03, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.connect(gain); gain.connect(sfxGain);
+        osc.start(t); osc.stop(t + 0.2);
+    }
+
     function playDialogueBeep(speaker = "Unit 01") {
         if (!initialized || muted || !ctx) return;
         const t = ctx.currentTime;
@@ -1579,6 +1933,13 @@ const AudioEngine = (() => {
         playChime,
         playExplosion,
         playMineBeep,
+        playEmp,
+        playShieldActivate,
+        playShieldBreak,
+        playMissileLaunch,
+        playTurretDeploy,
+        playDroneSpawn,
+        playNaniteHeal,
         playDialogueBeep,
         playLevelUp,
         setMood
@@ -2861,6 +3222,484 @@ class FloatText {
     }
 }
 
+
+// =====================================================================
+//  TACTICAL ABILITIES REGISTRY & ENTITY ARCHITECTURE
+// =====================================================================
+
+// =====================================================================
+//  TACTICAL ABILITIES REGISTRY & DEFINITIONS (PASSIVES + ACTIVES)
+// =====================================================================
+
+const ABILITIES_DEF = {
+    // ─── 🔹 PASSIVE ABILITIES (ALWAYS ACTIVE ONCE UNLOCKED) ───
+    orbit_drones: {
+        id: 'orbit_drones', 
+        name: "Orbiting Defense Drones", 
+        type: 'passive', 
+        icon: "🛡️",
+        desc: "3 kinetic micro-drones continuously orbit your hull, deflecting incoming enemy fire and dealing collision damage on contact.",
+        cost: { pts: 2, sq: 24, tri: 12, pent: 0, desc: "2 Pts + 24■ 12▲" }
+    },
+    grav_aura: {
+        id: 'grav_aura', 
+        name: "Dynamic Grav-Slow Aura", 
+        type: 'passive', 
+        icon: "🌀",
+        desc: "Radial gravity field slowing nearby hostiles by up to 50%. Efficiency dilutes when surrounded by multiple targets.",
+        cost: { pts: 2, sq: 20, tri: 20, pent: 4, desc: "2 Pts + 20■ 20▲ 4⬟" }
+    },
+    missile_barrage: {
+        id: 'missile_barrage', 
+        name: "Auto Missile Barrage", 
+        type: 'passive', 
+        icon: "🚀",
+        desc: "Automatically launches 4 micro-missiles every 10 seconds tracking the nearest hostile targets.",
+        cost: { pts: 3, sq: 0, tri: 28, pent: 8, desc: "3 Pts + 28▲ 8⬟" }
+    },
+    drone_spawner: {
+        id: 'drone_spawner', 
+        name: "Swarm Drone Spawner", 
+        type: 'passive', 
+        icon: "🐝",
+        desc: "Fabricates 2 friendly homing swarm drones every 2 seconds that dive-bomb enemies on sight.",
+        cost: { pts: 3, sq: 16, tri: 24, pent: 8, desc: "3 Pts + 16■ 24▲ 8⬟" }
+    },
+
+    // ─── 🔹 TRIGGERABLE / ACTIVE ABILITIES (ASSIGNED TO HOTKEYS) ───
+    aegis_barrier: {
+        id: 'aegis_barrier', 
+        name: "Aegis Kinetic Barrier", 
+        type: 'active', 
+        slot: 'shift', 
+        key: 'Shift', 
+        cd: 14, 
+        icon: "🛡️",
+        desc: "Projects a 3-second energy shield absorbing 75% of incoming damage up to a 300 HP barrier threshold.",
+        cost: { pts: 2, sq: 32, tri: 16, pent: 6, desc: "2 Pts + 32■ 16▲ 6⬟" }
+    },
+    sentry_turret: {
+        id: 'sentry_turret', 
+        name: "Deployable Sentry Turret", 
+        type: 'active', 
+        slot: 'q', 
+        key: 'Q', 
+        cd: 18, 
+        icon: "⚙️",
+        desc: "Deploys a rapid-fire automated turret (250 HP, 12s duration) that engages enemies and draws hostile aggro.",
+        cost: { pts: 2, sq: 28, tri: 12, pent: 4, desc: "2 Pts + 28■ 12▲ 4⬟" }
+    },
+    emp_blast: {
+        id: 'emp_blast', 
+        name: "Tactical EMP Blast", 
+        type: 'active', 
+        slot: 'f', 
+        key: 'F / RMB', 
+        cd: 12, 
+        icon: "⚡",
+        desc: "Discharges a 300px shockwave stunning hostiles for 1.75s, vaporizing enemy bullets/mines, and shattering shields.",
+        cost: { pts: 3, sq: 20, tri: 26, pent: 10, desc: "3 Pts + 20■ 26▲ 10⬟" }
+    },
+    nanite_heal: {
+        id: 'nanite_heal', 
+        name: "Nanite Repair Drones", 
+        type: 'active', 
+        slot: 'c', 
+        key: 'C', 
+        cd: 16, 
+        icon: "💚",
+        desc: "Deploys a cloud of nanite repair bots rapidly healing +35 HP/sec for 2 seconds.",
+        cost: { pts: 2, sq: 24, tri: 0, pent: 12, desc: "2 Pts + 24■ 12⬟" }
+    },
+    heavy_missile: {
+        id: 'heavy_missile', 
+        name: "Heavy Homing Rocket", 
+        type: 'active', 
+        slot: 'r', 
+        key: 'R', 
+        cd: 10, 
+        icon: "🚀",
+        desc: "Fires a heavy armor-piercing guided rocket dealing massive splash damage and explosive knockback on impact.",
+        cost: { pts: 3, sq: 12, tri: 32, pent: 14, desc: "3 Pts + 12■ 32▲ 14⬟" }
+    }
+};
+
+// Global Tactical Entity Arrays
+let friendlyTurrets = [];
+let friendlyMissiles = [];
+let friendlyDrones = [];
+let empShockwaves = [];
+
+class FriendlyTurret extends Entity {
+    constructor(x, y) {
+        super(x, y, 18, '#2ed573');
+        this.maxHp = 250;
+        this.hp = 250;
+        this.life = 1000; // 12 seconds
+        this.reload = 0;
+        this.angle = 0;
+    }
+    update() {
+        this.life--;
+        if (this.life <= 0) {
+            this.dead = true;
+            spawnParticles(this.x, this.y, this.color, 12, 'debris');
+            return;
+        }
+
+        let target = null;
+        let minDistSq = 450 * 450;
+        const candidates = [...enemies, ...dummies];
+        for (let i = 0, len = candidates.length; i < len; i++) {
+            const e = candidates[i];
+            if (!e.dead) {
+                const dx = e.x - this.x;
+                const dy = e.y - this.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq < minDistSq) {
+                    minDistSq = dSq;
+                    target = e;
+                }
+            }
+        }
+
+        if (target) {
+            this.angle = Math.atan2(target.y - this.y, target.x - this.x);
+            if (this.reload <= 0) {
+                bullets.push(new Bullet(
+                    this.x + Math.cos(this.angle) * this.r * 1.3,
+                    this.y + Math.sin(this.angle) * this.r * 1.3,
+                    this.angle, 9, 18 + (player ? player.S(2) * 3 : 0), 6, 80, '#2ed573', true
+                ));
+                AudioEngine.playShoot('player');
+                this.reload = 32; // Balanced firing rate (~1.8 shots/sec)
+            }
+        }
+        if (this.reload > 0) this.reload--;
+    }
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-16, -16); ctx.lineTo(16, 16);
+        ctx.moveTo(-16, 16); ctx.lineTo(16, -16);
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(0, -3.5, 24, 7);
+        ctx.strokeRect(0, -3.5, 24, 7);
+
+        ctx.fillStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#00d2d3';
+        ctx.beginPath();
+        ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        this.drawHealth(ctx);
+    }
+}
+
+class FriendlyMissile extends Entity {
+    constructor(x, y, angle, isHeavy = false) {
+        super(x, y, isHeavy ? 8 : 4, isHeavy ? '#ff4757' : '#ffd700');
+        this.isHeavy = isHeavy;
+        this.angle = angle;
+        this.speed = isHeavy ? 6.8 : 8.5;
+        this.vx = Math.cos(angle) * this.speed;
+        this.vy = Math.sin(angle) * this.speed;
+        this.damage = isHeavy ? 180 + (player ? player.S(2) * 20 : 0) : 42 + (player ? player.S(2) * 6 : 0);
+        this.splashRadius = isHeavy ? 130 : 65;
+        this.life = isHeavy ? 180 : 120;
+    }
+    update() {
+        this.life--;
+        if (this.life <= 0) {
+            this.explode();
+            return;
+        }
+        // Trail particles
+        if (state.frame % 2 === 0) {
+            spawnParticles(this.x, this.y, '#94a3b8', 1, 'spark', { speed: 1 });
+        }
+
+        // Homing logic towards closest enemy or cursor
+        let target = null;
+        let minDistSq = 700 * 700;
+        const candidates = [...enemies, ...dummies];
+        for (let i = 0, len = candidates.length; i < len; i++) {
+            const e = candidates[i];
+            if (!e.dead) {
+                const dx = e.x - this.x;
+                const dy = e.y - this.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq < minDistSq) {
+                    minDistSq = dSq;
+                    target = e;
+                }
+            }
+        }
+
+        let targetAngle = this.angle;
+        if (target) {
+            targetAngle = Math.atan2(target.y - this.y, target.x - this.x);
+        } else if (this.isHeavy) {
+            targetAngle = Math.atan2(mouse.wy - this.y, mouse.wx - this.x);
+        }
+
+        const diff = targetAngle - this.angle;
+        this.angle += Math.atan2(Math.sin(diff), Math.cos(diff)) * (this.isHeavy ? 0.08 : 0.14);
+        this.vx = Math.cos(this.angle) * this.speed;
+        this.vy = Math.sin(this.angle) * this.speed;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Collision Check
+        for (let i = 0, len = candidates.length; i < len; i++) {
+            const e = candidates[i];
+            if (!e.dead) {
+                const dx = e.x - this.x;
+                const dy = e.y - this.y;
+                if (dx * dx + dy * dy < (this.r + e.r) * (this.r + e.r)) {
+                    this.explode();
+                    return;
+                }
+            }
+        }
+    }
+    explode() {
+        this.dead = true;
+        AudioEngine.playExplosion(this.isHeavy);
+        spawnParticles(this.x, this.y, this.isHeavy ? '#ff4757' : '#ffd700', this.isHeavy ? 24 : 12, 'explosion');
+        if (this.isHeavy) state.cam.shake = 8;
+
+        const candidates = [...enemies, ...dummies, ...shapes];
+        const rSq = this.splashRadius * this.splashRadius;
+        for (let i = 0, len = candidates.length; i < len; i++) {
+            const e = candidates[i];
+            if (!e.dead) {
+                const dx = e.x - this.x;
+                const dy = e.y - this.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq < rSq) {
+                    const dist = Math.sqrt(dSq);
+                    const falloff = 1 - (dist / this.splashRadius);
+                    const dealt = Math.round(this.damage * (0.5 + 0.5 * falloff));
+                    e.takeDmg(dealt);
+                    if (this.isHeavy && e.vx !== undefined) {
+                        e.vx += (dx / (dist || 1)) * 6;
+                        e.vy += (dy / (dist || 1)) * 6;
+                    }
+                    spawnText(e.x, e.y - 20, `-${dealt}`, '#ffd700');
+                }
+            }
+        }
+    }
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-this.r * 1.5, -this.r * 0.5, this.r * 3, this.r);
+        ctx.strokeRect(-this.r * 1.5, -this.r * 0.5, this.r * 3, this.r);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(this.r * 1.5, -this.r * 0.5);
+        ctx.lineTo(this.r * 2.2, 0);
+        ctx.lineTo(this.r * 1.5, this.r * 0.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+class FriendlyDrone extends Entity {
+    constructor(x, y) {
+        super(x, y, 7, '#00d2d3');
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = 6.2;
+        this.wobble = Math.random() * Math.PI * 2;
+        this.damage = 12 + (player ? player.S(2) * 5 : 0);
+        this.life = 240;
+    }
+    update() {
+        this.life--;
+        if (this.life <= 0) {
+            this.dead = true;
+            spawnParticles(this.x, this.y, this.color, 4, 'spark');
+            return;
+        }
+        let target = null;
+        let minDistSq = 850 * 850;
+        const candidates = [...enemies, ...dummies];
+        for (let i = 0, len = candidates.length; i < len; i++) {
+            const e = candidates[i];
+            if (!e.dead) {
+                const dx = e.x - this.x;
+                const dy = e.y - this.y;
+                const dSq = dx * dx + dy * dy;
+                if (dSq < minDistSq) {
+                    minDistSq = dSq;
+                    target = e;
+                }
+            }
+        }
+        let aim = target ? Math.atan2(target.y - this.y, target.x - this.x) : this.angle;
+        this.wobble += 0.2;
+        this.angle = aim + Math.sin(this.wobble) * 0.35;
+        this.vx = Math.cos(this.angle) * this.speed;
+        this.vy = Math.sin(this.angle) * this.speed;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (target && minDistSq < (this.r + target.r) * (this.r + target.r)) {
+            this.dead = true;
+            target.takeDmg(this.damage);
+            AudioEngine.playHit('armor');
+            spawnParticles(this.x, this.y, this.color, 8, 'explosion');
+            spawnText(target.x, target.y - 15, `-${this.damage}`, '#00d2d3');
+        }
+    }
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(8, 0); ctx.lineTo(-6, -5); ctx.lineTo(-3, 0); ctx.lineTo(-6, 5);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+    }
+}
+
+class EmpWave {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 10;
+        this.maxRadius = 300;
+        this.life = 22;
+        this.maxLife = 22;
+        this.dead = false;
+    }
+    update() {
+        this.radius += (this.maxRadius - this.radius) * 0.28;
+        this.life--;
+        if (this.life <= 0) this.dead = true;
+    }
+    draw(ctx) {
+        const pct = this.life / this.maxLife;
+        ctx.save();
+        ctx.strokeStyle = `rgba(165, 94, 234, ${pct * 0.9})`;
+        ctx.lineWidth = 4 * pct + 1;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = `rgba(165, 94, 234, ${pct * 0.15})`;
+        ctx.fill();
+        ctx.restore();
+    }
+}
+function triggerAbility(slotKey) {
+    if (!player || player.dead || !state.active) return;
+    if (state.dia && state.dia.active) return;
+
+    const def = Object.values(ABILITIES_DEF).find(a => a.slot === slotKey);
+    if (!def) return;
+
+    // 1. Check if Unlocked
+    if (!state.unlockedAbilities || !state.unlockedAbilities[def.id]) {
+        spawnText(player.x, player.y - 40, `${def.name} LOCKED`, "#ff4757");
+        return;
+    }
+
+    // 2. Check if Cooldown is Active
+    const remainingFrames = state.abilityCooldowns[slotKey] || 0;
+    if (remainingFrames > 0) {
+        const remainingSeconds = (remainingFrames / 60).toFixed(1);
+        spawnText(player.x, player.y - 40, `${def.name} ON COOLDOWN (${remainingSeconds}s)`, "#ff6b81");
+        AudioEngine.playHit('player_hurt');
+        return;
+    }
+
+    // 3. Cooldown Reduction from Reload Stat (-5% per Reload tier)
+    const reloadLvl = player.S(3) || 0;
+    const cooldownMultiplier = Math.max(0.6, 1 - reloadLvl * 0.05);
+    const finalCooldownFrames = Math.round(def.cd * 60 * cooldownMultiplier);
+
+    // 4. Ability Actions
+    if (slotKey === 'shift') {
+        state.activeBuffs.aegisTimer = 180; // 3 seconds
+        state.activeBuffs.aegisShieldHp = 300;
+        AudioEngine.playShieldActivate();
+        spawnText(player.x, player.y - 45, "AEGIS BARRIER ACTIVE", "#00d2d3");
+    } else if (slotKey === 'q') {
+        friendlyTurrets.push(new FriendlyTurret(player.x, player.y));
+        AudioEngine.playTurretDeploy();
+        spawnParticles(player.x, player.y, '#2ed573', 14, 'spark');
+        spawnText(player.x, player.y - 45, "SENTRY DEPLOYED", "#2ed573");
+    } else if (slotKey === 'f') {
+        empShockwaves.push(new EmpWave(player.x, player.y));
+        AudioEngine.playEmp();
+        state.cam.shake = 6;
+        triggerGlitch(8, 12);
+        spawnText(player.x, player.y - 45, "EMP DISCHARGED", "#a55eea");
+
+        const shockRadiusSq = 300 * 300;
+        for (let i = 0, len = enemies.length; i < len; i++) {
+            const e = enemies[i];
+            if (!e.dead && (e.x - player.x) ** 2 + (e.y - player.y) ** 2 < shockRadiusSq) {
+                e.stunTimer = 105;
+                if (e.state && e.state.shieldUp) {
+                    e.state.shieldUp = false;
+                    e.state.shieldHp = 0;
+                    e.state.shieldCooldown = 180;
+                }
+                spawnParticles(e.x, e.y, '#a55eea', 6, 'spark');
+                spawnText(e.x, e.y - 20, "STUNNED!", "#a55eea");
+            }
+        }
+        for (let i = 0, len = bullets.length; i < len; i++) {
+            const b = bullets[i];
+            if (!b.pShot && !b.dead && (b.x - player.x) ** 2 + (b.y - player.y) ** 2 < shockRadiusSq) {
+                b.dead = true;
+                spawnParticles(b.x, b.y, '#a55eea', 3, 'spark');
+            }
+        }
+    } else if (slotKey === 'c') {
+        state.activeBuffs.naniteTimer = 120; // 2 seconds
+        AudioEngine.playNaniteHeal();
+        spawnText(player.x, player.y - 45, "NANITE REPAIR ENGAGED", "#22d98e");
+    } else if (slotKey === 'r') {
+        friendlyMissiles.push(new FriendlyMissile(player.x, player.y, player.angle, true));
+        AudioEngine.playMissileLaunch(true);
+        spawnText(player.x, player.y - 45, "ROCKET LAUNCHED", "#ff4757");
+    }
+
+    state.abilityCooldowns[slotKey] = finalCooldownFrames;
+    updateAbilityBarUi();
+}
+
 // =====================================================================
 //  HIGH-FIDELITY VECTOR AVATAR RENDERER
 // =====================================================================
@@ -3247,6 +4086,7 @@ let state = {
     nearVault: false,
     hubUpgradeOpen: false,
     vaultOpen: false,
+    abilityBayOpen: false,
     activeNpcShop: null,
     galleryOpen: false,
     selectedGalleryId: 'basic',
@@ -3256,7 +4096,23 @@ let state = {
         rammer: { seen: true, kills: 0 }
     },
     harvested: { sq: 0, tri: 0, pent: 0, total: 0 },
-    paused: false
+    paused: false,
+    unlockedAbilities: {},
+    abilityCooldowns: { shift: 0, q: 0, f: 0, c: 0, r: 0 },
+    activeBuffs: {
+        aegisTimer: 0,
+        aegisShieldHp: 0,
+        naniteTimer: 0
+    },
+    passiveTimers: {
+        missileBarrage: 600,
+        swarmSpawner: 120
+    },
+    orbitDrones: [
+        { angle: 0, radius: 56, hp: 1 },
+        { angle: (Math.PI * 2) / 3, radius: 56, hp: 1 },
+        { angle: (Math.PI * 4) / 3, radius: 56, hp: 1 }
+    ]
 };
 
 const keys = {};
@@ -3651,10 +4507,15 @@ const LEVELS = [
                 { who: "Archivist Vance", text: "Archivist Vance at tactical records. I compile active combat telemetry on every hostile model you destroy." }
               ]
             },
-            { x: -350, y: 650, name: "Scout Yolo", color: C.NPC_ORANGE,
-              dialogue: [
-                { who: "Scout Yolo", text: "Take these 3 upgrade points from the black supply stash. Don't let Command see you!" }
-              ]
+            { 
+                x: -350, y: 650, 
+                name: "Scout Yolo", 
+                color: C.NPC_ORANGE,
+                subRole: "BLACK SUPPLY STASH",
+                dialogue: [
+                    { who: "Scout Yolo", text: "Psst! Take these 3 Upgrade Points and supply polygons (35■, 20▲, 6⬟) from my black stash." },
+                    { who: "Scout Yolo", text: "Head over to Specialist Jax to equip your first tactical ability!" }
+                ]
             }
         ]
     },
@@ -3804,7 +4665,17 @@ const LEVELS = [
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
               dialogue: [{ who: "Command", text: "The Hexagon Guardian fires 4 artillery rounds simultaneously. Circle it constantly and stay at range!" }]
-            }
+            },
+            {
+                x: 0, y: 320, 
+                name: "Specialist Jax", 
+                color: "#00d2d3", 
+                subRole: "TACTICAL ABILITIES & ARMORY",
+                dialogue: [
+                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
+                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
+                ]
+            },
         ]
     },
 
@@ -3882,7 +4753,17 @@ const LEVELS = [
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
               dialogue: [{ who: "Command", text: "Sniper Units hold extreme distance, but their retreat is slow. Charge them between shots!" }]
-            }
+            },
+            {
+                x: 0, y: 320, 
+                name: "Specialist Jax", 
+                color: "#00d2d3", 
+                subRole: "TACTICAL ABILITIES & ARMORY",
+                dialogue: [
+                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
+                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
+                ]
+            },
         ]
     },
 
@@ -4021,6 +4902,16 @@ const LEVELS = [
             { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
               dialogue: [{ who: "Archivist Vance", text: "Field telemetry updated." }]
             },
+            {
+                x: 0, y: 320, 
+                name: "Specialist Jax", 
+                color: "#00d2d3", 
+                subRole: "TACTICAL ABILITIES & ARMORY",
+                dialogue: [
+                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
+                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
+                ]
+            },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
               dialogue: [{ who: "Command", text: "Shield Carriers will escort Sniper Units and Shotgun Breachers. Pop their barrier first!" }]
             }
@@ -4097,7 +4988,17 @@ const LEVELS = [
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
               dialogue: [{ who: "Command", text: "The Destroyer enrages at 50% HP and doubles its cannon array. Save your movement speed and stay mobile!" }]
-            }
+            },
+            {
+                x: 0, y: 320, 
+                name: "Specialist Jax", 
+                color: "#00d2d3", 
+                subRole: "TACTICAL ABILITIES & ARMORY",
+                dialogue: [
+                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
+                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
+                ]
+            },
         ]
     },
 
@@ -4179,7 +5080,17 @@ const LEVELS = [
             },
             { x: -160, y: 0, name: "Command", color: C.COMMAND,
               dialogue: [{ who: "Command", text: "This is it, Unit 01. Complete Sector 7 liberation is in your hands!" }]
-            }
+            },
+            {
+                x: 0, y: 320, 
+                name: "Specialist Jax", 
+                color: "#00d2d3", 
+                subRole: "TACTICAL ABILITIES & ARMORY",
+                dialogue: [
+                    { who: "Specialist Jax", text: "Specialist Jax at the tactical bay. I fit combat hulls with active abilities and passive support modules." },
+                    { who: "Specialist Jax", text: "Bring me upgrade points and harvested polygon crates to equip your slots." }
+                ]
+            },
         ]
     },
 
@@ -4359,16 +5270,39 @@ function init() {
 
     window.addEventListener('keydown', e => {
         AudioEngine.resume();
-        let k = e.key.toLowerCase();
+        const k = e.key.toLowerCase();
         keys[k] = true;
-        if (k === 'enter') {
-            if (state.dia.active) nextDialogue();
-            else if (state.nearDeploy && LEVELS[state.level].type === 'hub' && !state.dia.active) deployHub();
+
+        // 1. Advance dialogue if open
+        if (state.dia && state.dia.active) {
+            if (k === 'enter' || k === ' ' || k === 'e') {
+                nextDialogue();
+                return;
+            }
         }
+
+        // 2. Tactical Ability Hotkeys
+        if (e.key === 'Shift' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+            triggerAbility('shift');
+        }
+        if (k === 'q') triggerAbility('q');
+        if (k === 'f') triggerAbility('f');
+        if (k === 'c') triggerAbility('c');
+        if (k === 'r') triggerAbility('r');
+
+        // 3. Deploy from Outpost
+        if (k === 'enter') {
+            if (state.nearDeploy && LEVELS[state.level].type === 'hub' && !state.dia.active) {
+                deployHub();
+            }
+        }
+
+        // 4. Interaction Key [E]
         if (k === 'e') {
             if (state.hubUpgradeOpen) { closeHubUpgrade(); return; }
             if (state.galleryOpen)    { closeGallery(); return; }
             if (state.vaultOpen)      { closeVault(); return; }
+            if (state.abilityBayOpen) { closeAbilityBay(); return; }
 
             if (state.nearVault && !state.dia.active) {
                 openVault();
@@ -4377,7 +5311,38 @@ function init() {
 
             if (state.nearNpc && !state.dia.active) {
                 let npc = state.nearNpc;
-                if (npc.name === "Medic Voss") {
+
+                // SCOUT YOLO: Gives 3 Pts & Polygon Crates (Never opens workshop)
+                if (npc.name.includes("Yolo")) {
+                    if (npc.giftClaimed || state.claimedGifts['Scout Yolo']) {
+                        startDialogue([{ who: npc.name, text: "I've already given you all the stash materials I had! Go kick some chassis." }], null);
+                    } else {
+                        npc.giftClaimed = true;
+                        state.claimedGifts['Scout Yolo'] = true;
+                        player.pts += 3;
+                        state.harvested.sq += 35;
+                        state.harvested.tri += 20;
+                        state.harvested.pent += 6;
+                        state.harvested.total += 61;
+
+                        AudioEngine.playLevelUp();
+                        spawnText(npc.x, npc.y - 40, "+3 PTS & STARTER CRATES!", "#ffd700");
+                        spawnParticles(npc.x, npc.y, '#ffd700', 18, 'spark');
+                        updateUi();
+
+                        startDialogue([
+                            { who: "Scout Yolo", text: "Psst! Take these 3 Upgrade Points and supply polygons (35■, 20▲, 6⬟) from my black stash." },
+                            { who: "Scout Yolo", text: "Head over to Specialist Jax to equip your first tactical ability!" }
+                        ], null);
+                    }
+                }
+                // SPECIALIST JAX: Ability Bay / Armory
+                else if (npc.name.includes("Jax") || npc.name.includes("Specialist")) {
+                    startDialogue(npc.dialogue, () => openAbilityBay());
+                }
+                // FIELD MEDIC VOSS: Heal + Hull/Regen Workshop
+                else if (npc.name === "Medic Voss") {
+                    state.activeNpcShop = npc;
                     if (player.hp < player.maxHp) {
                         let healDia = [
                             { who: "Medic Voss", text: "Your hull is heavily damaged. Hold still, patching you up with nanites..." },
@@ -4387,15 +5352,17 @@ function init() {
                         AudioEngine.playHit('shield');
                         spawnParticles(player.x, player.y, "#00ff88", 20, 'smoke', { speed: 2, gravity: -0.2 });
                         triggerGlitch(5, 10);
-                        state.activeNpcShop = npc;
                         startDialogue(healDia, () => openHubUpgrade(npc));
                     } else {
-                        state.activeNpcShop = npc;
                         startDialogue(npc.dialogue, () => openHubUpgrade(npc));
                     }
-                } else if (npc.name.includes("Vance")) {
+                }
+                // ARCHIVIST VANCE: Enemy Dossier
+                else if (npc.name.includes("Vance")) {
                     startDialogue(npc.dialogue, () => openGallery());
-                } else if (npc.action === 'rescue') {
+                }
+                // RESCUE SCOUTS: Rescue Rewards
+                else if (npc.action === 'rescue') {
                     if (npc.giftClaimed || state.claimedGifts[npc.name]) {
                         startDialogue([{ who: npc.name, text: "Thanks again for the rescue, Unit 01! Make those points count." }], null);
                     } else {
@@ -4409,27 +5376,19 @@ function init() {
                             updateUi();
                         });
                     }
-                } else if (npc.name === "Command") {
+                }
+                // COMMAND: Intel & Briefings
+                else if (npc.name === "Command") {
                     startDialogue(npc.dialogue, null);
-                } else {
+                }
+                // RECOGNIZED WORKSHOP NPCS (Kova, Wren, Doss)
+                else if (NPC_SHOPS[npc.name]) {
                     state.activeNpcShop = npc;
-                    if (npc.name.includes("Scout Yolo")) {
-                        if (npc.giftClaimed || state.claimedGifts['Scout Yolo']) {
-                            startDialogue([{ who: npc.name, text: "I've already given you all the stash points I had! Go kick some chassis." }], null);
-                        } else {
-                            startDialogue(npc.dialogue, () => {
-                                npc.giftClaimed = true;
-                                state.claimedGifts['Scout Yolo'] = true;
-                                player.pts += 3;
-                                AudioEngine.playLevelUp();
-                                spawnText(npc.x, npc.y - 40, "+3 UPGRADE POINTS", "#ffd700");
-                                npc.dialogue = [{ who: npc.name, text: "Keep moving! Don't let Command see us." }];
-                                updateUi();
-                            });
-                        }
-                    } else {
-                        startDialogue(npc.dialogue, () => openHubUpgrade(npc));
-                    }
+                    startDialogue(npc.dialogue, () => openHubUpgrade(npc));
+                }
+                // ALL OTHER NPCS: Pure Dialogue (Never open empty shops)
+                else {
+                    startDialogue(npc.dialogue, null);
                 }
             }
         }
@@ -4439,6 +5398,32 @@ function init() {
     window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
     window.addEventListener('mousedown', () => { AudioEngine.resume(); mouse.down = true; });
     window.addEventListener('mouseup',   () => mouse.down = false);
+
+    // Mouse click on dialogue overlay advances text
+    const diaOverlay = document.getElementById('dialogue-overlay');
+    if (diaOverlay) {
+        diaOverlay.onclick = () => {
+            if (state.dia && state.dia.active) nextDialogue();
+        };
+    }
+
+    // Right-click triggers EMP Shockwave
+    window.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        triggerAbility('f');
+    });
+
+    // Direct HUD slot clicking
+    const sShift = document.getElementById('slot-shift');
+    const sQ     = document.getElementById('slot-q');
+    const sF     = document.getElementById('slot-f');
+    const sC     = document.getElementById('slot-c');
+    const sR     = document.getElementById('slot-r');
+    if (sShift) sShift.onclick = () => triggerAbility('shift');
+    if (sQ)     sQ.onclick     = () => triggerAbility('q');
+    if (sF)     sF.onclick     = () => triggerAbility('f');
+    if (sC)     sC.onclick     = () => triggerAbility('c');
+    if (sR)     sR.onclick     = () => triggerAbility('r');
 
     if (loadGame()) {
         document.getElementById('btn-continue').style.display = 'block';
@@ -4831,7 +5816,6 @@ function retain(arr, predicate) {
 function update() {
     state.frame++;
 
-    // Chromatic aberration effect
     if (caEffect.timer > 0) {
         caEffect.timer--;
         let offset = (Math.random() - 0.5) * caEffect.intensity;
@@ -4842,7 +5826,6 @@ function update() {
 
     let lvl = LEVELS[state.level];
 
-    // Throttle range check (e.g. every 6 frames) — zoom lerp is smooth anyway
     if (lvl && lvl.type === 'hub') {
         if (!state.dia.active && !state.bossDeathEffect) {
             if (state.frame % 6 === 0) {
@@ -4874,7 +5857,115 @@ function update() {
 
     player.update();
 
-    // ----------------- HUB LOGIC -----------------
+    // ── 1. TICK COOLDOWNS & ACTIVE BUFFS ──
+    for (let key in state.abilityCooldowns) {
+        if (state.abilityCooldowns[key] > 0) {
+            state.abilityCooldowns[key]--;
+        }
+    }
+
+    if (state.activeBuffs.aegisTimer > 0) state.activeBuffs.aegisTimer--;
+    if (state.activeBuffs.naniteTimer > 0) {
+        state.activeBuffs.naniteTimer--;
+        player.hp = Math.min(player.maxHp, player.hp + 0.58);
+        if (state.frame % 4 === 0) {
+            spawnParticles(player.x + (Math.random() - 0.5) * 30, player.y + (Math.random() - 0.5) * 30, '#22d98e', 1, 'spark');
+        }
+    }
+
+    // ── 2. UPDATE PASSIVES (DRONES ORBIT EVERYWHERE) ──
+    if (state.active && !state.paused && player && !player.dead) {
+        if (state.unlockedAbilities.orbit_drones) {
+            state.orbitDrones.forEach(drone => {
+                drone.angle += 0.045;
+                const dx = player.x + Math.cos(drone.angle) * drone.radius;
+                const dy = player.y + Math.sin(drone.angle) * drone.radius;
+
+                for (let i = 0, len = bullets.length; i < len; i++) {
+                    const b = bullets[i];
+                    if (!b.pShot && !b.dead) {
+                        if ((b.x - dx) ** 2 + (b.y - dy) ** 2 < 144) {
+                            b.dead = true;
+                            AudioEngine.playHit('shield');
+                            spawnParticles(dx, dy, '#00d2d3', 4, 'spark');
+                        }
+                    }
+                }
+
+                const targets = [...enemies, ...dummies];
+                for (let i = 0, len = targets.length; i < len; i++) {
+                    const e = targets[i];
+                    if (!e.dead && (e.x - dx) ** 2 + (e.y - dy) ** 2 < (12 + e.r) ** 2) {
+                        e.takeDmg(2.5);
+                        if (state.frame % 6 === 0) spawnParticles(dx, dy, '#00d2d3', 2, 'spark');
+                    }
+                }
+            });
+        }
+
+        if (state.unlockedAbilities.grav_aura) {
+            const auraRadiusSq = 220 * 220;
+            let inAuraCount = 0;
+            const auraEnemies = [];
+            for (let i = 0, len = enemies.length; i < len; i++) {
+                const e = enemies[i];
+                if (!e.dead && (e.x - player.x) ** 2 + (e.y - player.y) ** 2 < auraRadiusSq) {
+                    inAuraCount++;
+                    auraEnemies.push(e);
+                }
+            }
+            if (inAuraCount > 0) {
+                const slowFactor = 0.50 / (1 + (inAuraCount - 1) * 0.25);
+                auraEnemies.forEach(e => {
+                    e.vx *= (1 - slowFactor * 0.1);
+                    e.vy *= (1 - slowFactor * 0.1);
+                });
+            }
+        }
+
+        if (state.unlockedAbilities.missile_barrage && (lvl.type !== 'hub' || isPlayerInFiringRange())) {
+            state.passiveTimers.missileBarrage--;
+            if (state.passiveTimers.missileBarrage <= 0) {
+                if (enemies.length > 0 || dummies.length > 0) {
+                    for (let i = 0; i < 4; i++) {
+                        setTimeout(() => {
+                            if (player && !player.dead) {
+                                friendlyMissiles.push(new FriendlyMissile(player.x, player.y, player.angle + (Math.random() - 0.5) * 1.2, false));
+                                AudioEngine.playMissileLaunch(false);
+                            }
+                        }, i * 110);
+                    }
+                }
+                state.passiveTimers.missileBarrage = 600;
+            }
+        }
+
+        if (state.unlockedAbilities.drone_spawner && (lvl.type !== 'hub' || isPlayerInFiringRange())) {
+            state.passiveTimers.swarmSpawner--;
+            if (state.passiveTimers.swarmSpawner <= 0) {
+                for (let i = 0; i < 2; i++) {
+                    friendlyDrones.push(new FriendlyDrone(player.x + (Math.random() - 0.5) * 20, player.y + (Math.random() - 0.5) * 20));
+                }
+                AudioEngine.playDroneSpawn();
+                state.passiveTimers.swarmSpawner = 120;
+            }
+        }
+    }
+
+    // ── 3. UPDATE TACTICAL ENTITIES & HUD UI ──
+    friendlyTurrets.forEach(t => t.update());
+    friendlyMissiles.forEach(m => m.update());
+    friendlyDrones.forEach(d => d.update());
+    empShockwaves.forEach(w => w.update());
+
+    retain(friendlyTurrets, t => !t.dead);
+    retain(friendlyMissiles, m => !m.dead);
+    retain(friendlyDrones, d => !d.dead);
+    retain(empShockwaves, w => !w.dead);
+
+    updateAbilityBarUi();
+
+    // ── 4. HUB ROUTINES (NPCS & DUMMIES) ──
     if (lvl.type === 'hub') {
         npcs.forEach(n => n.update());
         dummies.forEach(d => d.update());
@@ -4885,7 +5976,6 @@ function update() {
         particles.forEach(p => p.update());
         texts.forEach(t => t.update());
 
-        // Cleanup particles/texts every 3 frames
         if (state.frame % 3 === 0) {
             retain(particles, x => x.life > 0);
             retain(texts, x => x.life > 0);
@@ -4893,11 +5983,11 @@ function update() {
         return;
     }
 
+    // ── 5. COMBAT PROGRESSION & SPAWNING ──
     if (!state.paused && !state.bossDeathEffect) {
         levelTimer++;
     }
 
-    // ----------------- BOSS DEATH SEQUENCE -----------------
     if (state.bossDeathEffect) {
         let bde = state.bossDeathEffect;
         bde.timer--;
@@ -4929,9 +6019,7 @@ function update() {
         return;
     }
 
-    // ----------------- SPAWNING LOGIC -----------------
     if (lvl.spawnRate > 0) {
-        // Run ambient shape checks every 15 frames
         if (state.frame % 15 === 0 && shapes.length < 32 && Math.random() < 0.6) {
             let d = 800 + Math.random() * 400;
             let a = Math.random() * Math.PI * 2;
@@ -4953,7 +6041,6 @@ function update() {
         }
     }
 
-    // ----------------- LEVEL EVENTS -----------------
     if (lvl.events) {
         for (let evt of lvl.events) {
             if (!evt.triggered && levelTimer >= evt.frame) {
@@ -4963,7 +6050,6 @@ function update() {
         }
     }
 
-    // ----------------- ENTITY UPDATES -----------------
     bullets.forEach(b => b.update());
     if (!state.paused) {
         enemies.forEach(e => e.update());
@@ -4972,12 +6058,10 @@ function update() {
     particles.forEach(p => p.update());
     texts.forEach(t => t.update());
 
-    // In-place filtering for active entities
     retain(bullets, x => !x.dead);
     retain(enemies, x => !x.dead);
     retain(shapes, x => !x.dead);
 
-    // Throttle particle/text array cleanup to every 3 frames
     if (state.frame % 3 === 0) {
         retain(particles, x => x.life > 0);
         retain(texts, x => x.life > 0);
@@ -4988,8 +6072,7 @@ function update() {
         retain(npcs, n => !n.dead);
     }
 
-    // Check level win/loss/completion every 10 frames (~6 times/sec)
-    if (state.frame % 10 === 0) {
+    if (state.frame % 12 === 0) {
         checkLvl();
     }
 }
@@ -5034,6 +6117,131 @@ function updateHubLogic(lvl) {
         let inZone = player && Math.hypot(player.x - dz.x, player.y - dz.y) < 95;
         state.nearDeploy = inZone;
         document.getElementById('hub-deploy-prompt').style.display = (inZone && !state.dia.active) ? 'block' : 'none';
+    }
+}
+
+function updateAbilityBarUi() {
+    const slots = ['shift', 'q', 'f', 'c', 'r'];
+    slots.forEach(slot => {
+        const def = Object.values(ABILITIES_DEF).find(a => a.slot === slot);
+        const slotEl = document.getElementById(`slot-${slot}`);
+        const cdOverlay = document.getElementById(`cd-${slot}`);
+        const cdText = document.getElementById(`cdt-${slot}`);
+        if (!slotEl || !def) return;
+
+        const isUnlocked = Boolean(state.unlockedAbilities && state.unlockedAbilities[def.id]);
+        slotEl.className = `ability-slot ${isUnlocked ? 'ready' : 'locked'}`;
+
+        // Add glowing border while buff duration is active
+        if (slot === 'shift' && state.activeBuffs && state.activeBuffs.aegisTimer > 0) {
+            slotEl.classList.add('active-buff');
+        }
+        if (slot === 'c' && state.activeBuffs && state.activeBuffs.naniteTimer > 0) {
+            slotEl.classList.add('active-buff');
+        }
+
+        const cdFrames = (state.abilityCooldowns && state.abilityCooldowns[slot]) || 0;
+        const maxFrames = def.cd * 60;
+
+        if (cdFrames > 0) {
+            // Calculate percentage remaining (100% -> 0%)
+            const pct = (cdFrames / maxFrames) * 100;
+            cdOverlay.style.height = `${pct}%`;
+            cdText.style.display = 'block';
+            cdText.innerText = `${(cdFrames / 60).toFixed(1)}s`;
+        } else {
+            cdOverlay.style.height = '0%';
+            cdText.style.display = 'none';
+        }
+    });
+}
+
+function openAbilityBay() {
+    state.abilityBayOpen = true;
+    AudioEngine.resume();
+    document.getElementById('ability-bay-overlay').style.display = 'flex';
+    renderAbilityBay();
+}
+
+function closeAbilityBay() {
+    state.abilityBayOpen = false;
+    document.getElementById('ability-bay-overlay').style.display = 'none';
+}
+
+function renderAbilityBay() {
+    document.getElementById('bay-pts').innerText = `Pts: ${player.pts}`;
+    document.getElementById('bay-sq').innerText = state.harvested.sq;
+    document.getElementById('bay-tri').innerText = state.harvested.tri;
+    document.getElementById('bay-pent').innerText = state.harvested.pent;
+
+    const container = document.getElementById('ability-cards-container');
+    container.innerHTML = '';
+
+    Object.values(ABILITIES_DEF).forEach(ab => {
+        const isUnlocked = Boolean(state.unlockedAbilities[ab.id]);
+        const cost = ab.cost;
+        const canAfford = player.pts >= cost.pts &&
+                          state.harvested.sq >= cost.sq &&
+                          state.harvested.tri >= cost.tri &&
+                          state.harvested.pent >= cost.pent;
+
+        let actionBtnHtml = '';
+        if (!isUnlocked) {
+            actionBtnHtml = `
+                <button class="btn-buy-ability" onclick="buyAbility('${ab.id}')" ${canAfford ? '' : 'disabled'}>
+                    PURCHASE
+                </button>`;
+        } else {
+            actionBtnHtml = `
+                <button class="btn-buy-ability" style="background:#2ed573; color:#091322;" onclick="toggleEquipAbility('${ab.id}')">
+                    EQUIPPED (READY)
+                </button>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = `ability-card ${isUnlocked ? 'unlocked' : ''}`;
+        card.innerHTML = `
+            <div class="ability-card-header">
+                <div class="ability-card-title">${ab.icon} ${ab.name}</div>
+                <span class="ability-type-badge ${ab.type === 'passive' ? 'type-passive' : 'type-active'}">
+                    ${ab.type === 'passive' ? 'PASSIVE' : `ACTIVE [${ab.key}]`}
+                </span>
+            </div>
+            <div class="ability-card-desc">${ab.desc}</div>
+            <div class="ability-card-footer">
+                <div class="ability-cost">${isUnlocked ? 'STATUS: ACTIVE' : cost.desc}</div>
+                ${actionBtnHtml}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function buyAbility(id) {
+    const ab = ABILITIES_DEF[id];
+    if (!ab || state.unlockedAbilities[id]) return;
+    const cost = ab.cost;
+    if (player.pts < cost.pts || state.harvested.sq < cost.sq || state.harvested.tri < cost.tri || state.harvested.pent < cost.pent) return;
+
+    player.pts -= cost.pts;
+    state.harvested.sq -= cost.sq;
+    state.harvested.tri -= cost.tri;
+    state.harvested.pent -= cost.pent;
+
+    state.unlockedAbilities[id] = true;
+    AudioEngine.playLevelUp();
+    spawnText(player.x, player.y - 45, `${ab.name.toUpperCase()} EQUIPPED!`, '#00ff88');
+    renderAbilityBay();
+    updateAbilityBarUi();
+    updateUi();
+}
+
+function toggleEquipAbility(id) {
+    // Re-trigger confirmation pulse
+    const ab = ABILITIES_DEF[id];
+    if (ab) {
+        AudioEngine.playDialogueBeep('Unit 01');
+        spawnText(player.x, player.y - 45, `${ab.name} ACTIVE`, '#00d2d3');
     }
 }
 
@@ -5116,6 +6324,59 @@ function draw() {
         bufferCtx.fillText('TACTICAL RUNWAY', dz.x, dz.y - 12);
         bufferCtx.fillText('[ENTER DEPLOY]', dz.x, dz.y + 6);
         bufferCtx.restore();
+    }
+
+    friendlyTurrets.forEach(t => t.draw(bufferCtx));
+    friendlyMissiles.forEach(m => m.draw(bufferCtx));
+    friendlyDrones.forEach(d => d.draw(bufferCtx));
+    empShockwaves.forEach(w => w.draw(bufferCtx));
+
+    // Draw Orbit Drones & Dynamic Aura around Player
+    if (player && !player.dead) {
+        if (state.unlockedAbilities.orbit_drones) {
+            state.orbitDrones.forEach(d => {
+                const dx = player.x + Math.cos(d.angle) * d.radius;
+                const dy = player.y + Math.sin(d.angle) * d.radius;
+                bufferCtx.save();
+                bufferCtx.fillStyle = '#00d2d3';
+                bufferCtx.strokeStyle = '#0f172a';
+                bufferCtx.lineWidth = 1.5;
+                bufferCtx.beginPath();
+                bufferCtx.arc(dx, dy, 5.5, 0, Math.PI * 2);
+                bufferCtx.fill(); bufferCtx.stroke();
+                bufferCtx.restore();
+            });
+        }
+
+        if (state.unlockedAbilities.grav_aura) {
+            const pulse = 0.5 + 0.5 * Math.sin(state.frame * 0.08);
+            bufferCtx.save();
+            bufferCtx.strokeStyle = `rgba(0, 210, 211, ${0.18 + pulse * 0.15})`;
+            bufferCtx.lineWidth = 2;
+            bufferCtx.setLineDash([8, 6]);
+            bufferCtx.beginPath();
+            bufferCtx.arc(player.x, player.y, 220, 0, Math.PI * 2);
+            bufferCtx.stroke();
+            bufferCtx.setLineDash([]);
+            bufferCtx.restore();
+        }
+
+        // Aegis Barrier Hexagonal Bubble
+        if (state.activeBuffs.aegisTimer > 0) {
+            bufferCtx.save();
+            bufferCtx.strokeStyle = 'rgba(0, 255, 230, 0.85)';
+            bufferCtx.fillStyle = 'rgba(0, 210, 211, 0.18)';
+            bufferCtx.lineWidth = 3;
+            bufferCtx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const a = (i * Math.PI) / 3;
+                bufferCtx.lineTo(player.x + (player.r + 14) * Math.cos(a), player.y + (player.r + 14) * Math.sin(a));
+            }
+            bufferCtx.closePath();
+            bufferCtx.fill();
+            bufferCtx.stroke();
+            bufferCtx.restore();
+        }
     }
 
     shapes.forEach(s => s.draw(bufferCtx));
@@ -5263,6 +6524,13 @@ function startGame() {
     state.claimedGifts = {};
     state.harvested = { sq: 0, tri: 0, pent: 0, total: 0 };
     state.discoveries = { basic: { seen: true, kills: 0 }, rammer: { seen: true, kills: 0 } };
+    state.unlockedAbilities = {};
+    state.abilityCooldowns = { shift: 0, q: 0, f: 0, c: 0, r: 0 };
+    state.activeBuffs = { aegisTimer: 0, aegisShieldHp: 0, naniteTimer: 0 };
+    friendlyTurrets = [];
+    friendlyMissiles = [];
+    friendlyDrones = [];
+    empShockwaves = [];
     startLevel(0);
 }
 
@@ -5279,7 +6547,8 @@ function saveGame() {
         maxHp: player.maxHp,
         claimedGifts: state.claimedGifts,
         discoveries: state.discoveries,
-        harvested: state.harvested
+        harvested: state.harvested,
+        unlockedAbilities: state.unlockedAbilities
     };
     localStorage.setItem('polytank_save', JSON.stringify(saveData));
 }
@@ -5317,6 +6586,7 @@ function continueGame() {
     if (data.claimedGifts) state.claimedGifts = data.claimedGifts;
     if (data.discoveries) state.discoveries = data.discoveries;
     if (data.harvested) state.harvested = data.harvested;
+    if (data.unlockedAbilities) state.unlockedAbilities = data.unlockedAbilities;
 
     startLevel(data.level);
 }
