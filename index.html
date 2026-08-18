@@ -3363,8 +3363,8 @@ class Tank extends Entity {
             this.lvl++;
 
             // ── LINEAR XP FORMULA (Replaces * 1.32) ──
-            // Starts at 120 XP and adds a predictable +140 XP per level, soft-capped at 6000 XP
-            this.maxXp = Math.min(6000, 120 + (this.lvl * 140));
+            // Starts at 120 XP and adds a predictable +120 XP per level, soft-capped at 5000 XP
+            this.maxXp = Math.min(5000, 120 + (this.lvl * 120));
 
             // ── MID/ENDGAME POINT BOOST ──
             // Grants +1 point in Act 1, and +2 points per level from Level 12 onward
