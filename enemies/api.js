@@ -132,9 +132,10 @@ const EnemyAPI = (() => {
         return {
             shoot(from, angle, opts = {}) {
                 const { speed = 5, damage = 10, size = 10, life = 120, color = from.color } = opts;
+                const scaledDamage = Math.round(damage * (from.dmgMult || 1));
                 const bx = from.x + Math.cos(angle) * from.r * 1.2;
                 const by = from.y + Math.sin(angle) * from.r * 1.2;
-                gameCtx.bullets.push(new Bullet(bx, by, angle, speed, damage, size, life, color, false));
+                gameCtx.bullets.push(new Bullet(bx, by, angle, speed, scaledDamage, size, life, color, false, opts));
             },
 
             spawnEnemy(type, x, y) {

@@ -32,9 +32,10 @@ EnemyAPI.register({
 
             if (self.state.ramCooldown > 0) self.state.ramCooldown--;
             if (d < self.r + 22 + 4 && self.state.ramCooldown <= 0) {
-                const impact = 10 + Math.hypot(self.vx, self.vy);
+                const mult = self.dmgMult || 1;
+                const impact = Math.round((10 + Math.hypot(self.vx, self.vy)) * mult);
                 const gamePlayer = gameCtx.player;
-                gamePlayer.takeDmg(Math.round(impact));
+                gamePlayer.takeDmg(impact);
                 gameCtx.state.cam.shake = 6;
                 triggerGlitch(12, 14);
                 api.particles(self.x, self.y, self.color, 8, 'spark');
@@ -88,8 +89,9 @@ EnemyAPI.register({
             }
 
             if (d < self.r + 22 + 4) {
+                const mult = self.dmgMult || 1;
+                const impact = Math.round(24 * mult);
                 const gamePlayer = gameCtx.player;
-                const impact = 24;
                 gamePlayer.takeDmg(impact);
                 gameCtx.state.cam.shake = 14;
                 triggerGlitch(24, 36);

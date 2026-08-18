@@ -8,7 +8,7 @@ EnemyAPI.register({
     name:       'Patrol Unit',
     color:      '#f14e54',
     radius:     22,
-    hp:         100,
+    hp:         90,
     xpReward:   30,
     scoreValue: 20,
     bodyShape:  'circle',

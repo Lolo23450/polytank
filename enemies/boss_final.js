@@ -9,7 +9,7 @@ EnemyAPI.register({
     name:       'The Destroyer',
     color:      '#ff8800',
     radius:     60,
-    hp:         5000,
+    hp:         7000,
     xpReward:   800,
     scoreValue: 500,
     bodyShape:  'square',

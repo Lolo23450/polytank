@@ -40,7 +40,13 @@ EnemyAPI.register({
         if (self.state.hitCooldown > 0) self.state.hitCooldown--;
         if (d < self.r + 22 + 2 && self.state.hitCooldown <= 0 && gameCtx.player) {
             const gamePlayer = gameCtx.player;
-            gamePlayer.takeDmg(5);
+            const mult = self.dmgMult || 1;
+            const dmg = Math.round(3.5 * mult);
+            gamePlayer.takeDmg(dmg);
+            gameCtx.state.cam.shake = 4;
+            api.particles(self.x, self.y, self.color, 6, 'spark');
+            api.text(self.x, self.y - 24, `-${dmg}`, '#ffcc55');
+            // ...
             gameCtx.state.cam.shake = 4;
             api.particles(self.x, self.y, self.color, 6, 'spark');
             api.text(self.x, self.y - 24, '-6', '#ffcc55');
