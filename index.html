@@ -3301,7 +3301,7 @@ class Tank extends Entity {
             }
 
             this.angle = Math.atan2(mouse.wy - this.y, mouse.wx - this.x);
-            let maxSpd = 3.5 + (this.S(4) * 0.55);
+            let maxSpd = 10 + (this.S(4) * 0.6);
             let acc = 0.5;
             if (keys['w'] || keys['arrowup'])    this.vy -= acc;
             if (keys['s'] || keys['arrowdown'])  this.vy += acc;
@@ -3445,8 +3445,8 @@ function getCachedMineCoreGrad(ctx, r) {
 class Bullet extends Entity {
     constructor(x, y, ang, spd, dmg, r, life, c, pShot, opts = {}) {
         super(x, y, r, c);
-        this.vx = Math.cos(ang) * spd;
-        this.vy = Math.sin(ang) * spd;
+        this.vx = Math.cos(ang) * spd * 2;
+        this.vy = Math.sin(ang) * spd * 2;
         this.dmg = dmg;
         this.life = life;
         this.maxLife = life;
@@ -4866,7 +4866,7 @@ class FriendlyMissile extends Entity {
         super(x, y, isHeavy ? 8 : 4, isHeavy ? '#ff4757' : '#ffd700');
         this.isHeavy = isHeavy;
         this.angle = angle;
-        this.speed = isHeavy ? 6.8 : 8.5;
+        this.speed = isHeavy ? 8 : 12;
         this.vx = Math.cos(angle) * this.speed;
         this.vy = Math.sin(angle) * this.speed;
         this.damage = isHeavy ? 250 + (player ? player.S(2) * 20 : 0) : 42 + (player ? player.S(2) * 6 : 0);
@@ -5006,7 +5006,7 @@ class FriendlyDrone extends Entity {
     constructor(x, y) {
         super(x, y, 7, '#00d2d3');
         this.angle = Math.random() * Math.PI * 2;
-        this.speed = 6.2;
+        this.speed = 9;
         this.wobble = Math.random() * Math.PI * 2;
         this.damage = 12 + (player ? player.S(2) * 5 : 0);
         this.life = 240;
@@ -5691,8 +5691,8 @@ let state = {
         naniteTimer: 0
     },
     passiveTimers: {
-        missileBarrage: 600,
-        swarmSpawner: 120
+        missileBarrage: 300,
+        swarmSpawner: 80
     },
     orbitDrones: [
         { angle: 0, radius: 56, hp: 1 },
@@ -7789,7 +7789,7 @@ function unequipAbility(abilityType, slotIndex) {
 // =====================================================================
 let lastTime = 0;
 let accumulator = 0;
-const FIXED_TIMESTEP = 1000 / 64; // Exactly 64 updates per second (~16.67ms)
+const FIXED_TIMESTEP = 1000 / 70; // Exactly 70 updates per second (~14.29ms)
 const MAX_DELTA_TIME = 100;       // Max 100ms per frame to prevent spiral of death on tab switch
 
 function loop(currentTime = 0) {
@@ -8186,7 +8186,7 @@ function update() {
                         state.passiveTimers.missileLaunchQueue.push({ delay: i * 7, fired: false });
                     }
                 }
-                state.passiveTimers.missileBarrage = 600;
+                state.passiveTimers.missileBarrage = 300;
             }
             if (state.passiveTimers.missileLaunchQueue) {
                 for (let i = state.passiveTimers.missileLaunchQueue.length - 1; i >= 0; i--) {
@@ -8212,7 +8212,7 @@ function update() {
                     state.passiveTimers.droneSpawnQueue.push({ delay: i * 7, fired: false });
                 }
                 AudioEngine.playDroneSpawn();
-                state.passiveTimers.swarmSpawner = 120;
+                state.passiveTimers.swarmSpawner = 80;
             }
             if (state.passiveTimers.droneSpawnQueue) {
                 for (let i = state.passiveTimers.droneSpawnQueue.length - 1; i >= 0; i--) {
