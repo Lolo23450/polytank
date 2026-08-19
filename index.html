@@ -7789,7 +7789,7 @@ function unequipAbility(abilityType, slotIndex) {
 // =====================================================================
 let lastTime = 0;
 let accumulator = 0;
-const FIXED_TIMESTEP = 1000 / 90; // Exactly 60 updates per second (~16.67ms)
+const FIXED_TIMESTEP = 1000 / 64; // Exactly 64 updates per second (~16.67ms)
 const MAX_DELTA_TIME = 100;       // Max 100ms per frame to prevent spiral of death on tab switch
 
 function loop(currentTime = 0) {
