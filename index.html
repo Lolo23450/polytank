@@ -6979,6 +6979,14 @@ function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    // Prevent time-warp when switching browser tabs
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            lastTime = performance.now();
+            accumulator = 0;
+        }
+    });
+
     window.addEventListener('keydown', e => {
         AudioEngine.resume();
         const k = e.key.toLowerCase();
@@ -7159,6 +7167,9 @@ function startLevel(idx) {
     state.activeNpcShop = null;
     state.galleryOpen = false;
     state.transitioning = false;
+
+    lastTime = performance.now();
+    accumulator = 0;
 
     // Dynamic Camera Zoom for large levels and bosses
     if (lvl.type === 'boss') {
@@ -7773,27 +7784,54 @@ function unequipAbility(abilityType, slotIndex) {
     updateUi();
 }
 
-function loop() {
+// =====================================================================
+//  FIXED TIMESTEP GAME LOOP (INDEPENDENT OF MONITOR REFRESH RATE)
+// =====================================================================
+let lastTime = 0;
+let accumulator = 0;
+const FIXED_TIMESTEP = 1000 / 90; // Exactly 60 updates per second (~16.67ms)
+const MAX_DELTA_TIME = 100;       // Max 100ms per frame to prevent spiral of death on tab switch
+
+function loop(currentTime = 0) {
+    if (!lastTime) lastTime = currentTime;
+    let deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    // Cap deltaTime to avoid massive catch-up jumps when tabbing out
+    if (deltaTime > MAX_DELTA_TIME) {
+        deltaTime = MAX_DELTA_TIME;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     if (state.galleryOpen) {
-        galleryPreviewAngle += 0.02;
+        galleryPreviewAngle += 0.02 * (deltaTime / 16.6667);
         drawGalleryPreview(state.selectedGalleryId);
     }
+
     if (state.active) {
-        update();
+        accumulator += deltaTime;
+
+        // Run fixed simulation updates (60 TPS) regardless of monitor refresh rate (60/120/144/240Hz)
+        while (accumulator >= FIXED_TIMESTEP) {
+            update();
+            accumulator -= FIXED_TIMESTEP;
+        }
+
         draw();
     } else {
+        accumulator = 0; // Don't build up simulation time while inactive
         ctx.fillStyle = C.BG;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = C.GRID;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        // Scale step so line count stays bounded regardless of zoom
         let step = 40;
         for (let x = 0; x < canvas.width + step; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
         for (let y = 0; y < canvas.height + step; y += step) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
         ctx.stroke();
     }
+
     requestAnimationFrame(loop);
 }
 

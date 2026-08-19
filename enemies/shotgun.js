@@ -33,7 +33,7 @@ EnemyAPI.register({
 
         if (self.reload <= 0 && d < effective + 100) {
             for (let i = -2; i <= 2; i++) {
-                api.shoot(self, aim + i * 0.15, { speed: 9, damage: 10, size: 9, life: 45 });
+                api.shoot(self, aim + i * 0.15, { speed: 8, damage: 9, size: 7, life: 45 });
             }
             self.vx -= Math.cos(aim) * 3;
             self.vy -= Math.sin(aim) * 3;
