@@ -15,7 +15,7 @@ EnemyAPI.register({
 
     onSpawn(self) {
         self.state.phase        = 'chase';
-        self.state.dashCooldown = 240 + Math.random() * 160;
+        self.state.dashCooldown = 200 + Math.random() * 160;
         self.state.phaseTimer   = 0;
         self.state.dashAngle    = 0;
         self.state.ramCooldown  = 0;
@@ -27,8 +27,8 @@ EnemyAPI.register({
 
         if (self.state.phase === 'chase') {
             self.angle = aim;
-            self.vx += Math.cos(aim) * 0.16;
-            self.vy += Math.sin(aim) * 0.16;
+            self.vx += Math.cos(aim) * 0.24;
+            self.vy += Math.sin(aim) * 0.24;
 
             if (self.state.ramCooldown > 0) self.state.ramCooldown--;
             if (d < self.r + 22 + 4 && self.state.ramCooldown <= 0) {
@@ -81,8 +81,8 @@ EnemyAPI.register({
             }
 
         } else if (self.state.phase === 'dash') {
-            self.vx = Math.cos(self.state.dashAngle) * 7;
-            self.vy = Math.sin(self.state.dashAngle) * 7;
+            self.vx = Math.cos(self.state.dashAngle) * 11;
+            self.vy = Math.sin(self.state.dashAngle) * 11;
 
             if (api.state.frame % 2 === 0) {
                 api.particles(self.x, self.y, self.color, 1, 'spark');

@@ -2424,17 +2424,20 @@
     </div>
 </div>
 
-<script src="enemies/api.js"></script>
-<script src="enemies/basic.js"></script>
-<script src="enemies/swarm_drone.js"></script>
-<script src="enemies/hive.js"></script>
-<script src="enemies/rammer.js"></script>
-<script src="enemies/sniper.js"></script>
-<script src="enemies/shotgun.js"></script>
-<script src="enemies/trapper.js"></script>
-<script src="enemies/boss_hexagon.js"></script>
-<script src="enemies/boss_final.js"></script>
-<script src="enemies/shield_carrier.js"></script>
+<script src="scripts/editor.js"></script>
+<script src="scripts/enemy_editor.js"></script>
+<script src="scripts/enemies/api.js"></script>
+<script src="scripts/enemies/basic.js"></script>
+<script src="scripts/enemies/swarm_drone.js"></script>
+<script src="scripts/enemies/hive.js"></script>
+<script src="scripts/enemies/rammer.js"></script>
+<script src="scripts/enemies/sniper.js"></script>
+<script src="scripts/enemies/shotgun.js"></script>
+<script src="scripts/enemies/trapper.js"></script>
+<script src="scripts/enemies/boss_hexagon.js"></script>
+<script src="scripts/enemies/boss_final.js"></script>
+<script src="scripts/enemies/shield_carrier.js"></script>
+<script src="scripts/enemies/striker.js"></script>
 
 <script>
 
@@ -3268,7 +3271,7 @@ const C = {
     SHAPE_SQ_ACT2:"#fed330", SHAPE_TRI_ACT2:"#fc5c65", SHAPE_PENT_ACT2:"#45aaf2",
 
     BG_ACT3:"#190808", GRID_ACT3:"#441414",
-    PLAYER_ACT3:"#ff9f43",
+    PLAYER_ACT3:"#00d2d3",
     ENEMY_BASIC_ACT3:"#ff3838", ENEMY_FAST_ACT3:"#ff5252", ENEMY_SNIPER_ACT3:"#ff3f34",
     ENEMY_SHOTGUN_ACT3:"#be2edd", ENEMY_TRAPPER_ACT3: "#4b4b4b",
     SHAPE_SQ_ACT3:"#f39c12", SHAPE_TRI_ACT3:"#e74c3c", SHAPE_PENT_ACT3:"#3867d6",
@@ -6500,743 +6503,6 @@ function drawMassiveFiringRange(ctx, lvl) {
 }
 
 // =====================================================================
-//  CAMPAIGN LEVELS DATA — EXPANDED WITH RIDGE OUTPOST & SCRIPTED DEBUTS
-// =====================================================================
-
-const LEVELS = [
-    // ═════════════════════════════════════════════════════════════════
-    //  ACT 1: PERIMETER GRID & CITADEL BREACH
-    //  Enemy Roster: Basic Patrols (90 HP) -> Rammers (80 HP) -> Hexagon Guardian (3700 HP)
-    // ═════════════════════════════════════════════════════════════════
-
-    // ── HUB 0: FORWARD BASE ──
-    {
-        name: "Forward Base", type: "hub", mapSize: 2200, spawnRate: 0, act: 1,
-        objText: "Inspect outpost facilities, test fire at proving grounds, then deploy.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -520, label: "LANE 1: TARGET MK-I", subLabel: "50m Reaction", type: 'standard', tier: 1 },
-            { x: 700, y: -260, label: "LANE 2: TARGET MK-I", subLabel: "50m Reaction", type: 'standard', tier: 1 },
-            { x: 920, y: 0, label: "LANE 3: STRAFER MK-I", subLabel: "100m Moving", type: 'moving_y', range: 180, speed: 0.2, tier: 1 },
-            { x: 1160, y: -380, label: "LANE 4: RUNNER MK-I", subLabel: "150m Runner", type: 'moving_x', range: 160, speed: 0.3, tier: 1 },
-            { x: 1160, y: 380, label: "LANE 5: HEAVY MK-I", subLabel: "150m Armor DPS", type: 'heavy', hp: 750, tier: 1 },
-            { x: 1420, y: 0, label: "LANE 6: BARRIER MK-I", subLabel: "200m Energy Shield", type: 'shielded', hp: 350, shieldHp: 280, tier: 1 }
-        ],
-        intro: [
-            { who: "Command", text: "Unit 01, systems online. Welcome to Forward Base. Meet our specialists and calibrate your chassis at the eastern proving grounds." },
-            { who: "Unit 01", text: "Understood. Inspecting outpost bays and running diagnostics." }
-        ],
-        npcs: [
-            { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [
-                { who: "Engineer Kova", text: "Weapon tech bay open. Spend points on Bullet Damage, Reload, and Range here. Advanced tiers consume harvested shapes." }
-              ]
-            },
-            { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
-              dialogue: [
-                { who: "Scout Wren", text: "Mobility bay ready. Upgrading Move Speed and XP Boost accelerates your leveling across all sectors." }
-              ]
-            },
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [
-                { who: "Medic Voss", text: "Field hospital standing by. Visit me anytime for free nanite hull repairs, or upgrade Max HP and Nanite Regen." }
-              ]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [
-                { who: "Command", text: "Sector 7 hostiles are mounting forward positions. Harvest polygons in the field to bank upgrade materials." },
-                { who: "Command", text: "Use the eastern proving grounds to check your DPS before heading out through the southern runway." }
-              ]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [
-                { who: "Archivist Vance", text: "Combat archivist online. I record detailed tactical telemetry and threat ratings on every hostile class you destroy." }
-              ]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [
-                { who: "Specialist Jax", text: "Armory bay open. I install deployable sentry turrets, Aegis barriers, EMP blast coils, and autonomous homing rockets." },
-                { who: "Specialist Jax", text: "Equip modules here using upgrade points and refined polygon crates." }
-              ]
-            },
-            { x: -350, y: 650, name: "Scout Yolo", color: C.NPC_ORANGE, subRole: "BLACK SUPPLY STASH",
-              dialogue: [
-                { who: "Scout Yolo", text: "Psst! Grab these 3 Upgrade Points and supply polygons (35■, 20▲, 6⬟) from my private stash." },
-                { who: "Scout Yolo", text: "Head over to Specialist Jax to equip your first tactical ability before deployment!" }
-              ]
-            }
-        ]
-    },
-
-    // ── A1-L1: TUTORIAL — BASIC CALIBRATION ──
-    {
-        name: "Calibration", type: "shape", count: 8, scripted: true, spawnRate: 0, mapSize: 700, act: 1,
-        objText: "Destroy 8 Kinetic Squares [WASD Move | Aim & Click Fire]",
-        intro: [
-            { who: "Command", text: "Calibration grid active. Use WASD to maneuver and Left Click or Spacebar to fire at the surrounding Kinetic Squares (12 HP)." },
-            { who: "Unit 01", text: "Sensors calibrated. Commencing target practice." }
-        ]
-    },
-
-    // ── A1-L2: TUTORIAL — FIRST CONTACT (SCRIPTED CAMERA FOCUS) ──
-    {
-        name: "First Contact", type: "kill", count: 3, scripted: true, spawnRate: 0, mapSize: 1300, act: 1,
-        objText: "Neutralize 3 Hostile Patrol Scouts",
-        intro: [
-            { who: "Command", text: "3 hostile Patrol Units detected (90 HP). They fire single 10-dmg kinetic rounds at medium range. Keep moving and lead your shots." },
-            { who: "Unit 01", text: "Radar lock confirmed. Engaging hostiles." }
-        ]
-    },
-
-    // ── A1-L3: TUTORIAL — RESOURCE HARVESTING ──
-    {
-        name: "Polygon Fields", type: "shape", count: 18, spawnRate: 380, types: ['basic'], mapSize: 1500, act: 1,
-        objText: "Harvest 18 Polygons (Squares, Triangles & Pentagons)",
-        intro: [
-            { who: "Command", text: "High geometric energy detected. Destroy 18 formations. Pentagons grant massive XP and rare materials!" },
-            { who: "Unit 01", text: "Harvesting field reserves." }
-        ]
-    },
-
-    // ── A1-L4: PATROL COMBAT PRACTICE ──
-    {
-        name: "Patrol Break", type: "kill", count: 8, spawnRate: 340, types: ['basic'], mapSize: 1600, act: 1,
-        objText: "Break Perimeter Patrols — 8 Kills",
-        intro: [
-            { who: "Command", text: "Enemy patrol scouts attempting to set up a forward line. Clear 8 Patrol Units." },
-            { who: "Unit 01", text: "Engaging squad." }
-        ]
-    },
-
-    // ── A1-CS1: ENEMY INTRO — RAMMER UNITS ──
-    {
-        name: "CS: High-Velocity Contacts", type: "dialogue_cutscene", act: 1,
-        csAct: "Telemetry Warning", csTitle: "HIGH-VELOCITY CONTACTS", csSub: "Rammer Unit Detected",
-        csBg: "rgba(50,10,10,0.92)",
-        lines: [
-            { who: "Command", text: "Telemetry alert! Rammer Units detected (80 HP). Stripped-down hulls designed for explosive high-speed dashes." },
-            { who: "Command", text: "Watch for their targeting pause before they dash at 7.0 speed, then strafe laterally to evade." },
-            { who: "Unit 01", text: "Understood. Maintaining lateral thrusters." }
-        ]
-    },
-
-    // ── A1-L5: DEBUT — RAMMER 1-ON-1 TRIAL (SCRIPTED CAMERA LOCK) ──
-    {
-        name: "Rammer Trial", type: "kill", count: 3, scripted: true, spawnRate: 0, mapSize: 1500, act: 1,
-        objText: "Neutralize 3 Rammer Units [Watch the aim-lock pause before the dash!]",
-        intro: [
-            { who: "Command", text: "Single Rammer Unit approaching your position. Observe its aim lock, sidestep the dash, and return fire!" },
-            { who: "Unit 01", text: "Visual on target." }
-        ]
-    },
-
-    // ── HUB 0.2: NEW BASE — RIDGE OUTPOST BETA (RIGHT AFTER FIRST RAMMER) ──
-    {
-        name: "Ridge Outpost Beta", type: "hub", mapSize: 2200, spawnRate: 0, act: 1,
-        objText: "Resupply at Ridge Outpost, refit thrusters, then deploy.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -500, label: "LANE 1: TARGET MK-I+", subLabel: "50m Reaction", type: 'standard', tier: 1 },
-            { x: 920, y: 0, label: "LANE 2: STRAFER MK-I+", subLabel: "100m Moving", type: 'moving_y', range: 190, speed: 0.22, tier: 1 },
-            { x: 1160, y: 350, label: "LANE 3: RUNNER MK-I+", subLabel: "150m High Speed", type: 'moving_x', range: 180, speed: 0.35, tier: 1 },
-            { x: 1420, y: -200, label: "LANE 4: FORTIFIED MK-I+", subLabel: "200m Armor", type: 'heavy', hp: 850, tier: 1 }
-        ],
-        intro: [
-            { who: "Command", text: "Welcome to Ridge Outpost Beta. We've established a forward foothold along the Red Ridge. Refit your chassis before facing larger Rammer packs." }
-        ],
-        npcs: [
-            { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Those red triangular chassis pack 24 critical ram impact. Boost your Bullet Damage and Reload to shred them mid-charge!" }]
-            },
-            { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
-              dialogue: [{ who: "Scout Wren", text: "Saw that dash? Upgrading Move Speed lets you effortlessly circle-strafe their trajectory." }]
-            },
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Rammer hull collisions deal heavy direct damage. Get patched up and consider upgrading your Max HP." }]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Rammer telemetry logged: 80 HP, 7.0 dash velocity, high vulnerability to lateral kiting." }]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [{ who: "Specialist Jax", text: "Deployable Sentry Turrets (250 HP) draw Rammer aggression, allowing you to flank safely." }]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "Full swarm formations detected deeper in Sector 3. Deploy when ready!" }]
-            }
-        ]
-    },
-
-    // ── A1-L6: RAMMER SWARM ──
-    {
-        name: "The Swarm", type: "time", count: 50, scripted: true, spawnRate: 260, types: ['rammer'], mapSize: 1800, act: 1,
-        objText: "Evade and Survive Rammer Assault (50s)",
-        intro: [
-            { who: "Command", text: "Rammer assault wave incoming! Keep moving and sidestep their charges. Survive 50 seconds!" },
-            { who: "Unit 01", text: "Thrusters at maximum." }
-        ],
-        events: [
-            { frame: 600,  type: 'text', message: "SPACED FLANKERS INBOUND", color: '#ff4400' },
-            { frame: 600,  type: 'spawn_formation', formation: 'pincer', enemyType: 'rammer', count: 2, radius: 950 },
-            { frame: 1600, type: 'text', message: "DUAL CORNER DASH", color: '#ff0000' },
-            { frame: 1600, type: 'spawn_formation', formation: 'corners', enemyType: 'rammer', count: 2, radius: 950 }
-        ]
-    },
-
-    // ── A1-L7: RAMMER HUNT ──
-    {
-        name: "Hit and Run", type: "kill", count: 8, spawnRate: 260, types: ['rammer'], mapSize: 1800, act: 1,
-        objText: "Hunt Down 8 Rammer Units",
-        intro: [
-            { who: "Command", text: "Take the offensive. Track down 8 Rammer Units and eliminate them before they can charge." },
-            { who: "Unit 01", text: "Hunting targets." }
-        ]
-    },
-
-    // ── A1-L8: COMBINED BASICS & RAMMERS ──
-    {
-        name: "Crossfire Ridge", type: "kill", count: 12, spawnRate: 240, types: ['basic', 'rammer'], mapSize: 1800, act: 1,
-        objText: "Clear Crossfire Ridge — 12 Kills (Patrols & Rammers)",
-        intro: [
-            { who: "Command", text: "Patrol Units are holding range while Rammers charge in. Prioritize the fast rammers first!" },
-            { who: "Unit 01", text: "Managing target priority." }
-        ],
-        events: [
-            { frame: 450, type: 'text', message: "CROSS FORMATION ARRIVING", color: '#f14e54' },
-            { frame: 450, type: 'spawn_formation', formation: 'cross', enemyType: 'basic', count: 4, radius: 950 }
-        ]
-    },
-
-    // ── A1-L9: MASS HARVEST BEFORE SECTOR 3 ──
-    {
-        name: "Energy Sweep", type: "shape", count: 24, spawnRate: 200, types: ['basic', 'rammer'], mapSize: 1900, act: 1,
-        objText: "Harvest 24 Polygon Formations",
-        intro: [
-            { who: "Command", text: "Harvest 24 polygon formations to stock up on points and crates before the Citadel outpost." },
-            { who: "Unit 01", text: "Securing resources." }
-        ]
-    },
-
-    // ── HUB 0.5: SECTOR 3 FIELD OUTPOST ──
-    {
-        name: "Sector 3 Field Outpost", type: "hub", mapSize: 2200, spawnRate: 0, act: 1,
-        objText: "Refit chassis, test fire on MK-II proving dummies, then deploy.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -400, label: "LANE 1: TARGET MK-II", subLabel: "50m Reaction", type: 'standard', tier: 2 },
-            { x: 920, y: 0, label: "LANE 2: STRAFER MK-II", subLabel: "100m Moving", type: 'moving_y', range: 200, speed: 0.22, tier: 2 },
-            { x: 1160, y: 300, label: "LANE 3: FORTIFIED MK-II", subLabel: "150m Armor", type: 'heavy', hp: 950, tier: 2 },
-            { x: 1420, y: -200, label: "LANE 4: SHIELD MK-II", subLabel: "200m Barrier", type: 'shielded', hp: 460, shieldHp: 360, tier: 2 }
-        ],
-        intro: [
-            { who: "Command", text: "Sector 3 Field Outpost established. The Hexagon Guardian dreadnought (3700 HP) guards the gate ahead. Maximize your upgrades." }
-        ],
-        npcs: [
-            { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Guardian armor plates are heavy (3,700 HP). Max out Bullet Damage and Range so you can strike from safe distances." }]
-            },
-            { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
-              dialogue: [{ who: "Scout Wren", text: "Move speed is critical against the Guardian's quad artillery (22-24 Dmg). Keep circling and never reverse direction abruptly!" }]
-            },
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Full hull repairs complete. Upgrade your Max HP so direct artillery rounds won't breach your core." }]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Hexagon Guardian telemetry: 3700 HP, 4 heavy cannons, 6-way shockwaves, and Phase 2 Overdrive with 8-way secondary plasma." }]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [{ who: "Specialist Jax", text: "Deployable sentry turrets draw boss aggro effectively, allowing you to flank freely." }]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "Deploy through the southern runway when ready to breach the Citadel." }]
-            }
-        ]
-    },
-
-    // ── A1-L10: CITADEL GATES ──
-    {
-        name: "Citadel Approach", type: "time", count: 60, spawnRate: 180, types: ['basic', 'rammer'], mapSize: 2000, act: 1,
-        objText: "Hold Citadel Approach for 60s",
-        intro: [
-            { who: "Command", text: "Citadel automated defenses active. Hold ground against combined patrol and rammer assault." },
-            { who: "Unit 01", text: "Holding the line." }
-        ],
-        events: [
-            { frame: 1200, type: 'text', message: "SPACED 4-CORNER ASSAULT", color: '#ff4400' },
-            { frame: 1200, type: 'spawn_formation', formation: 'corners', enemyType: 'rammer', count: 4, radius: 950 }
-        ]
-    },
-
-    // ── A1-L11: VANGUARD SWEEP ──
-    {
-        name: "Vanguard Sweep", type: "kill", count: 16, spawnRate: 170, types: ['basic', 'rammer'], mapSize: 2000, act: 1,
-        objText: "Eliminate 16 Citadel Vanguard Units",
-        intro: [
-            { who: "Command", text: "Eliminate 16 vanguard units to force the Hexagon Guardian into the open." },
-            { who: "Unit 01", text: "Breaching." }
-        ]
-    },
-
-    // ── BOSS 1: THE GUARDIAN ──
-    {
-        name: "The Guardian", type: "boss", count: 1, spawnRate: 420, types: ['basic'], boss: 'hexagon', mapSize: 2100, act: 1,
-        objText: "Destroy the Hexagon Guardian (3,700 HP)",
-        intro: [
-            { who: "Guardian", text: "CITADEL PERIMETER BREACH DETECTED. ENGAGING PRIMARY ERADICATION CANNONS (3700 HP)." },
-            { who: "Unit 01", text: "Massive dreadnought class — four heavy artillery cannons confirmed!" },
-            { who: "Command", text: "Circle continuously at mid-range! Watch for Phase 2 Overdrive below 50% HP!" }
-        ],
-        outro: [
-            { who: "Guardian", text: "...CRITICAL ENERGY DISCHARGE... CITADEL FIREWALL COMPROMISED." },
-            { who: "Command", text: "Guardian neutralized! The path into Sector 7 deep space is open!" }
-        ]
-    },
-
-    // ═════════════════════════════════════════════════════════════════
-    //  ACT 2: SECTOR 7 CYBER-ABYSS & RELAY DEFENSE
-    //  Enemy Roster: Snipers (100 HP) -> Shotguns (100 HP) -> Shield Carriers (200 HP + 200 Barrier)
-    // ═════════════════════════════════════════════════════════════════
-
-    // ── A2-CS1: SECTOR 7 INFILTRATION ──
-    {
-        name: "CS: Sector 7", type: "dialogue_cutscene", act: 2,
-        csAct: "Intercepted Transmission", csTitle: "SECTOR 7 CYBER-ABYSS", csSub: "Deep Cyber Territory",
-        csBg: "rgba(0,20,45,0.92)",
-        lines: [
-            { who: "Command", text: "You have entered Sector 7 deep space. Specialized heavy combat classes confirmed ahead." },
-            { who: "Unit 01", text: "Atmospheric shift detected. Weapons primed." }
-        ]
-    },
-
-    // ── HUB 1: SECTOR 7 FORWARD OUTPOST ──
-    {
-        name: "Sector 7 Outpost", type: "hub", mapSize: 2200, spawnRate: 0, act: 2,
-        objText: "Resupply, test against MK-III target dummies, and deploy.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -300, label: "LANE 1: TARGET MK-III", subLabel: "50m Armor", type: 'standard', tier: 3 },
-            { x: 920, y: 150, label: "LANE 2: STRAFER MK-III", subLabel: "100m Moving", type: 'moving_y', range: 190, speed: 0.25, tier: 3 },
-            { x: 1180, y: -200, label: "LANE 3: BARRIER MK-III", subLabel: "150m Shielded", type: 'shielded', hp: 550, shieldHp: 440, tier: 3 },
-            { x: 1440, y: 200, label: "LANE 4: HEAVY MK-III", subLabel: "200m Heavy Plating", type: 'heavy', hp: 1100, tier: 3 }
-        ],
-        intro: [
-            { who: "Command", text: "Sector 7 Forward Post secured. Enemy armor and range have increased significantly. Check MK-III dummies at the range." }
-        ],
-        npcs: [
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Deep sector hostiles hit hard. Invest in Nanite Regen and HP to survive crossfire." }]
-            },
-            { x: -750, y: -180, name: "Sergeant Doss", color: C.NPC_YELLOW,
-              dialogue: [{ who: "Sergeant Doss", text: "Upgrading Range and Reload lets you trade shots with Snipers from outside their kill-zone." }]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Tactical data updated: Sniper railguns (18 Dmg / 9.8 Spd) pause briefly before firing. Strafe immediately!" }]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [{ who: "Specialist Jax", text: "Tactical EMP Blasts instantly shatter enemy energy barriers and clear incoming projectiles!" }]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "Sniper units have slow turn rates while aiming. Dash perpendicular to dodge rail rounds." }]
-            }
-        ]
-    },
-
-    // ── A2-L1: DEBUT — RAILGUN SNIPERS (SCRIPTED CAMERA FOCUS) ──
-    {
-        name: "Railgun Optics", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2100, act: 2,
-        objText: "Eliminate 4 Sniper Units [Watch railgun telegraph pause!]",
-        intro: [
-            { who: "Command", text: "Railgun Snipers (100 HP) anchored at long range. Observe their aim-lock pause and strafe immediately when they fire!" },
-            { who: "Unit 01", text: "Engaging marksmen." }
-        ]
-    },
-
-    // ── A2-L2: SNIPER CORRIDOR ──
-    {
-        name: "Sniper Alley", type: "kill", count: 12, spawnRate: 200, types: ['sniper', 'basic', 'rammer'], mapSize: 2100, act: 2,
-        objText: "Clear Sniper Alley — 12 Kills",
-        intro: [
-            { who: "Command", text: "Snipers locking down long corridors with support scouts. Close the gap and eliminate 12 hostiles." },
-            { who: "Unit 01", text: "Advancing with tactical cover." }
-        ]
-    },
-
-    // ── A2-L3: DEBUT — SHOTGUN BREACHERS (SCRIPTED CAMERA FOCUS) ──
-    {
-        name: "Breach Protocol", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2100, act: 2,
-        objText: "Neutralize 4 Shotgun Breachers [Keep distance from 5-pellet spread!]",
-        intro: [
-            { who: "Command", text: "Shotgun Breachers (100 HP) detected! They advance aggressively to fire wide 5-pellet bursts (10 Dmg each). Keep distance!" },
-            { who: "Unit 01", text: "Maintaining standoff distance." }
-        ]
-    },
-
-    // ── A2-L4: SNIPER & SHOTGUN DUAL THREAT ──
-    {
-        name: "Pincer Grid", type: "kill", count: 14, spawnRate: 175, types: ['sniper', 'shotgun', 'rammer'], mapSize: 2200, act: 2,
-        objText: "Eliminate 14 Mixed Assault Hostiles",
-        intro: [
-            { who: "Command", text: "Snipers holding backlines while Shotgun Breachers push frontally. Maneuver continuously!" },
-            { who: "Unit 01", text: "Engaging crossfire." }
-        ]
-    },
-
-    // ── A2-L5: DEEP RESCUE & EXTRACTION ──
-    {
-        name: "Deep Extraction", type: "shape", count: 30, spawnRate: 160, types: ['sniper', 'shotgun', 'basic'], mapSize: 2200, act: 2,
-        objText: "Harvest 30 Formations & Locate Stranded Scout",
-        intro: [
-            { who: "Command", text: "A scout unit was downed in the deep field to the southwest. Harvest 30 formations and locate the survivor." },
-            { who: "Unit 01", text: "Locating emergency beacon." }
-        ],
-        npcs: [
-            { x: -1200, y: 1200, name: "Stranded Scout", color: C.NPC_BLUE, action: "rescue",
-              dialogue: [{ who: "Stranded Scout", text: "Unit 01! Thanks for the extraction. Take this core upgrade point and spend it well!" }]
-            }
-        ]
-    },
-
-    // ── A2-L6: DEBUT — SHIELD CARRIERS (SCRIPTED CAMERA FOCUS) ──
-    {
-        name: "The Aegis Wall", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2200, act: 2,
-        objText: "Eliminate 4 Shield Carriers [Shatter Blue Energy Shields!]",
-        intro: [
-            { who: "Command", text: "Shield Carriers (200 HP + 200 Shield) deployed! Frontal energy barriers block kinetic fire. Flank around, focus fire, or use EMP." },
-            { who: "Unit 01", text: "Targeting shield generators." }
-        ]
-    },
-
-    // ── A2-L7: COMBINED ARMS TEST ──
-    {
-        name: "Fortress Phalanx", type: "kill", count: 16, spawnRate: 150, types: ['shield_carrier', 'sniper', 'shotgun'], mapSize: 2300, act: 2,
-        objText: "Break the Phalanx — 16 Kills (Shields + Snipers + Shotguns)",
-        intro: [
-            { who: "Command", text: "Shield Carriers are escorting Snipers and Breachers. Pop the barriers or take out exposed flanks." },
-            { who: "Unit 01", text: "Executing flanking maneuvers." }
-        ]
-    },
-
-    // ── A2-L8: CONVERGENCE SURVIVAL ──
-    {
-        name: "Convergence Zone", type: "time", count: 70, spawnRate: 140, types: ['sniper', 'shotgun', 'shield_carrier', 'rammer'], mapSize: 2300, act: 2,
-        objText: "Survive Multi-Vector Ambush (70s)",
-        intro: [
-            { who: "Command", text: "Multi-angle pincer ambush detected. Hold out for 70 seconds against coordinated waves!" },
-            { who: "Unit 01", text: "Engaging active evasion." }
-        ],
-        events: [
-            { frame: 800,  type: 'text', message: "EQUAL SPACED 6-POINT RING", color: '#ff6348' },
-            { frame: 800,  type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 6, radius: 1050 },
-            { frame: 2200, type: 'text', message: "CORNER BREACHERS CLOSING IN", color: '#c542f5' },
-            { frame: 2200, type: 'spawn_formation', formation: 'corners', enemyType: 'shotgun', count: 4, radius: 950 }
-        ]
-    },
-
-    // ── A2-CS2: RELAY THETA BRIEFING ──
-    {
-        name: "CS: Relay Station Theta", type: "dialogue_cutscene", act: 2,
-        csAct: "Midway Logistics", csTitle: "RELAY STATION THETA", csSub: "Sub-Sector Staging",
-        csBg: "rgba(0,15,35,0.94)",
-        lines: [
-            { who: "Unit 01", text: "Command, deep sector hostiles are organizing fortified fireteams." },
-            { who: "Command", text: "Confirmed. Dock at Relay Station Theta for intermediate chassis refitting." }
-        ]
-    },
-
-    // ── HUB 1.5: RELAY STATION THETA ──
-    {
-        name: "Relay Station", type: "hub", mapSize: 2200, spawnRate: 0, act: 2,
-        objText: "Midway resupply and test against MK-IV target dummies.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -300, label: "LANE 1: TARGET MK-IV", subLabel: "50m Plating", type: 'standard', tier: 4 },
-            { x: 920, y: 0, label: "LANE 2: STRAFER MK-IV", subLabel: "100m High Speed", type: 'moving_y', range: 210, speed: 0.28, tier: 4 },
-            { x: 1180, y: -200, label: "LANE 3: FORTIFIED MK-IV", subLabel: "150m Super-Heavy", type: 'heavy', hp: 1250, tier: 4 },
-            { x: 1440, y: 200, label: "LANE 4: SHIELD MK-IV", subLabel: "200m Dual Barrier", type: 'shielded', hp: 600, shieldHp: 500, tier: 4 }
-        ],
-        intro: [
-            { who: "Command", text: "Relay Station Theta secured. MK-IV high-durability proving dummies are calibrated for weapon testing." }
-        ],
-        npcs: [
-            { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Make sure you invest in Reload and Bullet Damage. Late-stage carriers require heavy burst fire." }]
-            },
-            { x: -950, y: 120, name: "Scout Wren", color: C.NPC_BLUE,
-              dialogue: [{ who: "Scout Wren", text: "Keep upgrading XP Boost and Move Speed. You'll need every bit of evasion for the outer Core." }]
-            },
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Full hull maintenance completed. Remember to activate Nanite Drones when heavily pressured." }]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Field telemetry synchronized across all known Sector 7 models." }]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [{ who: "Specialist Jax", text: "Heavy AP Homing Rockets (180 Dmg) deal devastating splash damage against grouped formations!" }]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "The inner Core gateway lies ahead. Prepare your loadout thoroughly." }]
-            }
-        ]
-    },
-
-    // ── A2-L9: ACT 2 CLIMAX ──
-    {
-        name: "Siege Break", type: "time", count: 80, spawnRate: 110, types: ['sniper', 'shield_carrier', 'shotgun', 'rammer'], mapSize: 2400, act: 2,
-        objText: "Break Outer Core Lockdown (80s)",
-        intro: [
-            { who: "Command", text: "Outer Core lockdown initiated by enemy battlegroups. Hold the breach for 80 seconds!" },
-            { who: "Unit 01", text: "Lockdown contested." }
-        ],
-        events: [
-            { frame: 1400, type: 'text', message: "SPACED 8-POINT RING INCOMING", color: '#ff4757' },
-            { frame: 1400, type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 8, radius: 1100 }
-        ]
-    },
-
-    // ═════════════════════════════════════════════════════════════════
-    //  ACT 3: THE CORE & AUTONOMOUS WEAPON PLATFORM
-    //  Enemy Roster: Trappers (180 HP) -> Hives (165 HP) -> The Destroyer (7000 HP)
-    // ═════════════════════════════════════════════════════════════════
-
-    // ── A3-CS1: THE CORE BRIEFING ──
-    {
-        name: "CS: The Core", type: "dialogue_cutscene", act: 3,
-        csAct: "Final Intelligence Brief", csTitle: "THE AUTONOMOUS CORE", csSub: "Central Mainframe Chamber",
-        csBg: "rgba(25,0,0,0.95)",
-        lines: [
-            { who: "Command", text: "You have reached The Core. Heavy area denial and drone carriers are shielding the mainframe." },
-            { who: "Destroyer", text: "SYSTEM THREAT QUANTIFIED. PURGE PROTOCOL ENGAGED." },
-            { who: "Unit 01", text: "Primary objective confirmed. Proceeding to breach." }
-        ]
-    },
-
-    // ── HUB 2: CORE THRESHOLD ──
-    {
-        name: "Core Threshold", type: "hub", mapSize: 2200, spawnRate: 0, act: 3,
-        objText: "Final refit against MK-V targets before the Destroyer push.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -300, label: "LANE 1: TARGET MK-V", subLabel: "50m Armor Plating", type: 'standard', tier: 5 },
-            { x: 920, y: 0, label: "LANE 2: STRAFER MK-V", subLabel: "100m High Speed", type: 'moving_y', range: 220, speed: 0.32, tier: 5 },
-            { x: 1180, y: -200, label: "LANE 3: FORTIFIED MK-V", subLabel: "150m Titan Plating", type: 'heavy', hp: 1500, tier: 5 },
-            { x: 1440, y: 200, label: "LANE 4: BARRIER MK-V", subLabel: "200m Titan Shield", type: 'shielded', hp: 750, shieldHp: 650, tier: 5 }
-        ],
-        intro: [
-            { who: "Command", text: "Last safe outpost before the supreme mainframe. Max out your DPS and durability against MK-V targets." }
-        ],
-        npcs: [
-            { x: -750, y: -180, name: "Engineer Kova", color: C.NPC_GREEN,
-              dialogue: [{ who: "Engineer Kova", text: "Spend all your banked polygon reserves now. The Destroyer's armor threshold is immense (7,000 HP)." }]
-            },
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "All nanite injectors topped off. Keep your Aegis barrier ready to absorb supreme naval rounds." }]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "Warning: The Destroyer enrages at 50% HP (3,500 HP), doubling its cannon array from 4 to 8 simultaneous batteries." }]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [{ who: "Specialist Jax", text: "Ensure your tactical active modules are fully unlocked and ready on hotkeys." }]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "This is it, Unit 01. Complete Sector 7 liberation is within our grasp!" }]
-            }
-        ]
-    },
-
-    // ── A3-L1: DEBUT — TRAPPER MINELAYERS (SCRIPTED CAMERA FOCUS) ──
-    {
-        name: "Minefield Grid", type: "kill", count: 4, scripted: true, spawnRate: 0, mapSize: 2400, act: 3,
-        objText: "Clear 4 Trapper Minelayers [Shoot spiked red mines (26 HP) to defuse!]",
-        intro: [
-            { who: "Command", text: "Trapper Minelayers (180 HP) are dispensing 46-55 dmg proximity mines. Shoot them from afar (26 HP) or use EMP to clear pathways!" },
-            { who: "Unit 01", text: "Clearing ordnance." }
-        ]
-    },
-
-    // ── A3-L2: DEBUT — HIVE DRONE CARRIERS (SCRIPTED CAMERA FOCUS) ──
-    {
-        name: "Hive Incursion", type: "kill", count: 3, scripted: true, spawnRate: 0, mapSize: 2400, act: 3,
-        objText: "Eliminate 3 Hive Drone Carriers [Focus down the mother hulls!]",
-        intro: [
-            { who: "Command", text: "Heavy Hive Carriers (165 HP) deploying swarms of suicide dart drones (5 Dmg). Focus fire on the mother hulls!" },
-            { who: "Unit 01", text: "Engaging carrier fleet." }
-        ]
-    },
-
-    // ── A3-L3: ENDGAME STAGE 1 — SUB-CORE REACTOR SIPHON ──
-    {
-        name: "Reactor Siphon", type: "shape", count: 36, spawnRate: 150, types: ['trapper', 'hive', 'sniper'], mapSize: 2500, act: 3,
-        objText: "Harvest 36 High-Energy Core Nodes",
-        intro: [
-            { who: "Command", text: "Drain 36 high-yield polygon nodes from the reactor ring while avoiding perimeter minefields." },
-            { who: "Unit 01", text: "Siphoning core nodes." }
-        ]
-    },
-
-    // ── A3-L4: ENDGAME STAGE 2 — THE GAUNTLET ──
-    {
-        name: "The Gauntlet", type: "kill", count: 24, spawnRate: 130, types: ['sniper', 'shotgun', 'shield_carrier', 'hive', 'trapper'], mapSize: 2500, act: 3,
-        objText: "Fight Through the Gauntlet — 24 Kills",
-        intro: [
-            { who: "Command", text: "All core defense archetypes mobilized. Break through the royal guard to reach the mainframe." },
-            { who: "Unit 01", text: "Executing full combat engagement." }
-        ],
-        events: [
-            { frame: 700, type: 'text', message: "SPACED 6-POINT PHALANX", color: '#00d2d3' },
-            { frame: 700, type: 'spawn_formation', formation: 'ring', enemyType: 'shield_carrier', count: 6, radius: 1000 }
-        ]
-    },
-
-    // ── A3-L5: ENDGAME STAGE 3 — OVERDRIVE ARENA ──
-    {
-        name: "Overdrive Arena", type: "time", count: 80, spawnRate: 90, types: ['shotgun', 'rammer', 'sniper', 'trapper', 'hive'], mapSize: 2500, act: 3,
-        objText: "Survive Core Overdrive Ambush (80s)",
-        intro: [
-            { who: "Command", text: "Automated overdrive engaged! Survive 80 seconds against 360-degree equidistant waves." },
-            { who: "Unit 01", text: "Shields up. Holding center." }
-        ],
-        events: [
-            { frame: 600,  type: 'text', message: "EQUIDISTANT 4-CORNER ASSAULT", color: '#ff3838' },
-            { frame: 600,  type: 'spawn_formation', formation: 'corners', enemyType: 'shotgun', count: 4, radius: 950 },
-            { frame: 2400, type: 'text', message: "EQUIDISTANT 8-POINT ENCIRCLEMENT", color: '#be2edd' },
-            { frame: 2400, type: 'spawn_formation', formation: 'ring', enemyType: 'hive', count: 4, radius: 1100 }
-        ]
-    },
-
-    // ── A3-L6: ENDGAME STAGE 4 — FIREWALL BREACH ──
-    {
-        name: "Firewall Breach", type: "kill", count: 28, spawnRate: 85, types: ['sniper', 'shield_carrier', 'hive', 'trapper', 'shotgun'], mapSize: 2600, act: 3,
-        objText: "Breach Inner Firewall — 28 Kills",
-        intro: [
-            { who: "Command", text: "Heavy defense battlegroups holding the final firewall. Break their line!" },
-            { who: "Unit 01", text: "Breaching." }
-        ],
-        events: [
-            { frame: 800, type: 'text', message: "EQUIDISTANT BOX AMBUSH", color: '#ff4757' },
-            { frame: 800, type: 'spawn_formation', formation: 'box', enemyType: 'sniper', count: 8, radius: 1050 }
-        ]
-    },
-
-    // ── HUB 2.5: TERMINAL VANGUARD OUTPOST ──
-    {
-        name: "Core Relay Outpost", type: "hub", mapSize: 2200, spawnRate: 0, act: 3,
-        objText: "Last relay refit against supreme MK-VI target dummies.",
-        deployZone: { x: 0, y: 780 },
-        vaultTerminal: { x: 0, y: -780 },
-        firingRange: { x: 450, y: -750, w: 1400, h: 1500 },
-        dummies: [
-            { x: 700, y: -300, label: "LANE 1: TARGET MK-VI", subLabel: "50m Colossus Armor", type: 'standard', tier: 6 },
-            { x: 920, y: 0, label: "LANE 2: STRAFER MK-VI", subLabel: "100m Overdrive", type: 'moving_y', range: 240, speed: 0.38, tier: 6 },
-            { x: 1180, y: -200, label: "LANE 3: FORTIFIED MK-VI", subLabel: "150m Dreadnought Hull", type: 'heavy', hp: 1800, tier: 6 },
-            { x: 1440, y: 200, label: "LANE 4: BARRIER MK-VI", subLabel: "200m Aegis Barrier", type: 'shielded', hp: 950, shieldHp: 800, tier: 6 }
-        ],
-        intro: [
-            { who: "Command", text: "Final refit station. One last opportunity to test fire and tune modules against supreme MK-VI targets." }
-        ],
-        npcs: [
-            { x: -750, y: -180, name: "Sergeant Doss", color: C.NPC_YELLOW,
-              dialogue: [{ who: "Sergeant Doss", text: "Reload, Move Speed, Range, XP Boost. Max them all out for the final confrontation." }]
-            },
-            { x: -850, y: 480, name: "Medic Voss", color: C.NPC_PINK,
-              dialogue: [{ who: "Medic Voss", text: "Emergency nanite protocols primed. May your armor hold strong, Unit 01." }]
-            },
-            { x: 160, y: 0, name: "Archivist Vance", color: C.NPC_CYAN,
-              dialogue: [{ who: "Archivist Vance", text: "All combat records synchronized. Go make history, Unit 01." }]
-            },
-            { x: 0, y: 320, name: "Specialist Jax", color: C.NPC_PURPLE, subRole: "TACTICAL ABILITIES & ARMORY",
-              dialogue: [{ who: "Specialist Jax", text: "Deploy turrets and rockets aggressively. Overwhelm the Destroyer's point defense!" }]
-            },
-            { x: -160, y: 0, name: "Command", color: C.COMMAND,
-              dialogue: [{ who: "Command", text: "Good luck, Unit 01. We are tracking your signal. Take down The Destroyer!" }]
-            }
-        ]
-    },
-
-    // ── A3-L7: ENDGAME STAGE 5 — INNER SANCTUM SIEGE ──
-    {
-        name: "Inner Sanctum", type: "kill", count: 32, spawnRate: 80, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun', 'hive'], mapSize: 2600, act: 3,
-        objText: "Clear Inner Sanctum Defenders — 32 Kills",
-        intro: [
-            { who: "Command", text: "Supreme defense lines mobilized inside the mainframe vault. Eliminate 32 elite hostiles." },
-            { who: "Unit 01", text: "Suppressing elite forces." }
-        ],
-        events: [
-            { frame: 800,  type: 'text', message: "SPACED CARDINAL PINCH", color: '#ff3838' },
-            { frame: 800,  type: 'spawn_formation', formation: 'cross', enemyType: 'shield_carrier', count: 4, radius: 1000 },
-            { frame: 2200, type: 'text', message: "8-POINT EQUIDISTANT RAIL BATTERY", color: '#ff4757' },
-            { frame: 2200, type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 8, radius: 1150 }
-        ]
-    },
-
-    // ── A3-L8: ENDGAME STAGE 6 — THE FINAL HOUR ──
-    {
-        name: "The Final Hour", type: "time", count: 110, spawnRate: 70, types: ['sniper', 'basic', 'trapper', 'shotgun', 'shield_carrier', 'hive'], mapSize: 2600, act: 3,
-        objText: "Survive Full Core Mobilization (110s)",
-        intro: [
-            { who: "Command", text: "Maximum resistance from all hostile classes. Hold out for 110 seconds!" },
-            { who: "Unit 01", text: "Holding to the end." }
-        ],
-        events: [
-            { frame: 1200, type: 'text', message: "WAVE 1 — SPACED 4-CORNER BREACHERS", color: '#ff3838' },
-            { frame: 1200, type: 'spawn_formation', formation: 'corners', enemyType: 'shotgun', count: 4, radius: 950 },
-            { frame: 3200, type: 'text', message: "WAVE 2 — SPACED 6-CARRIER INVASION", color: '#be2edd' },
-            { frame: 3200, type: 'spawn_formation', formation: 'ring', enemyType: 'hive', count: 6, radius: 1100 },
-            { frame: 5000, type: 'text', message: "FINAL SURGE — SPACED 8-POINT RAIL ENCIRCLEMENT", color: '#ff4757' },
-            { frame: 5000, type: 'shake', intensity: 14 },
-            { frame: 5000, type: 'spawn_formation', formation: 'ring', enemyType: 'sniper', count: 8, radius: 1150 }
-        ]
-    },
-
-    // ── A3-L9: ENDGAME STAGE 7 — THE DESTROYER'S ROYAL GUARD ──
-    {
-        name: "Royal Guard", type: "kill", count: 36, spawnRate: 65, types: ['sniper', 'shield_carrier', 'shotgun', 'trapper', 'hive'], mapSize: 2600, act: 3,
-        objText: "Neutralize 36 Royal Guard Elites",
-        intro: [
-            { who: "Command", text: "Final defense line guarding the supreme mainframe. Eliminate 36 Royal Guard units to expose The Destroyer!" },
-            { who: "Unit 01", text: "Final breach engaged." }
-        ]
-    },
-
-    // ── BOSS 2: THE DESTROYER (SUPREME COLOSSUS) ──
-    {
-        name: "The Destroyer", type: "boss", count: 1, spawnRate: 240, types: ['sniper', 'shield_carrier', 'trapper', 'shotgun'], boss: 'final', mapSize: 2600, act: 3,
-        objText: "Destroy The Destroyer (7,000 HP Supreme Colossus)",
-        intro: [
-            { who: "Destroyer", text: "PRIMARY MAINFRAME ENGAGED. INTRUDER ANNIHILATION PROTOCOL COMMENCING (7000 HP)." },
-            { who: "Command", text: "The Destroyer is active! Stay out of its naval batteries (30 Dmg), clear support rammers, and watch for Phase 2 Overdrive below 3500 HP!" }
-        ],
-        outro: [
-            { who: "Destroyer", text: "...SYSTEM CORRUPTION FATAL... CORE DETONATION INEVITABLE..." },
-            { who: "Unit 01", text: "Target eliminated. Sector 7 mainframe offline." },
-            { who: "Command", text: "Incredible work, Unit 01! Sector 7 core is neutralized... but infinite anomaly sectors are opening up ahead!" }
-        ]
-    },
-
-    // ── POST-GAME ENDLESS CUTSCENE ──
-    {
-        name: "CS: Infinite Anomaly", type: "dialogue_cutscene", act: 3,
-        csAct: "Post-Game Protocol", csTitle: "ENDLESS ANOMALY", csSub: "Sector Infinity • Uncharted Frontier",
-        csBg: "rgba(30,0,40,0.95)",
-        lines: [
-            { who: "Command", text: "Unit 01, the destruction of The Destroyer has fractured the dimensional grid." },
-            { who: "Command", text: "You have unlocked ENDLESS MODE. Hostile waves and rogue bosses will continuously scale in difficulty with resupply outposts every 5 sectors." },
-            { who: "Unit 01", text: "Overclocking core reactors. Engaging Sector Infinity." }
-        ]
-    }
-];
-
-// =====================================================================
 //  PROCEDURAL ENDLESS LEVEL GENERATOR
 // =====================================================================
 
@@ -7596,6 +6862,79 @@ function init() {
     }
     loop();
 }
+// --- SCRIPTED SPAWN INVOCATION HELPER ---
+function spawnScriptedItem(def) {
+    if (!def) return;
+    const px = player ? player.x : 0;
+    const py = player ? player.y : 0;
+
+    if (def.type === 'shape') {
+        const count = def.count || 1;
+        const shapeType = def.shapeType !== undefined ? def.shapeType : 0;
+        const radius = def.radius || 260;
+        const angleOffset = def.angleDegrees !== undefined ? (def.angleDegrees * Math.PI / 180) : 0;
+
+        if (def.formation === 'ring' || def.ring || count > 1) {
+            for (let i = 0; i < count; i++) {
+                const a = (i / count) * Math.PI * 2 + angleOffset;
+                const sx = (def.x !== undefined ? def.x : px) + Math.cos(a) * radius;
+                const sy = (def.y !== undefined ? def.y : py) + Math.sin(a) * radius;
+                shapes.push(new Shape(sx, sy, shapeType));
+            }
+        } else {
+            const sx = def.x !== undefined ? def.x : px + (Math.random() - 0.5) * radius * 2;
+            const sy = def.y !== undefined ? def.y : py + (Math.random() - 0.5) * radius * 2;
+            shapes.push(new Shape(sx, sy, shapeType));
+        }
+    } else if (def.type === 'enemy') {
+        const count = def.count || 1;
+        const enemyType = def.enemyType || 'basic';
+        const radius = def.radius || 550;
+        const angleOffset = def.angleDegrees !== undefined ? (def.angleDegrees * Math.PI / 180) : -Math.PI / 2;
+
+        if (def.x !== undefined && def.y !== undefined && count === 1) {
+            spawnEnemy(enemyType, def.x, def.y);
+        } else if (def.formation === 'arc') {
+            const arcSpan = Math.PI * 0.65;
+            for (let i = 0; i < count; i++) {
+                const frac = count > 1 ? (i / (count - 1)) - 0.5 : 0;
+                const a = angleOffset + frac * arcSpan;
+                spawnEnemy(enemyType, px + Math.cos(a) * radius, py + Math.sin(a) * radius);
+            }
+        } else if (def.formation === 'line') {
+            const half = (count - 1) * 0.5;
+            const spread = 90;
+            for (let i = 0; i < count; i++) {
+                const offset = (i - half) * spread;
+                const cx = px + Math.cos(angleOffset) * radius;
+                const cy = py + Math.sin(angleOffset) * radius;
+                const lx = cx - Math.sin(angleOffset) * offset;
+                const ly = cy + Math.cos(angleOffset) * offset;
+                spawnEnemy(enemyType, lx, ly);
+            }
+        } else if (def.formation === 'pincer') {
+            spawnFormation('pincer', px, py, enemyType, count, radius);
+        } else if (def.formation === 'corners') {
+            spawnFormation('corners', px, py, enemyType, count, radius);
+        } else if (def.formation === 'ring' || count > 1) {
+            for (let i = 0; i < count; i++) {
+                const a = (i / count) * Math.PI * 2 + angleOffset;
+                spawnEnemy(enemyType, px + Math.cos(a) * radius, py + Math.sin(a) * radius);
+            }
+        } else {
+            spawnEnemy(enemyType, px + Math.cos(angleOffset) * radius, py + Math.sin(angleOffset) * radius);
+        }
+    } else if (def.type === 'mine') {
+        const count = def.count || 1;
+        const radius = def.radius || 500;
+        for (let i = 0; i < count; i++) {
+            let mx = def.x !== undefined ? def.x : px + (Math.random() - 0.5) * radius * 2;
+            let my = def.y !== undefined ? def.y : py + (Math.random() - 0.5) * radius * 2;
+            bullets.push(new Bullet(mx, my, 0, 0, 48, 18, 99999, '#ff4757', false, { isMine: true }));
+        }
+    }
+}
+
 function startLevel(idx) {
     state.level = idx;
     let lvl = getLevelData(idx);
@@ -7621,16 +6960,15 @@ function startLevel(idx) {
     lastTime = performance.now();
     accumulator = 0;
 
-    // Dynamic Camera Zoom for large levels and bosses
+    // Camera zoom configuration
     if (lvl.type === 'boss') {
         state.cam.targetZoom = 0.75;
     } else if (idx >= 12 && lvl.type !== 'hub') {
-        state.cam.targetZoom = 0.88; // Slightly zoomed out for Snipers & large encounters
+        state.cam.targetZoom = 0.88;
     } else {
         state.cam.targetZoom = 1.0;
     }
 
-    // Set Dynamic Music Mood
     AudioEngine.setMood(lvl.act || 1, lvl.type === 'boss', lvl.type === 'hub');
 
     document.getElementById('hub-upgrade-overlay').style.display = 'none';
@@ -7654,9 +6992,9 @@ function startLevel(idx) {
 
     player.x = 0; player.y = 0; player.vx = 0; player.vy = 0; player.hp = player.maxHp;
     state.mapSize = lvl.mapSize || 1500;
-
     state.active = true;
 
+    // ── HUB INITIALIZATION ──
     if (lvl.type === 'hub') {
         saveGame();
         if (lvl.npcs) {
@@ -7676,135 +7014,44 @@ function startLevel(idx) {
         return;
     }
 
-    if (lvl.scripted) {
-        // Calibration: Ring of squares
-        if (lvl.name === 'Calibration') {
-            for (let i = 0; i < lvl.count; i++) {
-                let a = (i / lvl.count) * Math.PI * 2;
-                shapes.push(new Shape(Math.cos(a) * 360, Math.sin(a) * 360, 0));
+    // ── SPAWN CONFIGURATIONS & INITIAL SPAWNS ──
+    if (lvl.initialSpawns && Array.isArray(lvl.initialSpawns)) {
+        lvl.initialSpawns.forEach(spawnDef => spawnScriptedItem(spawnDef));
+    } else if (lvl.scripted) {
+        // Fallback generator for scripted stages if no explicit initialSpawns array is provided
+        if (lvl.type === 'shape') {
+            const count = lvl.count || 8;
+            for (let i = 0; i < count; i++) {
+                const a = (i / count) * Math.PI * 2;
+                shapes.push(new Shape(Math.cos(a) * 260, Math.sin(a) * 260, 0));
+            }
+        } else if (lvl.type === 'kill') {
+            const pool = (lvl.types && lvl.types.length > 0) ? lvl.types : ['basic'];
+            const count = Math.min(lvl.count || 3, 5);
+            for (let i = 0; i < count; i++) {
+                const a = (i / count) * Math.PI * 2;
+                const eType = pool[i % pool.length];
+                spawnEnemy(eType, Math.cos(a) * 560, Math.sin(a) * 560);
             }
         }
-        // Debut 1: Basic Patrol Scouts
-        else if (lvl.name === 'First Contact') {
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    if (state.level !== idx) return;
-                    let angle = (Math.PI * 2 / 3) * i;
-                    let x = Math.cos(angle) * 950;
-                    let y = Math.sin(angle) * 950;
-                    let enemy = spawnEnemy('basic', x, y);
-                    state.cam.target = enemy;
-                    setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1400);
-                }, i * 900);
-            }
-        }
-        // Debut 2: Rammer Unit
-        else if (lvl.name === 'Rammer Trial') {
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                let enemy = spawnEnemy('rammer', 0, -920);
-                state.cam.target = enemy;
-                spawnText(enemy.x, enemy.y - 45, "TARGET ACQUIRED: RAMMER", "#ff4757");
-                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1600);
-            }, 600);
+    }
 
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                spawnEnemy('rammer', -950, 0);
-                spawnEnemy('rammer', 950, 0);
-            }, 5500);
+    // Ambient resource seeding for general combat levels
+    if (lvl.type === 'shape' && !lvl.scripted) {
+        const seedCount = Math.min(lvl.count, 22);
+        for (let i = 0; i < seedCount; i++) {
+            const d = 350 + Math.random() * (state.mapSize * 0.7);
+            const a = Math.random() * Math.PI * 2;
+            const r = Math.random();
+            const sType = r < 0.55 ? 0 : (r < 0.85 ? 1 : 2);
+            shapes.push(new Shape(Math.cos(a) * d, Math.sin(a) * d, sType));
         }
-        // Debut 3: Railgun Snipers
-        else if (lvl.name === 'Railgun Optics') {
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                let enemy = spawnEnemy('sniper', 0, -1100);
-                state.cam.target = enemy;
-                spawnText(enemy.x, enemy.y - 45, "PRECISION RAILGUN OPTICS", "#ff6348");
-                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1800);
-            }, 500);
-
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                spawnEnemy('sniper', -1050, 450);
-                spawnEnemy('sniper', 1050, 450);
-                spawnEnemy('basic', 0, 950);
-            }, 4500);
-        }
-        // Debut 4: Shotgun Breachers
-        else if (lvl.name === 'Breach Protocol') {
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                let enemy = spawnEnemy('shotgun', 0, -850);
-                state.cam.target = enemy;
-                spawnText(enemy.x, enemy.y - 45, "SHOTGUN BREACHER DETECTED", "#c542f5");
-                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1600);
-            }, 500);
-
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                spawnEnemy('shotgun', -900, 300);
-                spawnEnemy('shotgun', 900, 300);
-                spawnEnemy('basic', 0, 900);
-            }, 4000);
-        }
-        // Debut 5: Shield Carriers
-        else if (lvl.name === 'The Aegis Wall') {
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                let enemy = spawnEnemy('shield_carrier', 0, -900);
-                state.cam.target = enemy;
-                spawnText(enemy.x, enemy.y - 45, "AEGIS BARRIER GENERATOR", "#00d2d3");
-                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1800);
-            }, 500);
-
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                spawnEnemy('shield_carrier', -950, 0);
-                spawnEnemy('shield_carrier', 950, 0);
-                spawnEnemy('sniper', 0, 1050);
-            }, 5000);
-        }
-        // Debut 6: Trapper Minelayers
-        else if (lvl.name === 'Minefield Grid') {
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                let enemy = spawnEnemy('trapper', 0, -900);
-                state.cam.target = enemy;
-                spawnText(enemy.x, enemy.y - 45, "TRAPPER MINELAYER LOCATED", "#778ca3");
-                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 1800);
-            }, 500);
-
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                spawnEnemy('trapper', -950, 0);
-                spawnEnemy('trapper', 950, 0);
-                spawnEnemy('sniper', 0, 1050);
-            }, 4500);
-        }
-        // Debut 7: Hive Drone Carriers
-        else if (lvl.name === 'Hive Incursion') {
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                let enemy = spawnEnemy('hive', 0, -950);
-                state.cam.target = enemy;
-                spawnText(enemy.x, enemy.y - 55, "HIVE CARRIER DETECTED", "#be2edd");
-                setTimeout(() => { if (state.cam.target === enemy) state.cam.target = null; }, 2000);
-            }, 500);
-
-            setTimeout(() => {
-                if (state.level !== idx) return;
-                spawnEnemy('hive', -1050, 400);
-                spawnEnemy('hive', 1050, 400);
-            }, 6000);
-        }
-        // Rammer Swarm opening
-        else if (lvl.name === 'The Swarm') {
-            for (let i = 0; i < 2; i++) {
-                let x = -250 + (i * 500);
-                let y = -1000;
-                spawnEnemy('rammer', x, y);
-            }
+    } else if (lvl.spawnRate > 0 && lvl.type !== 'hub') {
+        const initialAmbientShapes = 12;
+        for (let i = 0; i < initialAmbientShapes; i++) {
+            const d = 300 + Math.random() * (state.mapSize * 0.75);
+            const a = Math.random() * Math.PI * 2;
+            shapes.push(new Shape(Math.cos(a) * d, Math.sin(a) * d, Math.random() < 0.7 ? 0 : 1));
         }
     }
 
@@ -7819,6 +7066,7 @@ function startLevel(idx) {
             return inst;
         });
     }
+
     if (lvl.intro) startDialogue(lvl.intro, null);
     updateUi();
 }
@@ -9772,24 +9020,93 @@ function spawnFormation(formation, cx, cy, type, count, radius) {
     }
 }
 
+function focusCameraOnTarget(target, duration = 1400, zoom = 1.3) {
+    if (!target) return;
+    state.cam.target = target;
+    state.cam.targetZoom = zoom;
+    setTimeout(() => {
+        if (state.cam.target === target) {
+            state.cam.target = null;
+            state.cam.targetZoom = 1.0;
+        }
+    }, duration);
+}
+
 function handleLevelEvent(evt) {
     switch (evt.type) {
         case 'spawn_formation':
             spawnFormation(evt.formation, player.x, player.y, evt.enemyType, evt.count, evt.radius);
             break;
-        case 'spawn':
-            for (let i = 0; i < (evt.count || 1); i++) {
-                let a = Math.random() * Math.PI * 2, r = evt.radius || 800;
-                spawnEnemy(evt.enemyType || 'basic', player.x + Math.cos(a) * r, player.y + Math.sin(a) * r);
+        case 'spawn_shape': {
+            const count = evt.count || 8;
+            const radius = evt.radius || 360;
+            const shapeType = evt.shapeType ?? 0;
+            const angleOffset = evt.angleDegrees ? (evt.angleDegrees * Math.PI / 180) : 0;
+            for (let i = 0; i < count; i++) {
+                const a = (i / count) * Math.PI * 2 + angleOffset;
+                shapes.push(new Shape(player.x + Math.cos(a) * radius, player.y + Math.sin(a) * radius, shapeType));
             }
             break;
+        }
+        case 'spawn': {
+            const spawnCount = evt.count || 1;
+            const radius = evt.radius || 800;
+            const enemiesToSpawn = [];
+            for (let i = 0; i < spawnCount; i++) {
+                let x = evt.x !== undefined ? evt.x : player.x;
+                let y = evt.y !== undefined ? evt.y : player.y;
+                if (evt.x === undefined && evt.y === undefined) {
+                    const a = evt.angleDegrees !== undefined ? (evt.angleDegrees * Math.PI / 180) : (Math.random() * Math.PI * 2);
+                    x = player.x + Math.cos(a + i * 0.3) * radius;
+                    y = player.y + Math.sin(a + i * 0.3) * radius;
+                }
+                const spawned = spawnEnemy(evt.enemyType || 'basic', x, y);
+                if (spawned) enemiesToSpawn.push(spawned);
+            }
+            if (evt.focus && enemiesToSpawn.length > 0) {
+                const focusTarget = enemiesToSpawn[0];
+                if (evt.message) spawnText(focusTarget.x, focusTarget.y - 45, evt.message, evt.color || '#fff');
+                focusCameraOnTarget(focusTarget, evt.duration || 1400, evt.zoom || 1.3);
+            }
+            break;
+        }
         case 'text':
             spawnText(player.x, player.y - 100, evt.message || '', evt.color || '#fff');
+            break;
+        case 'camera_focus':
+            if (evt.target === 'player' || !evt.target) {
+                focusCameraOnTarget(player, evt.duration || 1200, evt.zoom || 1.3);
+            }
             break;
         case 'shake':
             state.cam.shake = evt.intensity || 15;
             break;
     }
+}
+
+async function loadLevels() {
+    try {
+        const response = await fetch('./levels.json', { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('levels.json did not contain a valid array of levels.');
+        }
+
+        window.LEVELS = data;
+        globalThis.LEVELS = data;
+        console.log(`Loaded ${data.length} levels from levels.json`);
+    } catch (error) {
+        console.error('Failed to load levels.json:', error);
+        window.LEVELS = [];
+        globalThis.LEVELS = [];
+        alert('Unable to load levels.json. Serve the project from a local web server and keep the file in the project root.');
+    }
+
+    init();
 }
 
 let caEffect = { active: false, intensity: 0, timer: 0 };
@@ -9800,7 +9117,7 @@ function triggerGlitch(intensity, duration) {
     canvas.style.filter = 'url(#chromatic)';
 }
 
-init();
+loadLevels();
 </script>
 </body>
 </html>

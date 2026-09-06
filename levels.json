@@ -1,0 +1,960 @@
+[
+  {
+    "name": "Forward Base",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 1,
+    "objText": "Inspect outpost facilities, test fire at proving grounds, then deploy.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -520, "label": "LANE 1: TARGET MK-I", "subLabel": "50m Reaction", "type": "standard", "tier": 1 },
+      { "x": 700, "y": -260, "label": "LANE 2: TARGET MK-I", "subLabel": "50m Reaction", "type": "standard", "tier": 1 },
+      { "x": 920, "y": 0, "label": "LANE 3: STRAFER MK-I", "subLabel": "100m Moving", "type": "moving_y", "range": 180, "speed": 0.2, "tier": 1 },
+      { "x": 1160, "y": -380, "label": "LANE 4: RUNNER MK-I", "subLabel": "150m Runner", "type": "moving_x", "range": 160, "speed": 0.3, "tier": 1 },
+      { "x": 1160, "y": 380, "label": "LANE 5: HEAVY MK-I", "subLabel": "150m Armor DPS", "type": "heavy", "hp": 750, "tier": 1 },
+      { "x": 1420, "y": 0, "label": "LANE 6: BARRIER MK-I", "subLabel": "200m Energy Shield", "type": "shielded", "hp": 350, "shieldHp": 280, "tier": 1 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Unit 01, systems online. Welcome to Forward Base. Meet our specialists and calibrate your chassis at the eastern proving grounds." },
+      { "who": "Unit 01", "text": "Understood. Inspecting outpost bays and running diagnostics." }
+    ],
+    "npcs": [
+      { "x": -750, "y": -180, "name": "Engineer Kova", "color": "#22d98e", "dialogue": [{ "who": "Engineer Kova", "text": "Weapon tech bay open. Spend points on Bullet Damage, Reload, and Range here. Advanced tiers consume harvested shapes." }] },
+      { "x": -950, "y": 120, "name": "Scout Wren", "color": "#6699ff", "dialogue": [{ "who": "Scout Wren", "text": "Mobility bay ready. Upgrading Move Speed and XP Boost accelerates your leveling across all sectors." }] },
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "Field hospital standing by. Visit me anytime for free nanite hull repairs, or upgrade Max HP and Nanite Regen." }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [
+        { "who": "Command", "text": "Sector 7 hostiles are mounting forward positions. Harvest polygons in the field to bank upgrade materials." },
+        { "who": "Command", "text": "Use the eastern proving grounds to check your DPS before heading out through the southern runway." }
+      ] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "Combat archivist online. I record detailed tactical telemetry and threat ratings on every hostile class you destroy." }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [
+        { "who": "Specialist Jax", "text": "Armory bay open. I install deployable sentry turrets, Aegis barriers, EMP blast coils, and autonomous homing rockets." },
+        { "who": "Specialist Jax", "text": "Equip modules here using upgrade points and refined polygon crates." }
+      ] },
+      { "x": -350, "y": 650, "name": "Scout Yolo", "color": "#ff9933", "subRole": "BLACK SUPPLY STASH", "dialogue": [
+        { "who": "Scout Yolo", "text": "Psst! Grab these 3 Upgrade Points and supply polygons (35■, 20▲, 6⬟) from my private stash." },
+        { "who": "Scout Yolo", "text": "Head over to Specialist Jax to equip your first tactical ability before deployment!" }
+      ] }
+    ]
+  },
+  {
+    "name": "Calibration",
+    "type": "shape",
+    "count": 8,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 750,
+    "act": 1,
+    "objText": "Destroy 8 Kinetic Squares [WASD Move | Aim & Click Fire]",
+    "initialSpawns": [
+      { "type": "shape", "shapeType": 0, "count": 8, "radius": 260, "formation": "ring" }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Calibration grid active. 8 Kinetic Squares deployed in a target ring around your position. Use WASD to maneuver and Left Click or Spacebar to fire." },
+      { "who": "Unit 01", "text": "Sensors calibrated. Commencing target practice." }
+    ]
+  },
+  {
+    "name": "First Contact",
+    "type": "kill",
+    "count": 3,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 1300,
+    "act": 1,
+    "objText": "Neutralize 3 Hostile Patrol Scouts",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "basic", "count": 3, "radius": 520, "formation": "arc", "angleDegrees": -90 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "3 hostile Patrol Units detected ahead (90 HP). They fire single 10-dmg kinetic rounds at medium range. Keep moving and lead your shots." },
+      { "who": "Unit 01", "text": "Radar lock confirmed. Engaging hostiles." }
+    ]
+  },
+  {
+    "name": "Polygon Fields",
+    "type": "shape",
+    "count": 18,
+    "spawnRate": 380,
+    "types": ["basic"],
+    "mapSize": 1500,
+    "act": 1,
+    "objText": "Harvest 18 Polygons (Squares, Triangles & Pentagons)",
+    "intro": [
+      { "who": "Command", "text": "High geometric energy detected. Destroy 18 formations. Pentagons grant massive XP and rare materials!" },
+      { "who": "Unit 01", "text": "Harvesting field reserves." }
+    ]
+  },
+  {
+    "name": "Patrol Break",
+    "type": "kill",
+    "count": 8,
+    "spawnRate": 340,
+    "types": ["basic"],
+    "mapSize": 1600,
+    "act": 1,
+    "objText": "Break Perimeter Patrols — 8 Kills",
+    "intro": [
+      { "who": "Command", "text": "Enemy patrol scouts attempting to set up a forward line. Clear 8 Patrol Units." },
+      { "who": "Unit 01", "text": "Engaging squad." }
+    ]
+  },
+  {
+    "name": "CS: High-Velocity Contacts",
+    "type": "dialogue_cutscene",
+    "act": 1,
+    "csAct": "Telemetry Warning",
+    "csTitle": "HIGH-VELOCITY CONTACTS",
+    "csSub": "Rammer Unit Detected",
+    "csBg": "rgba(50,10,10,0.92)",
+    "lines": [
+      { "who": "Command", "text": "Telemetry alert! Rammer Units detected (80 HP). Stripped-down hulls designed for explosive high-speed dashes." },
+      { "who": "Command", "text": "Watch for their targeting pause before they dash at 7.0 speed, then strafe laterally to evade." },
+      { "who": "Unit 01", "text": "Understood. Maintaining lateral thrusters." }
+    ]
+  },
+  {
+    "name": "Rammer Trial",
+    "type": "kill",
+    "count": 3,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 1500,
+    "act": 1,
+    "objText": "Neutralize 3 Rammer Units [Watch the aim-lock pause before the dash!]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "rammer", "count": 3, "radius": 580, "formation": "arc", "angleDegrees": -90 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "3 Rammer Units approaching in staggered formation. Sidestep their charging vector when the red lock flashes!" },
+      { "who": "Unit 01", "text": "Visual on targets." }
+    ]
+  },
+  {
+    "name": "Ridge Outpost Beta",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 1,
+    "objText": "Resupply at Ridge Outpost, refit thrusters, then deploy.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -500, "label": "LANE 1: TARGET MK-I+", "subLabel": "50m Reaction", "type": "standard", "tier": 1 },
+      { "x": 920, "y": 0, "label": "LANE 2: STRAFER MK-I+", "subLabel": "100m Moving", "type": "moving_y", "range": 190, "speed": 0.22, "tier": 1 },
+      { "x": 1160, "y": 350, "label": "LANE 3: RUNNER MK-I+", "subLabel": "150m High Speed", "type": "moving_x", "range": 180, "speed": 0.35, "tier": 1 },
+      { "x": 1420, "y": -200, "label": "LANE 4: FORTIFIED MK-I+", "subLabel": "200m Armor", "type": "heavy", "hp": 850, "tier": 1 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Welcome to Ridge Outpost Beta. We've established a forward foothold along the Red Ridge. Refit your chassis before facing larger Rammer packs." }
+    ],
+    "npcs": [
+      { "x": -750, "y": -180, "name": "Engineer Kova", "color": "#22d98e", "dialogue": [{ "who": "Engineer Kova", "text": "Those red triangular chassis pack 24 critical ram impact. Boost your Bullet Damage and Reload to shred them mid-charge!" }] },
+      { "x": -950, "y": 120, "name": "Scout Wren", "color": "#6699ff", "dialogue": [{ "who": "Scout Wren", "text": "Saw that dash? Upgrading Move Speed lets you effortlessly circle-strafe their trajectory." }] },
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "Rammer hull collisions deal heavy direct damage. Get patched up and consider upgrading your Max HP." }] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "Rammer telemetry logged: 80 HP, 7.0 dash velocity, high vulnerability to lateral kiting." }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [{ "who": "Specialist Jax", "text": "Deployable Sentry Turrets (250 HP) draw Rammer aggression, allowing you to flank safely." }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [{ "who": "Command", "text": "Full swarm formations detected deeper in Sector 3. Deploy when ready!" }] }
+    ]
+  },
+  {
+    "name": "The Swarm",
+    "type": "time",
+    "count": 50,
+    "scripted": true,
+    "spawnRate": 260,
+    "types": ["rammer"],
+    "mapSize": 1800,
+    "act": 1,
+    "objText": "Evade and Survive Rammer Assault (50s)",
+    "intro": [
+      { "who": "Command", "text": "Rammer assault wave incoming! Keep moving and sidestep their charges. Survive 50 seconds!" },
+      { "who": "Unit 01", "text": "Thrusters at maximum." }
+    ],
+    "events": [
+      { "frame": 600, "type": "text", "message": "SPACED FLANKERS INBOUND", "color": "#ff4400" },
+      { "frame": 600, "type": "spawn_formation", "formation": "pincer", "enemyType": "rammer", "count": 2, "radius": 950 },
+      { "frame": 1600, "type": "text", "message": "DUAL CORNER DASH", "color": "#ff0000" },
+      { "frame": 1600, "type": "spawn_formation", "formation": "corners", "enemyType": "rammer", "count": 2, "radius": 950 }
+    ]
+  },
+  {
+    "name": "Hit and Run",
+    "type": "kill",
+    "count": 8,
+    "spawnRate": 260,
+    "types": ["rammer"],
+    "mapSize": 1800,
+    "act": 1,
+    "objText": "Hunt Down 8 Rammer Units",
+    "intro": [
+      { "who": "Command", "text": "Take the offensive. Track down 8 Rammer Units and eliminate them before they can charge." },
+      { "who": "Unit 01", "text": "Hunting targets." }
+    ]
+  },
+  {
+    "name": "Crossfire Ridge",
+    "type": "kill",
+    "count": 12,
+    "spawnRate": 240,
+    "types": ["basic", "rammer"],
+    "mapSize": 1800,
+    "act": 1,
+    "objText": "Clear Crossfire Ridge — 12 Kills (Patrols & Rammers)",
+    "intro": [
+      { "who": "Command", "text": "Patrol Units are holding range while Rammers charge in. Prioritize the fast rammers first!" },
+      { "who": "Unit 01", "text": "Managing target priority." }
+    ],
+    "events": [
+      { "frame": 450, "type": "text", "message": "CROSS FORMATION ARRIVING", "color": "#f14e54" },
+      { "frame": 450, "type": "spawn_formation", "formation": "cross", "enemyType": "basic", "count": 4, "radius": 950 }
+    ]
+  },
+  {
+    "name": "Ambush at Echo Canyon",
+    "type": "kill",
+    "count": 10,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 1600,
+    "act": 1,
+    "objText": "Survive the Echo Canyon Ambush — 10 Kills",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "basic", "count": 2, "radius": 480, "formation": "arc", "angleDegrees": -90 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Sensors reading an acoustic distortion ahead. Watch your flanks — this gorge is a natural ambush site!" },
+      { "who": "Unit 01", "text": "Sensors locked on scout decoys." }
+    ],
+    "events": [
+      { "frame": 180, "type": "text", "message": "PINCER ALARM: RAMMERS FROM BOTH RIDGES!", "color": "#ff3838" },
+      { "frame": 180, "type": "shake", "intensity": 8 },
+      { "frame": 180, "type": "spawn_formation", "formation": "pincer", "enemyType": "rammer", "count": 4, "radius": 750 },
+      { "frame": 480, "type": "text", "message": "SECOND WAVE: CARDINAL REINFORCEMENTS", "color": "#ffd700" },
+      { "frame": 480, "type": "spawn_formation", "formation": "corners", "enemyType": "basic", "count": 4, "radius": 800 }
+    ]
+  },
+  {
+    "name": "Energy Sweep",
+    "type": "shape",
+    "count": 24,
+    "spawnRate": 200,
+    "types": ["basic", "rammer"],
+    "mapSize": 1900,
+    "act": 1,
+    "objText": "Harvest 24 Polygon Formations",
+    "intro": [
+      { "who": "Command", "text": "Harvest 24 polygon formations to stock up on points and crates before the Citadel outpost." },
+      { "who": "Unit 01", "text": "Securing resources." }
+    ]
+  },
+  {
+    "name": "Sector 3 Field Outpost",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 1,
+    "objText": "Refit chassis, test fire on MK-II proving dummies, then deploy.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -400, "label": "LANE 1: TARGET MK-II", "subLabel": "50m Reaction", "type": "standard", "tier": 2 },
+      { "x": 920, "y": 0, "label": "LANE 2: STRAFER MK-II", "subLabel": "100m Moving", "type": "moving_y", "range": 200, "speed": 0.22, "tier": 2 },
+      { "x": 1160, "y": 300, "label": "LANE 3: FORTIFIED MK-II", "subLabel": "150m Armor", "type": "heavy", "hp": 950, "tier": 2 },
+      { "x": 1420, "y": -200, "label": "LANE 4: SHIELD MK-II", "subLabel": "200m Barrier", "type": "shielded", "hp": 460, "shieldHp": 360, "tier": 2 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Sector 3 Field Outpost established. The Hexagon Guardian dreadnought (3700 HP) guards the gate ahead. Maximize your upgrades." }
+    ],
+    "npcs": [
+      { "x": -750, "y": -180, "name": "Engineer Kova", "color": "#22d98e", "dialogue": [{ "who": "Engineer Kova", "text": "Guardian armor plates are heavy (3,700 HP). Max out Bullet Damage and Range so you can strike from safe distances." }] },
+      { "x": -950, "y": 120, "name": "Scout Wren", "color": "#6699ff", "dialogue": [{ "who": "Scout Wren", "text": "Move speed is critical against the Guardian's quad artillery (22-24 Dmg). Keep circling and never reverse direction abruptly!" }] },
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "Full hull repairs complete. Upgrade your Max HP so direct artillery rounds won't breach your core." }] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "Hexagon Guardian telemetry: 3700 HP, 4 heavy cannons, 6-way shockwaves, and Phase 2 Overdrive with 8-way secondary plasma." }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [{ "who": "Specialist Jax", "text": "Deployable sentry turrets draw boss aggro effectively, allowing you to flank freely." }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [{ "who": "Command", "text": "Deploy through the southern runway when ready to breach the Citadel." }] }
+    ]
+  },
+  {
+    "name": "Citadel Approach",
+    "type": "time",
+    "count": 60,
+    "spawnRate": 180,
+    "types": ["basic", "rammer"],
+    "mapSize": 2000,
+    "act": 1,
+    "objText": "Hold Citadel Approach for 60s",
+    "intro": [
+      { "who": "Command", "text": "Citadel automated defenses active. Hold ground against combined patrol and rammer assault." },
+      { "who": "Unit 01", "text": "Holding the line." }
+    ],
+    "events": [
+      { "frame": 1200, "type": "text", "message": "SPACED 4-CORNER ASSAULT", "color": "#ff4400" },
+      { "frame": 1200, "type": "spawn_formation", "formation": "corners", "enemyType": "rammer", "count": 4, "radius": 950 }
+    ]
+  },
+  {
+    "name": "Citadel Gatehouse",
+    "type": "kill",
+    "count": 12,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 1900,
+    "act": 1,
+    "objText": "Breach Citadel Gatehouse Garrison — 12 Kills",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "basic", "count": 4, "radius": 520, "formation": "line", "angleDegrees": -90 },
+      { "type": "shape", "shapeType": 2, "count": 2, "radius": 350, "formation": "ring" }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Citadel Gatehouse defenses locked down! Break the forward garrison to force the inner blast doors open." },
+      { "who": "Unit 01", "text": "Breaching gatehouse line." }
+    ],
+    "events": [
+      { "frame": 240, "type": "text", "message": "GATEHOUSE DEFENSE PROTOCOL: RAMMER FLANK", "color": "#ff4757" },
+      { "frame": 240, "type": "spawn_formation", "formation": "pincer", "enemyType": "rammer", "count": 4, "radius": 750 },
+      { "frame": 600, "type": "text", "message": "CITADEL RESERVE SQUAD DEPLOYED", "color": "#ffd700" },
+      { "frame": 600, "type": "spawn_formation", "formation": "corners", "enemyType": "basic", "count": 4, "radius": 850 }
+    ]
+  },
+  {
+    "name": "Vanguard Sweep",
+    "type": "kill",
+    "count": 16,
+    "spawnRate": 170,
+    "types": ["basic", "rammer"],
+    "mapSize": 2000,
+    "act": 1,
+    "objText": "Eliminate 16 Citadel Vanguard Units",
+    "intro": [
+      { "who": "Command", "text": "Eliminate 16 vanguard units to force the Hexagon Guardian into the open." },
+      { "who": "Unit 01", "text": "Breaching." }
+    ]
+  },
+  {
+    "name": "The Guardian",
+    "type": "boss",
+    "count": 1,
+    "spawnRate": 420,
+    "types": ["basic"],
+    "boss": "hexagon",
+    "mapSize": 2100,
+    "act": 1,
+    "objText": "Destroy the Hexagon Guardian (3,700 HP)",
+    "intro": [
+      { "who": "Guardian", "text": "CITADEL PERIMETER BREACH DETECTED. ENGAGING PRIMARY ERADICATION CANNONS (3700 HP)." },
+      { "who": "Unit 01", "text": "Massive dreadnought class — four heavy artillery cannons confirmed!" },
+      { "who": "Command", "text": "Circle continuously at mid-range! Watch for Phase 2 Overdrive below 50% HP!" }
+    ],
+    "outro": [
+      { "who": "Guardian", "text": "...CRITICAL ENERGY DISCHARGE... CITADEL FIREWALL COMPROMISED." },
+      { "who": "Command", "text": "Guardian neutralized! The path into Sector 7 deep space is open!" }
+    ]
+  },
+  {
+    "name": "CS: Sector 7",
+    "type": "dialogue_cutscene",
+    "act": 2,
+    "csAct": "Intercepted Transmission",
+    "csTitle": "SECTOR 7 CYBER-ABYSS",
+    "csSub": "Deep Cyber Territory",
+    "csBg": "rgba(0,20,45,0.92)",
+    "lines": [
+      { "who": "Command", "text": "You have entered Sector 7 deep space. Specialized heavy combat classes confirmed ahead." },
+      { "who": "Unit 01", "text": "Atmospheric shift detected. Weapons primed." }
+    ]
+  },
+  {
+    "name": "Sector 7 Outpost",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 2,
+    "objText": "Resupply, test against MK-III target dummies, and deploy.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -300, "label": "LANE 1: TARGET MK-III", "subLabel": "50m Armor", "type": "standard", "tier": 3 },
+      { "x": 920, "y": 150, "label": "LANE 2: STRAFER MK-III", "subLabel": "100m Moving", "type": "moving_y", "range": 190, "speed": 0.25, "tier": 3 },
+      { "x": 1180, "y": -200, "label": "LANE 3: BARRIER MK-III", "subLabel": "150m Shielded", "type": "shielded", "hp": 550, "shieldHp": 440, "tier": 3 },
+      { "x": 1440, "y": 200, "label": "LANE 4: HEAVY MK-III", "subLabel": "200m Heavy Plating", "type": "heavy", "hp": 1100, "tier": 3 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Sector 7 Forward Post secured. Enemy armor and range have increased significantly. Check MK-III dummies at the range." }
+    ],
+    "npcs": [
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "Deep sector hostiles hit hard. Invest in Nanite Regen and HP to survive crossfire." }] },
+      { "x": -750, "y": -180, "name": "Sergeant Doss", "color": "#fed330", "dialogue": [{ "who": "Sergeant Doss", "text": "Upgrading Range and Reload lets you trade shots with Snipers from outside their kill-zone." }] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "Tactical data updated: Sniper railguns (18 Dmg / 9.8 Spd) pause briefly before firing. Strafe immediately!" }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [{ "who": "Specialist Jax", "text": "Tactical EMP Blasts instantly shatter enemy energy barriers and clear incoming projectiles!" }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [{ "who": "Command", "text": "Sniper units have slow turn rates while aiming. Dash perpendicular to dodge rail rounds." }] }
+    ]
+  },
+  {
+    "name": "Railgun Optics",
+    "type": "kill",
+    "count": 4,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2100,
+    "act": 2,
+    "objText": "Eliminate 4 Sniper Units [Watch railgun telegraph pause!]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "sniper", "count": 4, "radius": 680, "formation": "ring" }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Railgun Snipers (100 HP) anchored at long range. Observe their aim-lock pause and strafe immediately when they fire!" },
+      { "who": "Unit 01", "text": "Engaging marksmen." }
+    ]
+  },
+  {
+    "name": "Sniper Alley",
+    "type": "kill",
+    "count": 12,
+    "spawnRate": 200,
+    "types": ["sniper", "basic", "rammer"],
+    "mapSize": 2100,
+    "act": 2,
+    "objText": "Clear Sniper Alley — 12 Kills",
+    "intro": [
+      { "who": "Command", "text": "Snipers locking down long corridors with support scouts. Close the gap and eliminate 12 hostiles." },
+      { "who": "Unit 01", "text": "Advancing with tactical cover." }
+    ]
+  },
+  {
+    "name": "Breach Protocol",
+    "type": "kill",
+    "count": 4,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2100,
+    "act": 2,
+    "objText": "Neutralize 4 Shotgun Breachers [Keep distance from 5-pellet spread!]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "shotgun", "count": 4, "radius": 560, "formation": "corners" }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Shotgun Breachers (100 HP) detected! They advance aggressively to fire wide 5-pellet bursts (10 Dmg each). Keep distance!" },
+      { "who": "Unit 01", "text": "Maintaining standoff distance." }
+    ]
+  },
+  {
+    "name": "Corridor of Shadows",
+    "type": "kill",
+    "count": 8,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2000,
+    "act": 2,
+    "objText": "Break the Interlocking Railgun & Breacher Kill-Zone — 8 Kills",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "sniper", "x": 0, "y": -720 },
+      { "type": "enemy", "enemyType": "sniper", "x": 0, "y": 720 },
+      { "type": "enemy", "enemyType": "shotgun", "x": -480, "y": 0 },
+      { "type": "enemy", "enemyType": "shotgun", "x": 480, "y": 0 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Tactical hazard! North-South Snipers locking down the main channel while Shotgun Breachers close in from East and West!" },
+      { "who": "Unit 01", "text": "Executing diagonal evasion maneuvers." }
+    ],
+    "events": [
+      { "frame": 360, "type": "text", "message": "CROSS-AXIS FLANKERS INBOUND", "color": "#ff4757" },
+      { "frame": 360, "type": "spawn_formation", "formation": "corners", "enemyType": "rammer", "count": 4, "radius": 850 }
+    ]
+  },
+  {
+    "name": "Pincer Grid",
+    "type": "kill",
+    "count": 14,
+    "spawnRate": 175,
+    "types": ["sniper", "shotgun", "rammer", "striker"],
+    "mapSize": 2200,
+    "act": 2,
+    "objText": "Eliminate 14 Mixed Assault Hostiles",
+    "intro": [
+      { "who": "Command", "text": "Snipers holding backlines while Shotgun Breachers push frontally. Maneuver continuously!" },
+      { "who": "Unit 01", "text": "Engaging crossfire." }
+    ]
+  },
+  {
+    "name": "Deep Extraction",
+    "type": "shape",
+    "count": 30,
+    "spawnRate": 160,
+    "types": ["sniper", "shotgun", "basic", "striker"],
+    "mapSize": 2200,
+    "act": 2,
+    "objText": "Harvest 30 Formations & Locate Stranded Scout",
+    "intro": [
+      { "who": "Command", "text": "A scout unit was downed in the deep field to the southwest. Harvest 30 formations and locate the survivor." },
+      { "who": "Unit 01", "text": "Locating emergency beacon." }
+    ],
+    "npcs": [
+      { "x": -1200, "y": 1200, "name": "Stranded Scout", "color": "#6699ff", "action": "rescue", "dialogue": [{ "who": "Stranded Scout", "text": "Unit 01! Thanks for the extraction. Take this core upgrade point and spend it well!" }] }
+    ]
+  },
+  {
+    "name": "The Aegis Wall",
+    "type": "kill",
+    "count": 4,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2200,
+    "act": 2,
+    "objText": "Eliminate 4 Shield Carriers [Shatter Blue Energy Shields!]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "shield_carrier", "count": 4, "radius": 580, "formation": "line", "angleDegrees": -90 },
+      { "type": "shape", "shapeType": 2, "count": 3, "radius": 750, "formation": "arc", "angleDegrees": -90 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Shield Carriers (200 HP + 200 Shield) deployed! Frontal energy barriers block kinetic fire. Flank around, focus fire, or use EMP." },
+      { "who": "Unit 01", "text": "Targeting shield generators." }
+    ]
+  },
+  {
+    "name": "Fortress Phalanx",
+    "type": "kill",
+    "count": 16,
+    "spawnRate": 150,
+    "types": ["shield_carrier", "sniper", "shotgun", "striker"],
+    "mapSize": 2300,
+    "act": 2,
+    "objText": "Break the Phalanx — 16 Kills (Shields + Snipers + Shotguns)",
+    "intro": [
+      { "who": "Command", "text": "Shield Carriers are escorting Snipers and Breachers. Pop the barriers or take out exposed flanks." },
+      { "who": "Unit 01", "text": "Executing flanking maneuvers." }
+    ]
+  },
+  {
+    "name": "Phalanx Breach Protocol",
+    "type": "kill",
+    "count": 10,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2200,
+    "act": 2,
+    "objText": "Break the Advancing Armored Wall — 10 Kills",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "shield_carrier", "count": 3, "radius": 520, "formation": "line", "angleDegrees": -90 },
+      { "type": "enemy", "enemyType": "sniper", "x": -200, "y": -750 },
+      { "type": "enemy", "enemyType": "sniper", "x": 200, "y": -750 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Coordinated defensive phalanx ahead! 3 Shield Carriers are shielding 2 long-range snipers. Deploy EMP or circle-strafe their flanks!" },
+      { "who": "Unit 01", "text": "Engaging vanguard shields." }
+    ],
+    "events": [
+      { "frame": 300, "type": "text", "message": "BREACHERS FLANKING REAR EXITS", "color": "#c542f5" },
+      { "frame": 300, "type": "spawn_formation", "formation": "corners", "enemyType": "shotgun", "count": 3, "radius": 750 },
+      { "frame": 600, "type": "text", "message": "HEAVY PHALANX RESERVES ARRIVING", "color": "#00d2d3" },
+      { "frame": 600, "type": "spawn_formation", "formation": "pincer", "enemyType": "shield_carrier", "count": 2, "radius": 850 }
+    ]
+  },
+  {
+    "name": "Convergence Zone",
+    "type": "time",
+    "count": 70,
+    "spawnRate": 140,
+    "types": ["sniper", "shotgun", "shield_carrier", "rammer"],
+    "mapSize": 2300,
+    "act": 2,
+    "objText": "Survive Multi-Vector Ambush (70s)",
+    "intro": [
+      { "who": "Command", "text": "Multi-angle pincer ambush detected. Hold out for 70 seconds against coordinated waves!" },
+      { "who": "Unit 01", "text": "Engaging active evasion." }
+    ],
+    "events": [
+      { "frame": 800, "type": "text", "message": "EQUAL SPACED 6-POINT RING", "color": "#ff6348" },
+      { "frame": 800, "type": "spawn_formation", "formation": "ring", "enemyType": "sniper", "count": 6, "radius": 1050 },
+      { "frame": 2200, "type": "text", "message": "CORNER BREACHERS CLOSING IN", "color": "#c542f5" },
+      { "frame": 2200, "type": "spawn_formation", "formation": "corners", "enemyType": "shotgun", "count": 4, "radius": 950 }
+    ]
+  },
+  {
+    "name": "CS: Relay Station Theta",
+    "type": "dialogue_cutscene",
+    "act": 2,
+    "csAct": "Midway Logistics",
+    "csTitle": "RELAY STATION THETA",
+    "csSub": "Sub-Sector Staging",
+    "csBg": "rgba(0,15,35,0.94)",
+    "lines": [
+      { "who": "Unit 01", "text": "Command, deep sector hostiles are organizing fortified fireteams." },
+      { "who": "Command", "text": "Confirmed. Dock at Relay Station Theta for intermediate chassis refitting." }
+    ]
+  },
+  {
+    "name": "Relay Station",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 2,
+    "objText": "Midway resupply and test against MK-IV target dummies.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -300, "label": "LANE 1: TARGET MK-IV", "subLabel": "50m Plating", "type": "standard", "tier": 4 },
+      { "x": 920, "y": 0, "label": "LANE 2: STRAFER MK-IV", "subLabel": "100m High Speed", "type": "moving_y", "range": 210, "speed": 0.28, "tier": 4 },
+      { "x": 1180, "y": -200, "label": "LANE 3: FORTIFIED MK-IV", "subLabel": "150m Super-Heavy", "type": "heavy", "hp": 1250, "tier": 4 },
+      { "x": 1440, "y": 200, "label": "LANE 4: SHIELD MK-IV", "subLabel": "200m Dual Barrier", "type": "shielded", "hp": 600, "shieldHp": 500, "tier": 4 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Relay Station Theta secured. MK-IV high-durability proving dummies are calibrated for weapon testing." }
+    ],
+    "npcs": [
+      { "x": -750, "y": -180, "name": "Engineer Kova", "color": "#22d98e", "dialogue": [{ "who": "Engineer Kova", "text": "Make sure you invest in Reload and Bullet Damage. Late-stage carriers require heavy burst fire." }] },
+      { "x": -950, "y": 120, "name": "Scout Wren", "color": "#6699ff", "dialogue": [{ "who": "Scout Wren", "text": "Keep upgrading XP Boost and Move Speed. You'll need every bit of evasion for the outer Core." }] },
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "Full hull maintenance completed. Remember to activate Nanite Drones when heavily pressured." }] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "Field telemetry synchronized across all known Sector 7 models." }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [{ "who": "Specialist Jax", "text": "Heavy AP Homing Rockets (180 Dmg) deal devastating splash damage against grouped formations!" }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [{ "who": "Command", "text": "The inner Core gateway lies ahead. Prepare your loadout thoroughly." }] }
+    ]
+  },
+  {
+    "name": "Siege Break",
+    "type": "time",
+    "count": 80,
+    "spawnRate": 110,
+    "types": ["sniper", "shield_carrier", "shotgun", "rammer"],
+    "mapSize": 2400,
+    "act": 2,
+    "objText": "Break Outer Core Lockdown (80s)",
+    "intro": [
+      { "who": "Command", "text": "Outer Core lockdown initiated by enemy battlegroups. Hold the breach for 80 seconds!" },
+      { "who": "Unit 01", "text": "Lockdown contested." }
+    ],
+    "events": [
+      { "frame": 1400, "type": "text", "message": "SPACED 8-POINT RING INCOMING", "color": "#ff4757" },
+      { "frame": 1400, "type": "spawn_formation", "formation": "ring", "enemyType": "sniper", "count": 8, "radius": 1100 }
+    ]
+  },
+  {
+    "name": "CS: The Core",
+    "type": "dialogue_cutscene",
+    "act": 3,
+    "csAct": "Final Intelligence Brief",
+    "csTitle": "THE AUTONOMOUS CORE",
+    "csSub": "Central Mainframe Chamber",
+    "csBg": "rgba(25,0,0,0.95)",
+    "lines": [
+      { "who": "Command", "text": "You have reached The Core. Heavy area denial and drone carriers are shielding the mainframe." },
+      { "who": "Destroyer", "text": "SYSTEM THREAT QUANTIFIED. PURGE PROTOCOL ENGAGED." },
+      { "who": "Unit 01", "text": "Primary objective confirmed. Proceeding to breach." }
+    ]
+  },
+  {
+    "name": "Core Threshold",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 3,
+    "objText": "Final refit against MK-V targets before the Destroyer push.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -300, "label": "LANE 1: TARGET MK-V", "subLabel": "50m Armor Plating", "type": "standard", "tier": 5 },
+      { "x": 920, "y": 0, "label": "LANE 2: STRAFER MK-V", "subLabel": "100m High Speed", "type": "moving_y", "range": 220, "speed": 0.32, "tier": 5 },
+      { "x": 1180, "y": -200, "label": "LANE 3: FORTIFIED MK-V", "subLabel": "150m Titan Plating", "type": "heavy", "hp": 1500, "tier": 5 },
+      { "x": 1440, "y": 200, "label": "LANE 4: BARRIER MK-V", "subLabel": "200m Titan Shield", "type": "shielded", "hp": 750, "shieldHp": 650, "tier": 5 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Last safe outpost before the supreme mainframe. Max out your DPS and durability against MK-V targets." }
+    ],
+    "npcs": [
+      { "x": -750, "y": -180, "name": "Engineer Kova", "color": "#22d98e", "dialogue": [{ "who": "Engineer Kova", "text": "Spend all your banked polygon reserves now. The Destroyer's armor threshold is immense (7,000 HP)." }] },
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "All nanite injectors topped off. Keep your Aegis barrier ready to absorb supreme naval rounds." }] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "Warning: The Destroyer enrages at 50% HP (3,500 HP), doubling its cannon array from 4 to 8 simultaneous batteries." }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [{ "who": "Specialist Jax", "text": "Ensure your tactical active modules are fully unlocked and ready on hotkeys." }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [{ "who": "Command", "text": "This is it, Unit 01. Complete Sector 7 liberation is within our grasp!" }] }
+    ]
+  },
+  {
+    "name": "Minefield Grid",
+    "type": "kill",
+    "count": 4,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2400,
+    "act": 3,
+    "objText": "Clear 4 Trapper Minelayers [Shoot spiked red mines (26 HP) to defuse!]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "trapper", "x": -450, "y": -450 },
+      { "type": "enemy", "enemyType": "trapper", "x": 450, "y": -450 },
+      { "type": "enemy", "enemyType": "trapper", "x": -450, "y": 450 },
+      { "type": "enemy", "enemyType": "trapper", "x": 450, "y": 450 },
+      { "type": "mine", "count": 12, "radius": 600 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Trapper Minelayers (180 HP) are dispensing 46-55 dmg proximity mines. Shoot them from afar (26 HP) or use EMP to clear pathways!" },
+      { "who": "Unit 01", "text": "Clearing ordnance." }
+    ]
+  },
+  {
+    "name": "Hive Incursion",
+    "type": "kill",
+    "count": 3,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2400,
+    "act": 3,
+    "objText": "Eliminate 3 Hive Drone Carriers [Focus down the mother hulls!]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "hive", "x": 0, "y": -650 },
+      { "type": "enemy", "enemyType": "hive", "x": -550, "y": 400 },
+      { "type": "enemy", "enemyType": "hive", "x": 550, "y": 400 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Heavy Hive Carriers (165 HP) deploying swarms of suicide dart drones (5 Dmg). Focus fire on the mother hulls!" },
+      { "who": "Unit 01", "text": "Engaging carrier fleet." }
+    ]
+  },
+  {
+    "name": "Reactor Siphon",
+    "type": "shape",
+    "count": 36,
+    "spawnRate": 150,
+    "types": ["trapper", "hive", "sniper", "striker"],
+    "mapSize": 2500,
+    "act": 3,
+    "objText": "Harvest 36 High-Energy Core Nodes",
+    "intro": [
+      { "who": "Command", "text": "Drain 36 high-yield polygon nodes from the reactor ring while avoiding perimeter minefields." },
+      { "who": "Unit 01", "text": "Siphoning core nodes." }
+    ]
+  },
+  {
+    "name": "The Reactor Labyrinth",
+    "type": "kill",
+    "count": 12,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2400,
+    "act": 3,
+    "objText": "Neutralize the Labyrinth Guardians — 12 Kills",
+    "initialSpawns": [
+      { "type": "mine", "count": 18, "radius": 750 },
+      { "type": "enemy", "enemyType": "trapper", "x": -400, "y": -500 },
+      { "type": "enemy", "enemyType": "trapper", "x": 400, "y": -500 },
+      { "type": "enemy", "enemyType": "hive", "x": 0, "y": 600 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "The cooling labyrinth is dense with active ordnance and carrier swarms! Detonate mines at safe distance with primary fire." },
+      { "who": "Unit 01", "text": "Navigating mine channels." }
+    ],
+    "events": [
+      { "frame": 280, "type": "text", "message": "BREACHER SQUAD AMBUSH FROM FLANKS", "color": "#c542f5" },
+      { "frame": 280, "type": "spawn_formation", "formation": "pincer", "enemyType": "shotgun", "count": 4, "radius": 780 },
+      { "frame": 600, "type": "text", "message": "PERIMETER SNIPERS TARGETING YOUR RETREAT", "color": "#ff4757" },
+      { "frame": 600, "type": "spawn_formation", "formation": "corners", "enemyType": "sniper", "count": 4, "radius": 900 },
+      { "frame": 600, "type": "shake", "intensity": 9 }
+    ]
+  },
+  {
+    "name": "The Gauntlet",
+    "type": "kill",
+    "count": 24,
+    "spawnRate": 130,
+    "types": ["sniper", "shotgun", "shield_carrier", "hive", "trapper"],
+    "mapSize": 2500,
+    "act": 3,
+    "objText": "Fight Through the Gauntlet — 24 Kills",
+    "intro": [
+      { "who": "Command", "text": "All core defense archetypes mobilized. Break through the royal guard to reach the mainframe." },
+      { "who": "Unit 01", "text": "Executing full combat engagement." }
+    ],
+    "events": [
+      { "frame": 700, "type": "text", "message": "SPACED 6-POINT PHALANX", "color": "#00d2d3" },
+      { "frame": 700, "type": "spawn_formation", "formation": "ring", "enemyType": "shield_carrier", "count": 6, "radius": 1000 }
+    ]
+  },
+  {
+    "name": "Overdrive Arena",
+    "type": "time",
+    "count": 80,
+    "spawnRate": 90,
+    "types": ["shotgun", "rammer", "sniper", "trapper", "hive"],
+    "mapSize": 2500,
+    "act": 3,
+    "objText": "Survive Core Overdrive Ambush (80s)",
+    "intro": [
+      { "who": "Command", "text": "Automated overdrive engaged! Survive 80 seconds against 360-degree equidistant waves." },
+      { "who": "Unit 01", "text": "Shields up. Holding center." }
+    ],
+    "events": [
+      { "frame": 600, "type": "text", "message": "EQUIDISTANT 4-CORNER ASSAULT", "color": "#ff3838" },
+      { "frame": 600, "type": "spawn_formation", "formation": "corners", "enemyType": "shotgun", "count": 4, "radius": 950 },
+      { "frame": 2400, "type": "text", "message": "EQUIDISTANT 8-POINT ENCIRCLEMENT", "color": "#be2edd" },
+      { "frame": 2400, "type": "spawn_formation", "formation": "ring", "enemyType": "hive", "count": 4, "radius": 1100 }
+    ]
+  },
+  {
+    "name": "Firewall Breach",
+    "type": "kill",
+    "count": 28,
+    "spawnRate": 85,
+    "types": ["sniper", "shield_carrier", "hive", "trapper", "shotgun"],
+    "mapSize": 2600,
+    "act": 3,
+    "objText": "Breach Inner Firewall — 28 Kills",
+    "intro": [
+      { "who": "Command", "text": "Heavy defense battlegroups holding the final firewall. Break their line!" },
+      { "who": "Unit 01", "text": "Breaching." }
+    ],
+    "events": [
+      { "frame": 800, "type": "text", "message": "EQUIDISTANT BOX AMBUSH", "color": "#ff4757" },
+      { "frame": 800, "type": "spawn_formation", "formation": "box", "enemyType": "sniper", "count": 8, "radius": 1050 }
+    ]
+  },
+  {
+    "name": "Executioner's Corridor",
+    "type": "kill",
+    "count": 16,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 2500,
+    "act": 3,
+    "objText": "Shatter the Royal Mainframe Phalanx — 16 Kills",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "shield_carrier", "count": 4, "radius": 520, "formation": "ring" },
+      { "type": "enemy", "enemyType": "trapper", "x": 0, "y": -400 },
+      { "type": "enemy", "enemyType": "hive", "x": 0, "y": 400 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Royal Guard Executioner protocol active. Shield carriers are protecting central drone and mine bays!" },
+      { "who": "Unit 01", "text": "Engaging high-threat phalanx." }
+    ],
+    "events": [
+      { "frame": 350, "type": "text", "message": "CARDINAL RAIL BATTERY ONLINE", "color": "#ff3838" },
+      { "frame": 350, "type": "spawn_formation", "formation": "cross", "enemyType": "sniper", "count": 4, "radius": 950 },
+      { "frame": 750, "type": "text", "message": "HIGH-VELOCITY POINT-BLANK BREACHERS", "color": "#be2edd" },
+      { "frame": 750, "type": "spawn_formation", "formation": "corners", "enemyType": "shotgun", "count": 4, "radius": 850 },
+      { "frame": 750, "type": "shake", "intensity": 10 }
+    ]
+  },
+  {
+    "name": "Core Relay Outpost",
+    "type": "hub",
+    "mapSize": 2200,
+    "spawnRate": 0,
+    "act": 3,
+    "objText": "Last relay refit against supreme MK-VI target dummies.",
+    "deployZone": { "x": 0, "y": 780 },
+    "vaultTerminal": { "x": 0, "y": -780 },
+    "firingRange": { "x": 450, "y": -750, "w": 1400, "h": 1500 },
+    "dummies": [
+      { "x": 700, "y": -300, "label": "LANE 1: TARGET MK-VI", "subLabel": "50m Colossus Armor", "type": "standard", "tier": 6 },
+      { "x": 920, "y": 0, "label": "LANE 2: STRAFER MK-VI", "subLabel": "100m Overdrive", "type": "moving_y", "range": 240, "speed": 0.38, "tier": 6 },
+      { "x": 1180, "y": -200, "label": "LANE 3: FORTIFIED MK-VI", "subLabel": "150m Dreadnought Hull", "type": "heavy", "hp": 1800, "tier": 6 },
+      { "x": 1440, "y": 200, "label": "LANE 4: BARRIER MK-VI", "subLabel": "200m Aegis Barrier", "type": "shielded", "hp": 950, "shieldHp": 800, "tier": 6 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Final refit station. One last opportunity to test fire and tune modules against supreme MK-VI targets." }
+    ],
+    "npcs": [
+      { "x": -750, "y": -180, "name": "Sergeant Doss", "color": "#fed330", "dialogue": [{ "who": "Sergeant Doss", "text": "Reload, Move Speed, Range, XP Boost. Max them all out for the final confrontation." }] },
+      { "x": -850, "y": 480, "name": "Medic Voss", "color": "#ff88bb", "dialogue": [{ "who": "Medic Voss", "text": "Emergency nanite protocols primed. May your armor hold strong, Unit 01." }] },
+      { "x": 160, "y": 0, "name": "Archivist Vance", "color": "#00d2d3", "dialogue": [{ "who": "Archivist Vance", "text": "All combat records synchronized. Go make history, Unit 01." }] },
+      { "x": 0, "y": 320, "name": "Specialist Jax", "color": "#a55eea", "subRole": "TACTICAL ABILITIES & ARMORY", "dialogue": [{ "who": "Specialist Jax", "text": "Deploy turrets and rockets aggressively. Overwhelm the Destroyer's point defense!" }] },
+      { "x": -160, "y": 0, "name": "Command", "color": "#4b6584", "dialogue": [{ "who": "Command", "text": "Good luck, Unit 01. We are tracking your signal. Take down The Destroyer!" }] }
+    ]
+  },
+  {
+    "name": "Inner Sanctum",
+    "type": "kill",
+    "count": 32,
+    "spawnRate": 80,
+    "types": ["sniper", "shield_carrier", "trapper", "shotgun", "hive"],
+    "mapSize": 2600,
+    "act": 3,
+    "objText": "Clear Inner Sanctum Defenders — 32 Kills",
+    "intro": [
+      { "who": "Command", "text": "Supreme defense lines mobilized inside the mainframe vault. Eliminate 32 elite hostiles." },
+      { "who": "Unit 01", "text": "Suppressing elite forces." }
+    ],
+    "events": [
+      { "frame": 800, "type": "text", "message": "SPACED CARDINAL PINCH", "color": "#ff3838" },
+      { "frame": 800, "type": "spawn_formation", "formation": "cross", "enemyType": "shield_carrier", "count": 4, "radius": 1000 },
+      { "frame": 2200, "type": "text", "message": "8-POINT EQUIDISTANT RAIL BATTERY", "color": "#ff4757" },
+      { "frame": 2200, "type": "spawn_formation", "formation": "ring", "enemyType": "sniper", "count": 8, "radius": 1150 }
+    ]
+  },
+  {
+    "name": "The Final Hour",
+    "type": "time",
+    "count": 110,
+    "spawnRate": 70,
+    "types": ["sniper", "basic", "trapper", "shotgun", "shield_carrier", "hive"],
+    "mapSize": 2600,
+    "act": 3,
+    "objText": "Survive Full Core Mobilization (110s)",
+    "intro": [
+      { "who": "Command", "text": "Maximum resistance from all hostile classes. Hold out for 110 seconds!" },
+      { "who": "Unit 01", "text": "Holding to the end." }
+    ],
+    "events": [
+      { "frame": 1200, "type": "text", "message": "WAVE 1 — SPACED 4-CORNER BREACHERS", "color": "#ff3838" },
+      { "frame": 1200, "type": "spawn_formation", "formation": "corners", "enemyType": "shotgun", "count": 4, "radius": 950 },
+      { "frame": 3200, "type": "text", "message": "WAVE 2 — SPACED 6-CARRIER INVASION", "color": "#be2edd" },
+      { "frame": 3200, "type": "spawn_formation", "formation": "ring", "enemyType": "hive", "count": 6, "radius": 1100 },
+      { "frame": 5000, "type": "text", "message": "FINAL SURGE — SPACED 8-POINT RAIL ENCIRCLEMENT", "color": "#ff4757" },
+      { "frame": 5000, "type": "shake", "intensity": 14 },
+      { "frame": 5000, "type": "spawn_formation", "formation": "ring", "enemyType": "sniper", "count": 8, "radius": 1150 }
+    ]
+  },
+  {
+    "name": "Royal Guard",
+    "type": "kill",
+    "count": 36,
+    "spawnRate": 65,
+    "types": ["sniper", "shield_carrier", "shotgun", "trapper", "hive"],
+    "mapSize": 2600,
+    "act": 3,
+    "objText": "Neutralize 36 Royal Guard Elites",
+    "intro": [
+      { "who": "Command", "text": "Final defense line guarding the supreme mainframe. Eliminate 36 Royal Guard units to expose The Destroyer!" },
+      { "who": "Unit 01", "text": "Final breach engaged." }
+    ]
+  },
+  {
+    "name": "The Destroyer",
+    "type": "boss",
+    "count": 1,
+    "spawnRate": 240,
+    "types": ["sniper", "shield_carrier", "trapper", "shotgun"],
+    "boss": "final",
+    "mapSize": 2600,
+    "act": 3,
+    "objText": "Destroy The Destroyer (7,000 HP Supreme Colossus)",
+    "intro": [
+      { "who": "Destroyer", "text": "PRIMARY MAINFRAME ENGAGED. INTRUDER ANNIHILATION PROTOCOL COMMENCING (7000 HP)." },
+      { "who": "Command", "text": "The Destroyer is active! Stay out of its naval batteries (30 Dmg), clear support rammers, and watch for Phase 2 Overdrive below 3500 HP!" }
+    ],
+    "outro": [
+      { "who": "Destroyer", "text": "...SYSTEM CORRUPTION FATAL... CORE DETONATION INEVITABLE..." },
+      { "who": "Unit 01", "text": "Target eliminated. Sector 7 mainframe offline." },
+      { "who": "Command", "text": "Incredible work, Unit 01! Sector 7 core is neutralized... but infinite anomaly sectors are opening up ahead!" }
+    ]
+  },
+  {
+    "name": "CS: Infinite Anomaly",
+    "type": "dialogue_cutscene",
+    "act": 3,
+    "csAct": "Post-Game Protocol",
+    "csTitle": "ENDLESS ANOMALY",
+    "csSub": "Sector Infinity • Uncharted Frontier",
+    "csBg": "rgba(30,0,40,0.95)",
+    "lines": [
+      { "who": "Command", "text": "Unit 01, the destruction of The Destroyer has fractured the dimensional grid." },
+      { "who": "Command", "text": "You have unlocked ENDLESS MODE. Hostile waves and rogue bosses will continuously scale in difficulty with resupply outposts every 5 sectors." },
+      { "who": "Unit 01", "text": "Overclocking core reactors. Engaging Sector Infinity." }
+    ]
+  }
+]

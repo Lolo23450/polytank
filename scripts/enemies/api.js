@@ -34,8 +34,14 @@ const EnemyAPI = (() => {
 
     return {
         register(def) {
-            if (!def.id) return;
-            _registry.set(def.id, Object.assign({}, DEFAULTS, def));
+            if (!def || !def.id) return null;
+            const fullDef = Object.assign({}, DEFAULTS, def);
+            _registry.set(def.id, fullDef);
+            return fullDef;
+        },
+
+        remove(id) {
+            return _registry.delete(id);
         },
 
         spawn(type, x, y, gameCtx) {
@@ -59,25 +65,33 @@ const EnemyAPI = (() => {
 
                 update() {
                     if (this.dead) return;
-                    const playerSnap = gameCtx.player
-                        ? { x: gameCtx.player.x, y: gameCtx.player.y,
-                            hp: gameCtx.player.hp, dead: gameCtx.player.dead }
-                        : null;
+                    const p = gameCtx.player;
+                    const playerSnap = p ? {
+                        x: p.x, y: p.y,
+                        vx: p.vx || 0, vy: p.vy || 0,
+                        hp: p.hp, maxHp: p.maxHp,
+                        dead: Boolean(p.dead)
+                    } : null;
+
                     if (!playerSnap || playerSnap.dead) return;
 
                     if (this.hp < this.maxHp) this.hp += 0.02;
 
                     const spd = Math.hypot(this.vx, this.vy);
-                    if (spd > 20) { this.vx = (this.vx / spd) * 20; this.vy = (this.vy / spd) * 20; }
+                    if (spd > 24) { this.vx = (this.vx / spd) * 24; this.vy = (this.vy / spd) * 24; }
 
                     if (this.reload > 0) this.reload--;
 
-                    def.onUpdate(this, playerSnap, _makeApi(this, gameCtx));
+                    try {
+                        def.onUpdate(this, playerSnap, _makeApi(this, gameCtx));
+                    } catch (err) {
+                        console.warn(`[EnemyAPI:${this.type}] onUpdate error:`, err);
+                    }
 
                     this.vx *= 0.92; this.vy *= 0.92;
                     this.x += this.vx; this.y += this.vy;
 
-                    const lim = gameCtx.state.mapSize - this.r;
+                    const lim = (gameCtx.state && gameCtx.state.mapSize ? gameCtx.state.mapSize : 1500) - this.r;
                     if (this.x < -lim) { this.x = -lim; this.vx = 0; }
                     if (this.x >  lim) { this.x =  lim; this.vx = 0; }
                     if (this.y < -lim) { this.y = -lim; this.vy = 0; }
@@ -86,9 +100,13 @@ const EnemyAPI = (() => {
 
                 draw(ctx) {
                     if (this.dead) return;
-                    if (def.onDraw) {
-                        def.onDraw(this, ctx);
-                    } else {
+                    try {
+                        if (def.onDraw) {
+                            def.onDraw(this, ctx);
+                        } else {
+                            _drawBody(ctx, this, def.bodyShape, def.color);
+                        }
+                    } catch (err) {
                         _drawBody(ctx, this, def.bodyShape, def.color);
                     }
                     _drawHealthBar(ctx, this);
@@ -102,20 +120,28 @@ const EnemyAPI = (() => {
                 _die() {
                     if (this.dead) return;
                     this.dead = true;
-                    def.onDie(this, _makeApi(this, gameCtx));
+                    try {
+                        def.onDie(this, _makeApi(this, gameCtx));
+                    } catch (e) {}
 
-                    if (gameCtx.player) gameCtx.player.gainXp(def.xpReward);
-                    gameCtx.state.score += def.scoreValue;
+                    if (gameCtx.player && typeof gameCtx.player.gainXp === 'function') {
+                        gameCtx.player.gainXp(def.xpReward);
+                    }
+                    if (gameCtx.state) gameCtx.state.score += def.scoreValue;
 
                     if (def.isBoss) {
-                        gameCtx.state.bossDeathEffect = { timer: 200, x: this.x, y: this.y };
+                        if (gameCtx.state) gameCtx.state.bossDeathEffect = { timer: 200, x: this.x, y: this.y };
                     } else if (def.id !== 'swarm_drone' && !def.ignoreKillObjective) {
-                        gameCtx.checkObj('kill');
+                        if (typeof gameCtx.checkObj === 'function') gameCtx.checkObj('kill');
                     }
                 }
             };
 
-            def.onSpawn(instance, gameCtx);
+            try {
+                def.onSpawn(instance, gameCtx);
+            } catch (e) {
+                console.warn(`[EnemyAPI:${type}] onSpawn error:`, e);
+            }
             return instance;
         },
 
@@ -123,9 +149,13 @@ const EnemyAPI = (() => {
             return [..._registry.keys()];
         },
 
+        inspect(type) {
+            return _registry.get(type) ? Object.assign({}, _registry.get(type)) : null;
+        },
+
         get(type) {
             return _registry.get(type);
-        },
+        }
     };
 
     function _makeApi(self, gameCtx) {
@@ -133,26 +163,33 @@ const EnemyAPI = (() => {
             shoot(from, angle, opts = {}) {
                 const { speed = 5, damage = 10, size = 10, life = 120, color = from.color } = opts;
                 const scaledDamage = Math.round(damage * (from.dmgMult || 1));
-                const bx = from.x + Math.cos(angle) * from.r * 1.2;
-                const by = from.y + Math.sin(angle) * from.r * 1.2;
-                gameCtx.bullets.push(new Bullet(bx, by, angle, speed, scaledDamage, size, life, color, false, opts));
+                const bx = from.x + Math.cos(angle) * (from.r * 1.25);
+                const by = from.y + Math.sin(angle) * (from.r * 1.25);
+                if (gameCtx.bullets) {
+                    if (typeof Bullet !== 'undefined') {
+                        gameCtx.bullets.push(new Bullet(bx, by, angle, speed, scaledDamage, size, life, color, false, opts));
+                    } else {
+                        // Sandbox bullet fallback
+                        gameCtx.bullets.push({ x: bx, y: by, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, dmg: scaledDamage, r: size / 2, life, color });
+                    }
+                }
             },
 
             spawnEnemy(type, x, y) {
                 const child = EnemyAPI.spawn(type, x, y, gameCtx);
-                if (child) gameCtx.enemies.push(child);
+                if (child && gameCtx.enemies) gameCtx.enemies.push(child);
                 return child;
             },
 
             particles(x, y, color, count, type = 'spark', params = {}) {
-                gameCtx.spawnParticles(x, y, color, count, type, params);
+                if (gameCtx.spawnParticles) gameCtx.spawnParticles(x, y, color, count, type, params);
             },
 
             text(x, y, str, color = '#fff') {
-                gameCtx.spawnText(x, y, str, color);
+                if (gameCtx.spawnText) gameCtx.spawnText(x, y, str, color);
             },
 
-            get state() { return gameCtx.state; },
+            get state() { return gameCtx.state || {}; }
         };
     }
 
@@ -166,35 +203,24 @@ const EnemyAPI = (() => {
 
         const r = inst.r;
 
-        // Base Drop Plate
         ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
         ctx.beginPath();
         ctx.arc(1.5, 2.5, r, 0, Math.PI * 2);
         ctx.fill();
 
-        // Standard Single Cannon (with mantlet, dual-tone barrel, and muzzle ring)
         if (shape !== 'triangle') {
-            // Main Barrel Tube
             ctx.fillStyle = '#8395a7';
             ctx.fillRect(0, -r * 0.38, r * 2.2, r * 0.76);
             ctx.strokeRect(0, -r * 0.38, r * 2.2, r * 0.76);
 
-            // Barrel Highlight
             ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
             ctx.fillRect(0, -r * 0.38, r * 2.2, r * 0.32);
 
-            // Muzzle Ring
             ctx.fillStyle = '#576574';
             ctx.fillRect(r * 1.9, -r * 0.44, r * 0.35, r * 0.88);
             ctx.strokeRect(r * 1.9, -r * 0.44, r * 0.35, r * 0.88);
-
-            // Barrel Mantlet Collar
-            ctx.fillStyle = '#576574';
-            ctx.fillRect(r * 0.2, -r * 0.48, r * 0.65, r * 0.96);
-            ctx.strokeRect(r * 0.2, -r * 0.48, r * 0.65, r * 0.96);
         }
 
-        // Hull
         ctx.fillStyle = color;
         ctx.beginPath();
         if (shape === 'triangle') {
@@ -216,26 +242,11 @@ const EnemyAPI = (() => {
         ctx.fill();
         ctx.stroke();
 
-        // Bevel / Top Highlight Arc
-        ctx.save();
-        ctx.clip();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
         ctx.beginPath();
-        ctx.arc(-r * 0.25, -r * 0.25, r * 0.9, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-
-        // Center Turret Hatch
-        ctx.beginPath();
-        ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
+        ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2);
         ctx.fillStyle = '#2f3542';
         ctx.fill();
         ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, r * 0.22, 0, Math.PI * 2);
-        ctx.fillStyle = '#747d8c';
-        ctx.fill();
 
         ctx.restore();
     }
