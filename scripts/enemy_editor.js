@@ -18,7 +18,7 @@ const EnemyEditor = (() => {
 
     // Pristine factory definitions cache (captures initial script definitions before any edits)
     const originalDefCache = new Map();
-    const coreIds = ['basic', 'rammer', 'sniper', 'shotgun', 'trapper', 'hive', 'swarm_drone', 'hexagon', 'final', 'shield_carrier'];
+    const coreIds = ['basic', 'rammer', 'sniper', 'shotgun', 'trapper', 'hive', 'swarm_drone', 'hexagon', 'final', 'shield_carrier', 'prism_warden'];
 
     // Viewport camera & interaction
     let zoom = 1.0;

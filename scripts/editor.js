@@ -17,7 +17,8 @@ const LevelEditor = (() => {
         { id: 'trapper', name: 'Trapper Minelayer', color: '#708090', threat: 'Severe' },
         { id: 'hive', name: 'Fleet Hive Carrier', color: '#e056fd', threat: 'Severe' },
         { id: 'swarm_drone', name: 'Swarm Dart', color: '#ff7675', threat: 'Swarm' },
-        { id: 'striker', name: 'Striker Assault Drone', color: '#006666', threat: 'Med' }
+        { id: 'striker', name: 'Striker Assault Drone', color: '#006666', threat: 'Med' },
+        { id: 'prism_warden', name: 'Prism Warden', color: '#f5c542', threat: 'High' }
     ];
 
     function init() {

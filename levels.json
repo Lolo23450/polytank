@@ -134,6 +134,23 @@
     ]
   },
   {
+    "name": "Prism Lock",
+    "type": "kill",
+    "count": 3,
+    "scripted": true,
+    "spawnRate": 0,
+    "mapSize": 1550,
+    "act": 1,
+    "objText": "Neutralize 3 Prism Wardens [Dodge the red lock line]",
+    "initialSpawns": [
+      { "type": "enemy", "enemyType": "prism_warden", "count": 3, "radius": 600, "formation": "arc", "angleDegrees": -90 }
+    ],
+    "intro": [
+      { "who": "Command", "text": "Prism Wardens orbit at medium range. Their yellow ring means patrol; when it turns red, break the lock line before the five-shot burst." },
+      { "who": "Unit 01", "text": "Clear warning. I will move on the red telegraph." }
+    ]
+  },
+  {
     "name": "Ridge Outpost Beta",
     "type": "hub",
     "mapSize": 2200,
@@ -490,13 +507,10 @@
     "types": ["sniper", "shotgun", "basic", "striker"],
     "mapSize": 2200,
     "act": 2,
-    "objText": "Harvest 30 Formations & Locate Stranded Scout",
+    "objText": "Harvest 30 Formations",
     "intro": [
-      { "who": "Command", "text": "A scout unit was downed in the deep field to the southwest. Harvest 30 formations and locate the survivor." },
+      { "who": "Command", "text": "Deep-field energy readings are unstable. Harvest 30 formations before the next deployment." },
       { "who": "Unit 01", "text": "Locating emergency beacon." }
-    ],
-    "npcs": [
-      { "x": -1200, "y": 1200, "name": "Stranded Scout", "color": "#6699ff", "action": "rescue", "dialogue": [{ "who": "Stranded Scout", "text": "Unit 01! Thanks for the extraction. Take this core upgrade point and spend it well!" }] }
     ]
   },
   {

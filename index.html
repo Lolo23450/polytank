@@ -66,27 +66,6 @@
             letter-spacing: 0.5px;
         }
 
-        #sound-toggle {
-            top: 20px;
-            right: 25px;
-            background: rgba(15, 23, 42, 0.85);
-            color: #00d2d3;
-            border: 1px solid #334155;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Ubuntu', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            transition: all 0.15s;
-        }
-
-        #sound-toggle:hover {
-            background: #00d2d3;
-            color: #091322;
-        }
-
         #xp-container {
             bottom: 15px;
             left: 50%;
@@ -2091,6 +2070,363 @@
             box-shadow: 0 8px 25px rgba(0, 210, 211, 0.3);
         }
 
+        .menu-shell {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .menu-hero-card,
+        .menu-side-panel {
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(71, 85, 105, 0.75);
+            border-radius: 18px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(14px);
+        }
+
+        .menu-hero-card {
+            width: min(390px, 100%);
+            height: 100%;
+            min-height: 0;
+            justify-content: center;
+            align-items: stretch;
+            padding: 54px 42px;
+            border-radius: 0;
+            border-top: 0;
+            border-bottom: 0;
+            border-left: 0;
+            background: rgba(7, 11, 20, 0.92);
+            box-shadow: 18px 0 50px rgba(0, 0, 0, 0.28);
+            text-align: left;
+        }
+
+        .menu-side-panel {
+            display: none;
+        }
+
+        .menu-panel-kicker {
+            color: #00d2d3;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .menu-panel-title {
+            margin: 8px 0 20px;
+            color: #fff;
+            font-size: 23px;
+            letter-spacing: 1px;
+        }
+
+        .menu-status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .menu-status-item {
+            border-left: 2px solid #334155;
+            padding: 8px 10px;
+            background: rgba(2, 6, 23, 0.45);
+        }
+
+        .menu-status-label {
+            display: block;
+            color: #64748b;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .menu-status-value {
+            display: block;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .menu-secondary-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .menu-secondary-btn,
+        .settings-btn {
+            border: 1px solid #475569;
+            background: #111c2f;
+            color: #cbd5e1;
+            border-radius: 9px;
+            padding: 12px 14px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            cursor: pointer;
+        }
+
+        .menu-logo-tag,
+        .menu-subtitle,
+        .menu-hero-card > p {
+            display: none;
+        }
+
+        h1.menu-main-title {
+            font-size: 58px;
+            letter-spacing: 2px;
+            line-height: 0.92;
+            margin-bottom: 34px;
+        }
+
+        .menu-button-group {
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        button.menu-curvy-btn {
+            width: 100%;
+            flex: none;
+            border-radius: 4px;
+            padding: 15px 18px;
+            text-align: left;
+        }
+
+        button.menu-curvy-btn.start-btn {
+            background: #d84ce7;
+            border-color: #d84ce7;
+            color: #fff;
+            box-shadow: 0 5px 0 #78248e;
+        }
+
+        button.menu-curvy-btn.start-btn:hover {
+            background: #ed72f5;
+            border-color: #ed72f5;
+            color: #fff;
+        }
+
+        button.menu-curvy-btn.continue-btn {
+            order: -1;
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .menu-secondary-btn {
+            border-radius: 4px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        #menu-overlay {
+            align-items: stretch;
+            justify-content: flex-start;
+            background: rgba(3, 7, 13, 0.18);
+        }
+
+        #menu-overlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(90deg, rgba(3, 7, 13, 0.82) 0%, rgba(3, 7, 13, 0.2) 38%, rgba(3, 7, 13, 0.02) 72%);
+        }
+
+        #menu-overlay > .menu-shell { position: relative; z-index: 1; }
+
+        .menu-secondary-btn:hover,
+        .settings-btn:hover {
+            border-color: #00d2d3;
+            color: #fff;
+            background: #172942;
+        }
+
+        #settings-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 520;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(2, 6, 23, 0.82);
+        }
+
+        #settings-panel {
+            width: min(620px, 100%);
+            max-height: min(760px, 92vh);
+            overflow-y: auto;
+            padding: 28px;
+            border: 1px solid #475569;
+            border-radius: 16px;
+            background: #0b1322;
+            color: #e2e8f0;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+        }
+
+        .settings-header,
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .settings-header {
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 16px;
+            margin-bottom: 18px;
+        }
+
+        .settings-header h2 { margin: 0; color: #fff; letter-spacing: 1px; }
+        .settings-group { border-bottom: 1px solid #1e293b; padding: 14px 0; }
+        .settings-group:last-of-type { border-bottom: 0; }
+        .settings-row { min-height: 42px; color: #cbd5e1; font-size: 13px; }
+        .settings-row label { font-weight: 700; }
+        .settings-row input[type="range"] { width: 220px; accent-color: #00d2d3; }
+        .settings-row input[type="checkbox"] { width: 19px; height: 19px; accent-color: #00d2d3; }
+        .settings-value { width: 42px; color: #00d2d3; text-align: right; font-weight: 700; }
+
+        #mobile-controls {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 210;
+            pointer-events: none;
+            touch-action: none;
+        }
+
+        .mobile-stick,
+        .mobile-action {
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .mobile-stick {
+            position: absolute;
+            left: 24px;
+            bottom: 28px;
+            width: 124px;
+            height: 124px;
+            border: 2px solid rgba(0, 210, 211, 0.7);
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.62);
+        }
+
+        .mobile-stick::before {
+            content: '';
+            position: absolute;
+            inset: 28px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 50%;
+        }
+
+        #mobile-stick-knob {
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #00d2d3;
+            border-radius: 50%;
+            background: rgba(0, 210, 211, 0.35);
+        }
+
+        .mobile-action {
+            position: absolute;
+            right: 24px;
+            width: 70px;
+            height: 70px;
+            border: 2px solid #f97316;
+            border-radius: 50%;
+            background: rgba(67, 25, 10, 0.82);
+            color: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        #mobile-fire { bottom: 48px; width: 94px; height: 94px; border-color: #ff4757; background: rgba(127, 29, 29, 0.84); }
+        #mobile-ability-q { bottom: 158px; border-color: #2ed573; background: rgba(20, 83, 45, 0.84); }
+        #mobile-ability-r { bottom: 238px; border-color: #a55eea; background: rgba(76, 29, 149, 0.84); }
+        #mobile-interact { right: 112px; bottom: 28px; border-color: #00d2d3; background: rgba(8, 47, 73, 0.84); }
+        #mobile-auto { right: 112px; bottom: 110px; width: 58px; height: 58px; border-color: #f5c542; background: rgba(92, 63, 8, 0.88); font-size: 10px; }
+        #mobile-auto.active { color: #111827; background: #f5c542; box-shadow: 0 0 22px rgba(245, 197, 66, 0.6); }
+        #mobile-target-lock {
+            position: absolute;
+            top: 116px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            border: 1px solid rgba(245, 197, 66, 0.7);
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.78);
+            color: #f5c542;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        @media (pointer: coarse), (max-width: 760px) {
+            #mobile-controls { display: block; }
+            #pause-quick-btn { display: none; }
+            #score-bar { top: 10px; font-size: 18px; }
+            #objective-text { top: 38px; max-width: 70vw; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+            #player-hp-container { top: 72px; left: 12px; width: 150px; }
+            #boss-hp-container { top: 72px; right: 12px; width: 170px; }
+            #xp-container { bottom: 8px; width: 42%; height: 16px; }
+            #ability-bar { bottom: 16px; right: 178px; transform: scale(0.8); transform-origin: bottom right; }
+            .menu-shell { width: 100%; max-height: none; overflow: visible; }
+            .menu-hero-card { width: min(320px, 86vw); padding: 34px 24px; }
+            h1.menu-main-title { font-size: clamp(42px, 13vw, 66px); }
+            .menu-logo-tag { letter-spacing: 4px; font-size: 10px; }
+            .menu-button-group { flex-direction: column; gap: 10px; }
+            button.menu-curvy-btn { width: 100%; }
+            .menu-secondary-actions { grid-template-columns: 1fr; }
+            .dialogue-box { width: calc(100vw - 24px); height: 142px; }
+            .portrait-area { width: 112px; }
+            .portrait-area canvas { width: 100px; height: 100px; }
+            .text-area { padding: 16px; }
+            #settings-panel { padding: 20px; }
+            .settings-row input[type="range"] { width: 150px; }
+        }
+
+        @media (orientation: landscape) and (pointer: coarse) {
+            #mobile-target-lock { top: 58px; }
+            .mobile-stick { left: 18px; bottom: 18px; width: 104px; height: 104px; }
+            #mobile-stick-knob { left: 32px; top: 32px; width: 36px; height: 36px; }
+            #mobile-fire { right: 18px; bottom: 22px; width: 78px; height: 78px; }
+            #mobile-ability-q { right: 112px; bottom: 24px; }
+            #mobile-ability-r { right: 192px; bottom: 24px; }
+            #mobile-auto { right: 112px; bottom: 104px; }
+            #mobile-interact { right: 18px; bottom: 112px; }
+            #ability-bar { bottom: 12px; right: 286px; }
+            #xp-container { bottom: 8px; }
+            .menu-hero-card { width: 300px; padding: 28px 24px; }
+            h1.menu-main-title { font-size: 52px; }
+        }
+
+        @media (orientation: landscape) and (max-width: 900px) {
+            #mobile-controls { display: block; }
+            #pause-quick-btn { display: none; }
+            #mobile-target-lock { top: 58px; }
+            .mobile-stick { left: 18px; bottom: 18px; width: 104px; height: 104px; }
+            #mobile-stick-knob { left: 32px; top: 32px; width: 36px; height: 36px; }
+            #mobile-fire { right: 18px; bottom: 22px; width: 78px; height: 78px; }
+            #mobile-ability-q { right: 112px; bottom: 24px; }
+            #mobile-ability-r { right: 192px; bottom: 24px; }
+            #mobile-auto { right: 112px; bottom: 104px; }
+            #mobile-interact { right: 18px; bottom: 112px; }
+            #ability-bar { bottom: 12px; right: 286px; }
+            #xp-container { bottom: 8px; }
+            .menu-hero-card { width: 300px; padding: 28px 24px; }
+            h1.menu-main-title { font-size: 52px; }
+        }
+
         @keyframes pulse {
             0%   { opacity: 1; }
             50%  { opacity: 0.4; }
@@ -2117,7 +2453,6 @@
 <div id="ui-layer">
     <div class="hud-panel" id="score-bar">Score: <span id="score-val">0</span></div>
     <div class="hud-panel" id="objective-text">—</div>
-    <button class="hud-panel" id="sound-toggle" onclick="AudioEngine.toggleMute()">AUDIO: ON</button>
     <div class="hud-panel" id="xp-container">
         <div id="xp-fill"></div>
         <div id="level-text">Lvl 1</div>
@@ -2410,18 +2745,54 @@
 </div>
 
 <div id="menu-overlay">
-    <div class="menu-hero-card">
-        <div class="menu-logo-tag">Sector 7 Cyber-Frontier</div>
-        <h1 class="menu-main-title">POLY TANK</h1>
-        <div class="menu-subtitle">Tactical Armored Dreadnought</div>
-        <div class="menu-button-group">
-            <button class="menu-curvy-btn continue-btn" id="btn-continue" onclick="continueGame()" style="display:none;">Continue Checkpoint</button>
-            <button class="menu-curvy-btn start-btn" id="btn-start" onclick="startGame()">New Game</button>
+    <div class="menu-shell">
+        <div class="menu-hero-card">
+            <h1 class="menu-main-title">POLY TANK</h1>
+            <div class="menu-button-group">
+                <button class="menu-curvy-btn continue-btn" id="btn-continue" onclick="continueGame()" style="display:none;">Continue Checkpoint</button>
+                <button class="menu-curvy-btn start-btn" id="btn-start" onclick="startGame()">New Game</button>
+            </div>
+            <div class="menu-secondary-actions">
+                <button class="menu-secondary-btn" onclick="openSettings()">Settings</button>
+                <button class="menu-secondary-btn" onclick="openControlsGuide()">Controls</button>
+            </div>
         </div>
-        <p style="color:#64748b; margin:22px 0 0 0; font-size:12px; letter-spacing:1px; font-weight:700;">
-            WASD Move &nbsp;|&nbsp; Left-Click / Space Shoot &nbsp;|&nbsp; Q / R Abilities &nbsp;|&nbsp; E Interact &nbsp;|&nbsp; ESC Pause
-        </p>
     </div>
+</div>
+
+<div id="settings-overlay" onclick="closeSettingsOnOverlay(event)">
+    <section id="settings-panel" onclick="event.stopPropagation()">
+        <div class="settings-header">
+            <div><div class="menu-panel-kicker">System Configuration</div><h2>Settings</h2></div>
+            <button class="settings-btn" onclick="closeSettings()">Close</button>
+        </div>
+        <div class="settings-group">
+            <div class="settings-row"><label for="setting-master">Master volume</label><input id="setting-master" type="range" min="0" max="1" step="0.05" oninput="updateSettingVolume('master', this.value)"><span class="settings-value" id="setting-master-value"></span></div>
+            <div class="settings-row"><label for="setting-music">Music volume</label><input id="setting-music" type="range" min="0" max="1" step="0.05" oninput="updateSettingVolume('music', this.value)"><span class="settings-value" id="setting-music-value"></span></div>
+            <div class="settings-row"><label for="setting-sfx">SFX volume</label><input id="setting-sfx" type="range" min="0" max="1" step="0.05" oninput="updateSettingVolume('sfx', this.value)"><span class="settings-value" id="setting-sfx-value"></span></div>
+        </div>
+        <div class="settings-group">
+            <div class="settings-row"><label for="setting-shake">Screen shake</label><input id="setting-shake" type="checkbox" onchange="updateSettingToggle('screenShake', this.checked)"></div>
+            <div class="settings-row"><label for="setting-mobile">Touch controls</label><input id="setting-mobile" type="checkbox" onchange="updateSettingToggle('mobileControls', this.checked)"></div>
+        </div>
+        <div class="settings-group">
+            <div style="color:#00d2d3; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">Controls</div>
+            <div style="color:#94a3b8; font-size:12px; line-height:1.8;">Desktop: WASD or arrows to move, mouse or Space to fire, Q/R for abilities, E to interact, Enter to deploy, Esc to pause.<br>Touch: drag the left stick to move, hold FIRE to shoot, and use Q/R/E on the right.</div>
+        </div>
+        <div class="settings-group">
+            <div class="settings-row"><label>Save data</label><button class="settings-btn" onclick="resetSaveData()">Reset checkpoint</button></div>
+        </div>
+    </section>
+</div>
+
+<div id="mobile-controls" aria-label="Touch controls">
+    <div class="mobile-stick" id="mobile-stick" aria-label="Move"><div id="mobile-stick-knob"></div></div>
+    <button class="mobile-action" id="mobile-fire" aria-label="Fire">FIRE</button>
+    <button class="mobile-action" id="mobile-ability-q" aria-label="Ability Q">Q</button>
+    <button class="mobile-action" id="mobile-ability-r" aria-label="Ability R">R</button>
+    <button class="mobile-action" id="mobile-auto" aria-label="Toggle nearest target autofire">AUTO</button>
+    <button class="mobile-action" id="mobile-interact" aria-label="Interact">E</button>
+    <div id="mobile-target-lock">TARGET: NONE</div>
 </div>
 
 <script src="scripts/editor.js"></script>
@@ -2438,6 +2809,7 @@
 <script src="scripts/enemies/boss_final.js"></script>
 <script src="scripts/enemies/shield_carrier.js"></script>
 <script src="scripts/enemies/striker.js"></script>
+<script src="scripts/enemies/prism_warden.js"></script>
 
 <script>
 
@@ -2490,7 +2862,6 @@ const AudioEngine = (() => {
     let musicGain = null;
     let padGain = null;
     let sfxGain = null;
-    let muted = false;
     let initialized = false;
 
     // Advanced 16-Bar Multi-Phrase Sequencer State
@@ -2514,6 +2885,19 @@ const AudioEngine = (() => {
             bassWave: 'triangle',
             leadWave: 'sine',
             padCutoff: 380,
+            hasDrums: false
+        },
+        menu: {
+            tempo: 102,
+            chords: [
+                { root: 98.00, pad: [196.00, 246.94, 293.66, 369.99], scale: [196.00, 220.00, 246.94, 293.66, 329.63, 369.99] },
+                { root: 73.42, pad: [146.83, 220.00, 277.18, 329.63], scale: [146.83, 174.61, 220.00, 277.18, 329.63, 369.99] },
+                { root: 82.41, pad: [164.81, 207.65, 246.94, 311.13], scale: [164.81, 196.00, 207.65, 246.94, 311.13, 369.99] },
+                { root: 65.41, pad: [130.81, 196.00, 261.63, 329.63], scale: [130.81, 164.81, 196.00, 261.63, 329.63, 392.00] }
+            ],
+            bassWave: 'triangle',
+            leadWave: 'square',
+            padCutoff: 520,
             hasDrums: false
         },
         act1: {
@@ -2603,15 +2987,6 @@ const AudioEngine = (() => {
         }
     }
 
-    function toggleMute() {
-        if (!initialized) init();
-        muted = !muted;
-        if (masterGain && ctx) {
-            masterGain.gain.setValueAtTime(muted ? 0 : 1.1, ctx.currentTime);
-        }
-        document.getElementById('sound-toggle').innerText = muted ? "AUDIO: OFF" : "AUDIO: ON";
-    }
-
     // ── QUANTIZATION TIME HELPER ──
     // Subdivisions: 16 = 16th note (standard), 32 = 32nd note (ultra-snappy), 8 = 8th note
     function getQuantizedTime(subdivision = 8) {
@@ -2625,7 +3000,7 @@ const AudioEngine = (() => {
 
     // ── BPM-SYNCHRONIZED SFX SYNTHESIZERS ──
     function playShoot(type = 'player') {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(32); // 1/32 note quantization for instant responsiveness
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2674,7 +3049,7 @@ const AudioEngine = (() => {
     }
 
     function playHit(type = 'armor') {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(32);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2706,7 +3081,7 @@ const AudioEngine = (() => {
     }
 
     function playChime(shapeType = 0) {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16); // 1/16 note quantization for musical pickup
         const freqs = [440, 554.37, 659.25];
         const f = freqs[shapeType % 3] || 440;
@@ -2727,7 +3102,7 @@ const AudioEngine = (() => {
     }
 
     function playExplosion(isLarge = false) {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2751,7 +3126,7 @@ const AudioEngine = (() => {
     }
 
     function playMineBeep(proximityFactor = 0.5) {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const now = Date.now();
         const minInterval = 180 + (1 - proximityFactor) * 500;
         if (now - lastMineBeepTime < minInterval) return;
@@ -2773,7 +3148,7 @@ const AudioEngine = (() => {
     }
 
     function playEmp() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2787,7 +3162,7 @@ const AudioEngine = (() => {
     }
 
     function playShieldActivate() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2801,7 +3176,7 @@ const AudioEngine = (() => {
     }
 
     function playShieldBreak() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(32);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2815,7 +3190,7 @@ const AudioEngine = (() => {
     }
 
     function playMissileLaunch(isHeavy = false) {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2829,7 +3204,7 @@ const AudioEngine = (() => {
     }
 
     function playTurretDeploy() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16);
         const stepSec = (60 / tempo) / 4;
         [320, 480, 640].forEach((f, i) => {
@@ -2846,7 +3221,7 @@ const AudioEngine = (() => {
     }
 
     function playDroneSpawn() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(32);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2860,7 +3235,7 @@ const AudioEngine = (() => {
     }
 
     function playNaniteHeal() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(16);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2874,7 +3249,7 @@ const AudioEngine = (() => {
     }
 
     function playDialogueBeep(speaker = "Unit 01") {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(32);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -2903,7 +3278,7 @@ const AudioEngine = (() => {
     }
 
     function playLevelUp() {
-        if (!initialized || muted || !ctx) return;
+        if (!initialized || !ctx) return;
         const t = getQuantizedTime(8); // Snaps to 8th note for triumphant feel
         const stepSec = (60 / tempo) / 4;
         [440.00, 554.37, 659.25, 880.00].forEach((freq, i) => {
@@ -2924,9 +3299,9 @@ const AudioEngine = (() => {
     }
 
     // ── SEQUENCER ENGINE ──
-    function setMood(act = 1, isBoss = false, isHub = false) {
-        currentMood = { act, isBoss, isHub };
-        const themeKey = isHub ? 'hub' : (isBoss ? 'boss' : (act === 3 ? 'act3' : (act === 2 ? 'act2' : 'act1')));
+    function setMood(act = 1, isBoss = false, isHub = false, isMenu = false) {
+        currentMood = { act, isBoss, isHub, isMenu };
+        const themeKey = isMenu ? 'menu' : (isHub ? 'hub' : (isBoss ? 'boss' : (act === 3 ? 'act3' : (act === 2 ? 'act2' : 'act1'))));
         const theme = MUSIC_THEMES[themeKey] || MUSIC_THEMES.act1;
         tempo = theme.tempo;
         startMusicSequencer();
@@ -2938,7 +3313,7 @@ const AudioEngine = (() => {
         globalStep = 0;
 
         const tick = () => {
-            if (!initialized || muted || !ctx) return;
+            if (!initialized || !ctx) return;
             playSequencerStep(globalStep);
             globalStep = (globalStep + 1) % 256;
         };
@@ -2949,8 +3324,8 @@ const AudioEngine = (() => {
     function playSequencerStep(stepIdx) {
         const stepDuration = (60 / tempo) / 4;
         const t = seqStartTime + stepIdx * stepDuration;
-        const { act, isBoss, isHub } = currentMood;
-        const themeKey = isHub ? 'hub' : (isBoss ? 'boss' : (act === 3 ? 'act3' : (act === 2 ? 'act2' : 'act1')));
+        const { act, isBoss, isHub, isMenu } = currentMood;
+        const themeKey = isMenu ? 'menu' : (isHub ? 'hub' : (isBoss ? 'boss' : (act === 3 ? 'act3' : (act === 2 ? 'act2' : 'act1'))));
         const theme = MUSIC_THEMES[themeKey] || MUSIC_THEMES.act1;
 
         const subStep = stepIdx % 16;
@@ -3136,7 +3511,7 @@ const AudioEngine = (() => {
     function setMasterVolume(val) {
         if (!initialized) init();
         if (masterGain && ctx) {
-            masterGain.gain.setValueAtTime(muted ? 0 : parseFloat(val), ctx.currentTime);
+            masterGain.gain.setValueAtTime(parseFloat(val), ctx.currentTime);
         }
     }
 
@@ -3157,7 +3532,6 @@ const AudioEngine = (() => {
     return {
         init,
         resume,
-        toggleMute,
         setMasterVolume,
         setMusicVolume,
         setSfxVolume,
@@ -3178,6 +3552,184 @@ const AudioEngine = (() => {
         setMood
     };
 })();
+
+// =====================================================================
+//  PERSISTENT SETTINGS & TOUCH INPUT
+// =====================================================================
+const SETTINGS_STORAGE_KEY = 'polytank_settings';
+const defaultSettings = {
+    master: 0.7,
+    music: 0.28,
+    sfx: 0.32,
+    screenShake: true,
+    mobileControls: true
+};
+let appSettings = Object.assign({}, defaultSettings);
+const mobileInput = { x: 0, y: 0, aimAngle: 0, firing: false, autoFire: false, stickPointerId: null };
+
+function loadSettings() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+        appSettings = Object.assign({}, defaultSettings, saved);
+    } catch (error) {
+        appSettings = Object.assign({}, defaultSettings);
+    }
+}
+
+function saveSettings() {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(appSettings));
+}
+
+function applySettings() {
+    AudioEngine.setMasterVolume(appSettings.master);
+    AudioEngine.setMusicVolume(appSettings.music);
+    AudioEngine.setSfxVolume(appSettings.sfx);
+    const controls = document.getElementById('mobile-controls');
+    if (controls) {
+        const touchDevice = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 760 || (window.innerWidth <= 900 && window.innerHeight <= 600);
+        const menuOpen = document.getElementById('menu-overlay')?.style.display !== 'none';
+        controls.style.display = !menuOpen && appSettings.mobileControls && touchDevice ? 'block' : 'none';
+    }
+}
+
+function syncSettingsUi() {
+    const values = { master: 'setting-master', music: 'setting-music', sfx: 'setting-sfx' };
+    Object.keys(values).forEach(key => {
+        const input = document.getElementById(values[key]);
+        const output = document.getElementById(`${values[key]}-value`);
+        if (input) input.value = appSettings[key];
+        if (output) output.innerText = `${Math.round(appSettings[key] * 100)}%`;
+    });
+    const shake = document.getElementById('setting-shake');
+    const mobile = document.getElementById('setting-mobile');
+    if (shake) shake.checked = appSettings.screenShake;
+    if (mobile) mobile.checked = appSettings.mobileControls;
+}
+
+function openSettings() {
+    syncSettingsUi();
+    document.getElementById('settings-overlay').style.display = 'flex';
+}
+
+function closeSettings() {
+    document.getElementById('settings-overlay').style.display = 'none';
+}
+
+function closeSettingsOnOverlay(event) {
+    if (event.target.id === 'settings-overlay') closeSettings();
+}
+
+function setMenuMode(isMenu) {
+    const ui = document.getElementById('ui-layer');
+    const controls = document.getElementById('mobile-controls');
+    if (ui) ui.style.visibility = isMenu ? 'hidden' : 'visible';
+    if (controls && isMenu) controls.style.display = 'none';
+    if (controls && !isMenu) applySettings();
+}
+
+function updateSettingVolume(key, value) {
+    appSettings[key] = Number(value);
+    if (key === 'master') AudioEngine.setMasterVolume(value);
+    if (key === 'music') AudioEngine.setMusicVolume(value);
+    if (key === 'sfx') AudioEngine.setSfxVolume(value);
+    saveSettings();
+    syncSettingsUi();
+}
+
+function updateSettingToggle(key, value) {
+    appSettings[key] = Boolean(value);
+    saveSettings();
+    applySettings();
+}
+
+function resetSaveData() {
+    localStorage.removeItem('polytank_save');
+    const continueButton = document.getElementById('btn-continue');
+    if (continueButton) continueButton.style.display = 'none';
+    updateMenuSaveStatus();
+}
+
+function updateMenuSaveStatus() {
+    const status = document.getElementById('menu-save-status');
+    if (!status) return;
+    const save = loadGame();
+    status.innerText = save ? `Sector ${Number(save.level || 0) + 1} ready` : 'No checkpoint';
+}
+
+function openControlsGuide() {
+    openSettings();
+    const panel = document.getElementById('settings-panel');
+    if (panel) panel.scrollTop = panel.scrollHeight;
+}
+
+function setupMobileControls() {
+    const stick = document.getElementById('mobile-stick');
+    const knob = document.getElementById('mobile-stick-knob');
+    const fire = document.getElementById('mobile-fire');
+    const auto = document.getElementById('mobile-auto');
+    if (!stick || !knob || !fire || !auto) return;
+
+    const resetStick = () => {
+        mobileInput.x = 0;
+        mobileInput.y = 0;
+        mobileInput.stickPointerId = null;
+        knob.style.transform = 'translate(0px, 0px)';
+    };
+    const moveStick = event => {
+        if (mobileInput.stickPointerId !== event.pointerId) return;
+        const rect = stick.getBoundingClientRect();
+        const max = 42;
+        const dx = event.clientX - (rect.left + rect.width / 2);
+        const dy = event.clientY - (rect.top + rect.height / 2);
+        const length = Math.min(max, Math.hypot(dx, dy));
+        const angle = Math.atan2(dy, dx);
+        mobileInput.x = Math.cos(angle) * length / max;
+        mobileInput.y = Math.sin(angle) * length / max;
+        knob.style.transform = `translate(${mobileInput.x * max}px, ${mobileInput.y * max}px)`;
+    };
+    stick.addEventListener('pointerdown', event => {
+        mobileInput.stickPointerId = event.pointerId;
+        stick.setPointerCapture(event.pointerId);
+        moveStick(event);
+    });
+    stick.addEventListener('pointermove', moveStick);
+    stick.addEventListener('pointerup', resetStick);
+    stick.addEventListener('pointercancel', resetStick);
+
+    fire.addEventListener('pointerdown', event => { event.preventDefault(); mobileInput.firing = true; fire.setPointerCapture(event.pointerId); });
+    fire.addEventListener('pointerup', () => { mobileInput.firing = false; });
+    fire.addEventListener('pointercancel', () => { mobileInput.firing = false; });
+    auto.addEventListener('pointerdown', event => {
+        event.preventDefault();
+        mobileInput.autoFire = !mobileInput.autoFire;
+        auto.classList.toggle('active', mobileInput.autoFire);
+        auto.innerText = mobileInput.autoFire ? 'LOCK' : 'AUTO';
+    });
+    document.getElementById('mobile-ability-q').addEventListener('pointerdown', () => triggerAbility('q'));
+    document.getElementById('mobile-ability-r').addEventListener('pointerdown', () => triggerAbility('r'));
+    document.getElementById('mobile-interact').addEventListener('pointerdown', () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'e' })));
+}
+
+function getNearestMobileTarget() {
+    if (!Array.isArray(enemies) || !player || player.dead) return null;
+    let nearest = null;
+    let nearestDistance = Infinity;
+    enemies.forEach(enemy => {
+        if (!enemy || enemy.dead) return;
+        const distance = (enemy.x - player.x) ** 2 + (enemy.y - player.y) ** 2;
+        if (distance < nearestDistance) {
+            nearest = enemy;
+            nearestDistance = distance;
+        }
+    });
+    return nearest;
+}
+
+function updateMobileTargetUi(target) {
+    const indicator = document.getElementById('mobile-target-lock');
+    if (!indicator) return;
+    indicator.innerText = target ? `TARGET: ${(target.type || 'HOSTILE').toUpperCase()}` : 'TARGET: NONE';
+}
 
 // =====================================================================
 //  PAUSE SYSTEM & CHEAP CANVAS BLUR CONTROLLER
@@ -3230,6 +3782,8 @@ function restartLevel() {
 function quitToMainMenu() {
     resumeGame();
     state.active = false;
+    AudioEngine.setMood(1, false, false, true);
+    setMenuMode(true);
     document.getElementById('menu-overlay').style.display = 'flex';
     document.getElementById('gameCanvas').classList.remove('canvas-blurred');
 }
@@ -3445,6 +3999,17 @@ const ENEMY_DATABASE = [
         mobilityProfile: 'Erratic Dart Wobble • 6.2 Ultra-Fast Spd • Homing AI',
         tacticalCounter: 'Vaporized in 1 hit (1 HP); easily cleared with rapid-fire sweeps or Orbit Drones.',
         lore: 'Miniature aerodynamic dart drone launched in packs by Hive carriers. Features an erratic wobble flight path and contact detonation payload.'
+    },
+    {
+        id: 'prism_warden',
+        name: 'Prism Warden',
+        threat: 'high',
+        threatText: 'Threat: High',
+        chassisClass: 'Orbiting Prism Controller (R26)',
+        weaponProfile: 'Five-Shot Prism Burst • 11 Dmg/round • 55-Frame Telegraph',
+        mobilityProfile: 'Orbit / Retreat Cycle • 340px Preferred Range',
+        tacticalCounter: 'When the ring turns red, break the lock line before the burst fires.',
+        lore: 'An Act 1 control chassis that alternates between orbiting pressure, a clearly marked lock phase, and a five-round prism burst before retreating to reset its pattern.'
     },
     {
         id: 'shield_carrier',
@@ -3746,7 +4311,12 @@ class Tank extends Entity {
                 return;
             }
 
+            const mobileTarget = mobileInput.autoFire ? getNearestMobileTarget() : null;
+            updateMobileTargetUi(mobileTarget);
             this.angle = Math.atan2(mouse.wy - this.y, mouse.wx - this.x);
+            if (mobileTarget) {
+                this.angle = Math.atan2(mobileTarget.y - this.y, mobileTarget.x - this.x);
+            }
             let maxSpd = 12 + (this.S(4) * 0.1);
             let acc = 0.5;
             let mult = 1.2 + (this.S(4) * 0.1);
@@ -3754,6 +4324,12 @@ class Tank extends Entity {
             if (keys['s'] || keys['arrowdown'])  this.vy += acc * mult;
             if (keys['a'] || keys['arrowleft'])  this.vx -= acc * mult;
             if (keys['d'] || keys['arrowright']) this.vx += acc * mult;
+            if (mobileInput.x || mobileInput.y) {
+                this.vx += mobileInput.x * acc * mult;
+                this.vy += mobileInput.y * acc * mult;
+                mobileInput.aimAngle = Math.atan2(mobileInput.y, mobileInput.x);
+            }
+            if (mobileInput.firing) this.angle = mobileInput.aimAngle;
             let spd = Math.hypot(this.vx, this.vy);
             if (spd > maxSpd) {
                 this.vx = (this.vx / spd) * maxSpd;
@@ -3762,7 +4338,7 @@ class Tank extends Entity {
             
             this.gearRotation += (0.04 + spd * 0.06) * (1 + this.S(4) * 0.15);
 
-            if ((mouse.down || keys[' ']) && this.reload <= 0) this.shoot();
+            if ((mouse.down || keys[' '] || mobileInput.firing || mobileTarget) && this.reload <= 0) this.shoot();
         }
         if (this.reload > 0) this.reload--;
         this.phys();
@@ -3902,6 +4478,7 @@ class Bullet extends Entity {
         this.rot = Math.random() * Math.PI * 2;
         this.rotSpd = (Math.random() - 0.5) * 0.035;
         this.armTimer = 0;
+        this.simCtx = opts.simCtx || null;
 
         this.isMine = Boolean(
             opts.isMine || 
@@ -3930,7 +4507,32 @@ class Bullet extends Entity {
         }
     }
 
+    updateSimulation() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+        if (this.life <= 0) {
+            this.dead = true;
+            return;
+        }
+
+        const targets = this.pShot ? this.simCtx.enemies : [this.simCtx.player];
+        for (const target of targets) {
+            if (!target || target.dead) continue;
+            const radius = this.r + target.r;
+            if ((this.x - target.x) ** 2 + (this.y - target.y) ** 2 <= radius * radius) {
+                target.takeDmg(this.dmg);
+                this.dead = true;
+                return;
+            }
+        }
+    }
+
     update() {
+        if (this.simCtx) {
+            this.updateSimulation();
+            return;
+        }
         this.x += this.vx;
         this.y += this.vy;
         
@@ -6682,9 +7284,17 @@ function closeGallery() {
 // =====================================================================
 
 function init() {
+    loadSettings();
+    setupMobileControls();
+    applySettings();
+    syncSettingsUi();
+    updateMenuSaveStatus();
+    AudioEngine.setMood(1, false, false, true);
+    setMenuMode(true);
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        applySettings();
     });
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -6701,6 +7311,11 @@ function init() {
         AudioEngine.resume();
         const k = e.key.toLowerCase();
         keys[k] = true;
+
+        if (document.getElementById('settings-overlay').style.display === 'flex') {
+            if (e.key === 'Escape') closeSettings();
+            return;
+        }
 
         // 1. Advance dialogue if open
         if (state.dia && state.dia.active) {
@@ -7169,7 +7784,6 @@ function renderDialogue() {
     else if (line.who.includes('Destroyer'))    { color = C.ENEMY_BOSS2; scale = 0.7; }
     else if (line.who.includes('Jax'))          { color = C.NPC_PURPLE;  scale = 1.0; } // ✅ Fix for Jax
     else if (line.who === 'Engineer Kova')      { color = C.NPC_GREEN;   scale = 1.0; }
-    else if (line.who === 'Stranded Scout')     { color = C.NPC_ORANGE;  scale = 1.0; }
     else if (line.who === 'Scout Yolo')         { color = C.NPC_ORANGE;  scale = 1.0; }
     else if (line.who === 'Scout Wren')         { color = C.NPC_BLUE;    scale = 1.0; }
     else if (line.who === 'Sergeant Doss')      { color = C.NPC_YELLOW;  scale = 1.0; }
@@ -7485,6 +8099,280 @@ function unequipAbility(abilityType, slotIndex) {
 // =====================================================================
 //  FIXED TIMESTEP GAME LOOP (INDEPENDENT OF MONITOR REFRESH RATE)
 // =====================================================================
+const menuSimulation = {
+    ready: false,
+    lastTime: 0,
+    accumulator: 0,
+    timeScale: 0.68,
+    player: null,
+    enemies: [],
+    bullets: [],
+    shapes: [],
+    bot: {
+        target: null,
+        decisionTimer: 0,
+        strafeDirection: 1,
+        shieldTimer: 0,
+        empTimer: 0,
+        droneTimer: 0,
+        abilityText: '',
+        abilityTextTimer: 0
+    },
+    effects: { empRadius: 0 },
+    state: { mapSize: 900, frame: 0, score: 0, bossDeathEffect: null },
+    gameCtx: null
+};
+
+function initMenuSimulation() {
+    if (menuSimulation.ready || typeof EnemyAPI === 'undefined') return;
+    menuSimulation.player = new Tank(620, 500, true);
+    menuSimulation.player.dead = false;
+    menuSimulation.player.target = null;
+    menuSimulation.shapes = [
+        [210, 180, 0], [690, 170, 1], [160, 610, 2], [700, 790, 0], [470, 120, 1]
+    ].map(([x, y, type]) => new Shape(x, y, type));
+    const MenuBullet = class extends Bullet {
+        constructor(x, y, angle, speed, damage, radius, life, color, playerShot, options = {}) {
+            super(x, y, angle, speed, damage, radius, life, color, playerShot, Object.assign({}, options, { simCtx: menuSimulation.gameCtx }));
+        }
+    };
+    menuSimulation.gameCtx = {
+        Bullet: MenuBullet,
+        get player() { return menuSimulation.player; },
+        get enemies() { return menuSimulation.enemies; },
+        get bullets() { return menuSimulation.bullets; },
+        get state() { return menuSimulation.state; },
+        spawnParticles() {},
+        spawnText() {},
+        checkObj() {}
+    };
+    const placements = [
+        ['basic', 370, 270],
+        ['striker', 820, 680],
+        ['prism_warden', 360, 700]
+    ];
+    placements.forEach(([type, x, y]) => {
+        const enemy = EnemyAPI.spawn(type, x, y, menuSimulation.gameCtx);
+        if (enemy) menuSimulation.enemies.push(enemy);
+    });
+    menuSimulation.player.godMode = true;
+    menuSimulation.ready = true;
+}
+
+function updateMenuSimulation(now) {
+    initMenuSimulation();
+    if (!menuSimulation.ready) return;
+    const elapsed = menuSimulation.lastTime ? Math.min(100, now - menuSimulation.lastTime) : 16;
+    menuSimulation.lastTime = now;
+    menuSimulation.accumulator += elapsed * menuSimulation.timeScale;
+    const steps = Math.min(6, Math.floor(menuSimulation.accumulator / 16.67));
+    menuSimulation.accumulator -= steps * 16.67;
+    if (steps <= 0) return;
+
+    for (let step = 0; step < steps; step++) {
+        menuSimulation.state.frame++;
+
+        const bot = menuSimulation.bot;
+        const botPlayer = menuSimulation.player;
+        const liveEnemies = menuSimulation.enemies.filter(enemy => !enemy.dead);
+        if (bot.decisionTimer <= 0 || !bot.target || bot.target.dead) {
+            bot.target = liveEnemies
+                .map(enemy => {
+                    const distance = Math.hypot(enemy.x - botPlayer.x, enemy.y - botPlayer.y);
+                    const threat = enemy.type === 'prism_warden' ? 0 : (enemy.type === 'striker' ? 90 : 45);
+                    return { enemy, score: distance + threat };
+                })
+                .sort((a, b) => a.score - b.score)[0]?.enemy || null;
+            bot.decisionTimer = 18;
+            if (Math.random() < 0.12) bot.strafeDirection *= -1;
+        }
+        bot.decisionTimer--;
+        botPlayer.target = bot.target;
+
+        let dodgeX = 0;
+        let dodgeY = 0;
+        let nearestThreat = Infinity;
+        menuSimulation.bullets.forEach(bullet => {
+            if (bullet.pShot || bullet.dead) return;
+            const dx = botPlayer.x - bullet.x;
+            const dy = botPlayer.y - bullet.y;
+            const distance = Math.hypot(dx, dy);
+            if (distance < 170 && distance < nearestThreat) {
+                nearestThreat = distance;
+                const bulletSpeed = Math.hypot(bullet.vx, bullet.vy) || 1;
+                const approaching = ((botPlayer.x - bullet.x) * bullet.vx + (botPlayer.y - bullet.y) * bullet.vy) > 0;
+                if (approaching) {
+                    dodgeX += -bullet.vy / bulletSpeed;
+                    dodgeY += bullet.vx / bulletSpeed;
+                }
+            }
+        });
+
+        if (bot.target) {
+            const dx = bot.target.x - botPlayer.x;
+            const dy = bot.target.y - botPlayer.y;
+            const distance = Math.hypot(dx, dy) || 1;
+            const aim = Math.atan2(dy, dx);
+            const desiredRange = 300;
+            const radial = distance > desiredRange + 35 ? 1 : (distance < desiredRange - 35 ? -1 : 0);
+            const tangent = aim + (Math.PI * 0.5 * bot.strafeDirection);
+            const moveX = Math.cos(aim) * radial * 0.8 + Math.cos(tangent) * 0.7 + dodgeX * 2.2;
+            const moveY = Math.sin(aim) * radial * 0.8 + Math.sin(tangent) * 0.7 + dodgeY * 2.2;
+            const moveLength = Math.hypot(moveX, moveY) || 1;
+            botPlayer.vx = moveX / moveLength * 4.5;
+            botPlayer.vy = moveY / moveLength * 4.5;
+            botPlayer.x += botPlayer.vx;
+            botPlayer.y += botPlayer.vy;
+
+            const lead = Math.min(24, distance / 14);
+            const aimX = bot.target.x + (bot.target.vx || 0) * lead;
+            const aimY = bot.target.y + (bot.target.vy || 0) * lead;
+            botPlayer.angle = Math.atan2(aimY - botPlayer.y, aimX - botPlayer.x);
+            if (botPlayer.reload <= 0) {
+                menuSimulation.bullets.push(new Bullet(
+                    botPlayer.x + Math.cos(botPlayer.angle) * botPlayer.r * 1.3,
+                    botPlayer.y + Math.sin(botPlayer.angle) * botPlayer.r * 1.3,
+                    botPlayer.angle, 8, 18, 6, 90, botPlayer.color, true,
+                    { simCtx: menuSimulation.gameCtx }
+                ));
+                botPlayer.reload = 22;
+            }
+        }
+
+        botPlayer.x = Math.max(80, Math.min(820, botPlayer.x));
+        botPlayer.y = Math.max(80, Math.min(920, botPlayer.y));
+        if (botPlayer.reload > 0) botPlayer.reload--;
+
+        if (bot.shieldTimer <= 0 && menuSimulation.state.frame % 360 === 0) {
+            bot.shieldTimer = 150;
+            bot.abilityText = 'AEGIS BARRIER';
+            bot.abilityTextTimer = 70;
+        }
+        if (bot.empTimer <= 0 && menuSimulation.state.frame % 480 === 0) {
+            bot.empTimer = 480;
+            menuSimulation.effects.empRadius = 1;
+            bot.abilityText = 'EMP BLAST';
+            bot.abilityTextTimer = 70;
+            liveEnemies.forEach(enemy => {
+                if (Math.hypot(enemy.x - botPlayer.x, enemy.y - botPlayer.y) < 300) enemy.takeDmg(28);
+            });
+            menuSimulation.bullets.forEach(bullet => { if (!bullet.pShot) bullet.dead = true; });
+        }
+        if (bot.droneTimer <= 0 && menuSimulation.state.frame % 240 === 0) {
+            bot.droneTimer = 240;
+            bot.abilityText = 'DRONE WING';
+            bot.abilityTextTimer = 55;
+        }
+        if (bot.shieldTimer > 0) bot.shieldTimer--;
+        if (bot.empTimer > 0) bot.empTimer--;
+        if (bot.droneTimer > 0) bot.droneTimer--;
+        if (bot.abilityTextTimer > 0) bot.abilityTextTimer--;
+        if (menuSimulation.effects.empRadius > 0) menuSimulation.effects.empRadius += 0.08;
+        if (menuSimulation.effects.empRadius > 12) menuSimulation.effects.empRadius = 0;
+
+        menuSimulation.shapes.forEach(shape => shape.update());
+        menuSimulation.enemies.forEach(enemy => enemy.update());
+        menuSimulation.bullets.forEach(bullet => bullet.update());
+        menuSimulation.bullets = menuSimulation.bullets.filter(bullet => !bullet.dead && Math.abs(bullet.x) < 1200 && Math.abs(bullet.y) < 1200);
+        menuSimulation.enemies = menuSimulation.enemies.filter(enemy => !enemy.dead);
+        if (menuSimulation.enemies.length < 3) {
+            const type = ['basic', 'striker', 'prism_warden'][menuSimulation.state.frame % 3];
+            const angle = menuSimulation.state.frame * 0.9;
+            const enemy = EnemyAPI.spawn(type, 450 + Math.cos(angle) * 330, 500 + Math.sin(angle) * 330, menuSimulation.gameCtx);
+            if (enemy) menuSimulation.enemies.push(enemy);
+        }
+    }
+}
+
+function drawMenuShape(shape) {
+    shape.draw(ctx);
+}
+
+function drawActualMenuBattle(time) {
+    const w = canvas.width;
+    const h = canvas.height;
+    const t = time * 0.001;
+    updateMenuSimulation(time);
+
+    ctx.fillStyle = '#c5ccd3';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#9aa6b2';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < w; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+    for (let y = 0; y < h; y += 40) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+    ctx.stroke();
+
+    ctx.save();
+    state.viewL = -Infinity;
+    state.viewR = Infinity;
+    state.viewT = -Infinity;
+    state.viewB = Infinity;
+    const sceneLeft = Math.min(w * 0.32, 420);
+    const sceneScale = Math.min((w - sceneLeft) / 900, h / 1000);
+    ctx.translate(sceneLeft + ((w - sceneLeft) - 900 * sceneScale) / 2, (h - 1000 * sceneScale) / 2);
+    ctx.scale(sceneScale, sceneScale);
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.13)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= 900; x += 55) { ctx.beginPath(); ctx.moveTo(x, 620); ctx.lineTo(x + (x - 450) * 1.8, 1000); ctx.stroke(); }
+    for (let y = 660; y < 1000; y += 34) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(900, y); ctx.stroke(); }
+
+    menuSimulation.shapes.forEach(drawMenuShape);
+    menuSimulation.bullets.forEach(bullet => {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, bullet.life / 18);
+        bullet.draw(ctx);
+        ctx.restore();
+    });
+    menuSimulation.enemies.forEach(enemy => enemy.draw(ctx));
+    if (menuSimulation.player.target && !menuSimulation.player.target.dead) {
+        ctx.save();
+        ctx.translate(menuSimulation.player.target.x, menuSimulation.player.target.y);
+        ctx.strokeStyle = '#f5c542';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath(); ctx.arc(0, 0, menuSimulation.player.target.r + 16, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+    }
+    if (menuSimulation.bot.shieldTimer > 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 255, 230, 0.85)';
+        ctx.fillStyle = 'rgba(0, 210, 211, 0.12)';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(menuSimulation.player.x, menuSimulation.player.y, menuSimulation.player.r + 18, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.restore();
+    }
+    if (menuSimulation.effects.empRadius > 0) {
+        ctx.save();
+        ctx.strokeStyle = `rgba(165, 94, 234, ${Math.max(0, 1 - menuSimulation.effects.empRadius / 12)})`;
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(menuSimulation.player.x, menuSimulation.player.y, menuSimulation.effects.empRadius * 30, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+    }
+    if (menuSimulation.bot.droneTimer > 0) {
+        for (let i = 0; i < 2; i++) {
+            const angle = menuSimulation.state.frame * 0.08 + i * Math.PI;
+            ctx.fillStyle = '#2ed573';
+            ctx.beginPath(); ctx.arc(menuSimulation.player.x + Math.cos(angle) * 48, menuSimulation.player.y + Math.sin(angle) * 48, 7, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+    if (menuSimulation.bot.abilityTextTimer > 0) {
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px Ubuntu';
+        ctx.textAlign = 'center';
+        ctx.fillText(menuSimulation.bot.abilityText, menuSimulation.player.x, menuSimulation.player.y - 58);
+        ctx.restore();
+    }
+    menuSimulation.player.draw(ctx);
+    ctx.restore();
+}
+
+function drawMenuBackground(time) {
+    drawActualMenuBattle(time);
+}
+
 let lastTime = 0;
 let accumulator = 0;
 const FIXED_TIMESTEP = 1000 / 70; // Exactly 70 updates per second (~14.29ms)
@@ -7517,15 +8405,19 @@ function loop(currentTime = 0) {
         draw();
     } else {
         accumulator = 0;
-        ctx.fillStyle = C.BG;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = C.GRID;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        let step = 40;
-        for (let x = 0; x < canvas.width + step; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
-        for (let y = 0; y < canvas.height + step; y += step) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
-        ctx.stroke();
+        if (document.getElementById('menu-overlay').style.display !== 'none') {
+            drawMenuBackground(currentTime);
+        } else {
+            ctx.fillStyle = C.BG;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = C.GRID;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            let step = 40;
+            for (let x = 0; x < canvas.width + step; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+            for (let y = 0; y < canvas.height + step; y += step) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+            ctx.stroke();
+        }
     }
 
     requestAnimationFrame(loop);
@@ -7788,8 +8680,10 @@ function update() {
     state.cam.y += (desiredCy - state.cam.y) * 0.05;
 
     if (state.cam.shake > 0) {
-        state.cam.x += (Math.random() - 0.5) * state.cam.shake;
-        state.cam.y += (Math.random() - 0.5) * state.cam.shake;
+        if (appSettings.screenShake) {
+            state.cam.x += (Math.random() - 0.5) * state.cam.shake;
+            state.cam.y += (Math.random() - 0.5) * state.cam.shake;
+        }
         state.cam.shake *= 0.88;
         if (state.cam.shake < 0.5) state.cam.shake = 0;
     }
@@ -8814,8 +9708,10 @@ function deployHub() {
 
 function startGame() {
     localStorage.removeItem('polytank_save');
+    updateMenuSaveStatus();
     if (typeof endlessLevelCache !== 'undefined') endlessLevelCache.clear();
     document.getElementById('menu-overlay').style.display = 'none';
+    setMenuMode(false);
     AudioEngine.resume();
 
     healingNodes = [];
@@ -8869,6 +9765,7 @@ function saveGame() {
         equippedPassives: state.equippedPassives
     };
     localStorage.setItem('polytank_save', JSON.stringify(saveData));
+    updateMenuSaveStatus();
 }
 
 function loadGame() {
@@ -8881,6 +9778,7 @@ function continueGame() {
     if (!data) return startGame();
 
     document.getElementById('menu-overlay').style.display = 'none';
+    setMenuMode(false);
     AudioEngine.resume();
 
     player = new Tank(0, 0, true);
@@ -8918,6 +9816,8 @@ function continueGame() {
 
 function endGame(win) {
     state.active = false;
+    AudioEngine.setMood(1, false, false, true);
+    setMenuMode(true);
     document.getElementById('dialogue-overlay').style.display = 'none';
     hideCsDim();
 
@@ -8925,13 +9825,15 @@ function endGame(win) {
     m.style.display = 'flex';
     m.querySelector('h1').innerText = win ? "VICTORY" : "DESTROYED";
     m.querySelector('h1').style.color = win ? "#00e16e" : "#e10000";
-    m.querySelector('.menu-subtitle').innerText = win ? "Campaign Complete — Sector 7 Secured" : "System Failure";
+    const menuSubtitle = m.querySelector('.menu-subtitle');
+    if (menuSubtitle) menuSubtitle.innerText = win ? "Campaign Complete — Sector 7 Secured" : "System Failure";
 
     let btnContinue = document.getElementById('btn-continue');
     let btnStart = document.getElementById('btn-start');
 
     if (win) {
         localStorage.removeItem('polytank_save');
+        updateMenuSaveStatus();
         btnContinue.style.display = 'none';
         btnStart.innerText = "Play Again";
         btnStart.style.background = "#00e16e";

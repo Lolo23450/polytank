@@ -166,8 +166,9 @@ const EnemyAPI = (() => {
                 const bx = from.x + Math.cos(angle) * (from.r * 1.25);
                 const by = from.y + Math.sin(angle) * (from.r * 1.25);
                 if (gameCtx.bullets) {
-                    if (typeof Bullet !== 'undefined') {
-                        gameCtx.bullets.push(new Bullet(bx, by, angle, speed, scaledDamage, size, life, color, false, opts));
+                    const BulletType = gameCtx.Bullet === false ? null : (gameCtx.Bullet || (typeof Bullet !== 'undefined' ? Bullet : null));
+                    if (BulletType) {
+                        gameCtx.bullets.push(new BulletType(bx, by, angle, speed, scaledDamage, size, life, color, false, opts));
                     } else {
                         // Sandbox bullet fallback
                         gameCtx.bullets.push({ x: bx, y: by, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, dmg: scaledDamage, r: size / 2, life, color });
